@@ -1,4 +1,7 @@
 <?php
+namespace JCF\components\checkbox;
+use JCF\models\Just_Field;
+
 /**
  * Class for group of checkboxes
  *
@@ -7,9 +10,9 @@
  */
 class Just_Field_Checkbox extends Just_Field{
 	
-	public function __construct() {
+	public function __construct($data_layer, $post_type = NULL) {
 		$field_ops = array('classname' => 'field_checkbox' );
-		parent::__construct('checkbox', __('Checkbox', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct($data_layer, $post_type, 'checkbox', __('Checkbox', JCF_TEXTDOMAIN), $field_ops);
 	}
 	
 	/**

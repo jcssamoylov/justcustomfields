@@ -4,11 +4,7 @@
 	
 	<?php do_action('jcf_print_admin_notice'); ?>
 	
-	<h2 class="nav-tab-wrapper">
-		<a class="nav-tab <?php echo ($tabs == 'fields' ? 'nav-tab-active' : '');?>" href="?page=just_custom_fields&amp;tab=fields"><?php _e('Fields', JCF_TEXTDOMAIN); ?></a>
-		<a class="nav-tab <?php echo ($tabs == 'settings' ? 'nav-tab-active' : '');?>" href="?page=just_custom_fields&amp;tab=settings"><?php _e('Settings', JCF_TEXTDOMAIN); ?></a>
-		<a class="nav-tab <?php echo ($tabs == 'import_export' ? 'nav-tab-active' : '');?>" href="?page=just_custom_fields&amp;tab=import_export"><?php _e('Import/Export', JCF_TEXTDOMAIN); ?></a>
-	</h2>
+	<?php include(JCF_ROOT . '/views/_tabs.tpl.php'); ?>
 	
 	<?php // Fields list ?>
 	<?php if( $tabs == 'fields' ): ?>

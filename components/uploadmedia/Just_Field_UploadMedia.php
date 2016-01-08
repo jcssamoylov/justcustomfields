@@ -1,42 +1,18 @@
 <?php
-
-/**
- *	function to get link to the thumbnail script
- */
-function jcf_get_thumb_path( $image, $size = '100x77' ){
-	$cachedir = WP_CONTENT_DIR . '/uploads/jcfupload';
-	
-	$new_size = explode('x', $size);
-	
-	// check file extension
-	$filetype = wp_check_filetype($image);
-	if( empty($filetype['ext']) ){
-		return '#';
-	}
-	$ext = $filetype['ext'];
-	
-	// check if thumb already exists:
-	$hash = md5($image.$new_size[0].'x'.$new_size[1]);
-	$thumbfile = $cachedir . '/' . $hash . '.' . $ext;
-	if( is_file($thumbfile) ){
-		return get_bloginfo('url') . '/wp-content/uploads/jcfupload/' . basename($thumbfile);
-	}
-	else{
-		return get_bloginfo('url') . '/wp-content/plugins/just-custom-fields/components/uploadmedia/thump.php?image='.rawurlencode($image).'&amp;size='.$size;
-	}
-}
+namespace JCF\components\uploadmedia;
+use JCF\models\Just_Field;
 
 /**
  *	Upload media field
  */
-class Just_Field_Upload extends Just_Field{
+class Just_Field_UploadMedia extends Just_Field{
 	
 	public static $compatibility = '3.3+';
 
-	public function __construct(){
+	public function __construct($data_layer, $post_type = NULL){
 
 		$field_ops = array( 'classname' => 'field_uploadmedia' );
-		parent::__construct( 'uploadmedia', __('Upload Media', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct( $data_layer, $post_type, 'uploadmedia', __('Upload Media', JCF_TEXTDOMAIN), $field_ops);
 		
 		add_action('admin_head' , array($this , 'add_MediaUploader_js'));
 	}
@@ -72,7 +48,7 @@ class Just_Field_Upload extends Just_Field{
 			foreach($entries as $key => $entry) : 
 				if( !empty($entry) ){
 					$value = esc_attr( $entry['image'] );
-					$image = jcf_get_thumb_path( $entry['image'] );
+					$image = $this->get_thumb_path( $entry['image'] );
 					$upload_text = ($upload_type == 'image')? __('Update image', JCF_TEXTDOMAIN) : __('Update file', JCF_TEXTDOMAIN);
 					$delete_class = '';
 	
@@ -318,5 +294,32 @@ class Just_Field_Upload extends Just_Field{
 
 		return  $args['before_value'] . $html . $args['after_value'];
 	}
+	
+	/**
+	*	function to get link to the thumbnail script
+	*/
+	private function get_thumb_path( $image, $size = '100x77' ){
+	$cachedir = WP_CONTENT_DIR . '/uploads/jcfupload';
+	
+	$new_size = explode('x', $size);
+	
+	// check file extension
+	$filetype = wp_check_filetype($image);
+	if( empty($filetype['ext']) ){
+		return '#';
+	}
+	$ext = $filetype['ext'];
+	
+	// check if thumb already exists:
+	$hash = md5($image.$new_size[0].'x'.$new_size[1]);
+	$thumbfile = $cachedir . '/' . $hash . '.' . $ext;
+	if( is_file($thumbfile) ){
+		return get_bloginfo('url') . '/wp-content/uploads/jcfupload/' . basename($thumbfile);
+	}
+	else{
+		return get_bloginfo('url') . '/wp-content/plugins/just-custom-fields/components/uploadmedia/thump.php?image='.rawurlencode($image).'&amp;size='.$size;
+	}
+}
+
 }
 ?>

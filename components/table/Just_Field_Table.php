@@ -1,4 +1,7 @@
 <?php
+namespace JCF\components\table;
+use JCF\models\Just_Field;
+
 /**
  * Class for select multiple list type
  *
@@ -7,9 +10,9 @@
  */
 class Just_Field_Table extends Just_Field{
 	
-	public function __construct(){
+	public function __construct($data_layer, $post_type = NULL){
 		$field_ops = array( 'classname' => 'field_table' );
-		parent::__construct('table', __('Table', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct($data_layer, $post_type, 'table', __('Table', JCF_TEXTDOMAIN), $field_ops);
 	}
 	
 	/**

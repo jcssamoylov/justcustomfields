@@ -15,9 +15,13 @@ class Autoloader
 		$prefix = 'JCF\\';
 
 		$len = strlen($prefix);
-		
 		// get the relative class name
-		$relative_class = substr($file, $len);
+		if(substr($file, 0, 3).'\\' == $prefix ){
+			$relative_class = substr($file, $len);
+		}
+		else {
+			$relative_class = $file;
+		}
 
 		$path = JCF_ROOT;
 		$filepath = JCF_ROOT .'/'.  str_replace('\\', '/', $relative_class) . '.php';
@@ -44,6 +48,7 @@ class Autoloader
 		  {
 			$path2 = $path .'/' . $dir;
 			$filepath = $path2 . '/' . $file . '.php';
+			
 			if (file_exists($filepath))
 			{
 			  $flag = FALSE;

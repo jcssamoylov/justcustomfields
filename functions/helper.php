@@ -61,7 +61,7 @@ function jcf_get_language_strings(){
 /**
  * print response (encode to json if needed) callback
  */
-function jcf_ajax_reponse( $resp, $format = 'json' ){
+function jcf_ajax_response( $resp, $format = 'json' ){
 	if( $format == 'json' ){
 		$resp = json_encode($resp);
 		header( "Content-Type: application/json; charset=" . get_bloginfo('charset') );
@@ -138,3 +138,7 @@ function jcf_set_chmod($filename){
 	}
 }
 
+// print image with loader
+function print_loader_img(){
+	return '<img class="ajax-feedback " alt="" title="" src="' . get_bloginfo('wpurl') . '/wp-admin/images/wpspin_light.gif" style="visibility: hidden;">';
+}

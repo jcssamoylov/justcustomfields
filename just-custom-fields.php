@@ -21,7 +21,7 @@ define('JCF_CONF_SOURCE_FS_GLOBAL', 'fs_global');
 require_once( JCF_ROOT.'/core/Autoloader.php');
 require_once( JCF_ROOT.'/functions/helper.php' );
 
-if(!function_exists('pa')) {
+if( !function_exists('pa') ) {
 	function pa($mixed, $stop = false) {
 		$ar = debug_backtrace(); $key = pathinfo($ar[0]['file']); $key = $key['basename'].':'.$ar[0]['line'];
 		$print = array($key => $mixed); echo( '<pre>'.htmlentities(print_r($print,1)).'</pre>' );
@@ -29,15 +29,15 @@ if(!function_exists('pa')) {
 	}
 }
 
-function run_plugin_name() {
-    
+function run_plugin() {
+
     spl_autoload_register('JCF\Autoloader::autoload');
 
     $plugin = new JCF\JustCustomFields();
     $plugin->run();
 }
 
-run_plugin_name();
+run_plugin();
 
 
 ?>

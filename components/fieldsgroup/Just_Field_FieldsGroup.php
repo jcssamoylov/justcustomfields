@@ -1,4 +1,6 @@
 <?php
+namespace JCF\components\fieldsgroup;
+use JCF\models\Just_Field;
 
 /**
  *	Fields group field.
@@ -6,9 +8,9 @@
  */
 class Just_Field_FieldsGroup extends Just_Field{
 	
-	public function __construct(){
+	public function __construct($data_layer, $post_type = NULL){
 		$field_ops = array( 'classname' => 'field_fieldsgroup' );
-		parent::__construct( 'fieldsgroup', __('Fields Group', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct( $data_layer, $post_type, 'fieldsgroup', __('Fields Group', JCF_TEXTDOMAIN), $field_ops);
 	}
 	
 	/**

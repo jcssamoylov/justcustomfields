@@ -4,11 +4,8 @@
 	
 	<?php do_action('jcf_print_admin_notice'); ?>
 	
-	<h2 class="nav-tab-wrapper">
-		<a class="nav-tab <?php echo ($jcf_tabs == 'fields' ? 'nav-tab-active' : '');?>" href="?page=just_custom_fields&amp;tab=fields"><?php _e('Fields', JCF_TEXTDOMAIN); ?></a>
-		<a class="nav-tab <?php echo ($jcf_tabs == 'settings' ? 'nav-tab-active' : '');?>" href="?page=just_custom_fields&amp;tab=settings"><?php _e('Settings', JCF_TEXTDOMAIN); ?></a>
-		<a class="nav-tab <?php echo ($jcf_tabs == 'import_export' ? 'nav-tab-active' : '');?>" href="?page=just_custom_fields&amp;tab=import_export"><?php _e('Import/Export', JCF_TEXTDOMAIN); ?></a>
-	</h2>
+	<?php include(JCF_ROOT . '/views/_tabs.tpl.php'); ?>
+
 	<h3><?php _e('Custom Post Type:', JCF_TEXTDOMAIN); ?> <?php echo $post_type->label; ?>
 		<small><a href="?page=just_custom_fields" class="jcf_change_pt"><?php _e('change', JCF_TEXTDOMAIN); ?></a></small></h3>
 	
@@ -19,10 +16,7 @@
 		
 		<?php  // fieldsets loop
 		
-		if( !empty($fieldsets) ) :
-		
-			$registered_fields = jcf_get_registered_fields();
-			?>
+		if( !empty($fieldsets) ) : ?>
 			<?php foreach($fieldsets as $fieldset) : ?>
 			<div>
 			<div class="jcf_inner_box" id="jcf_fieldset_<?php echo $fieldset['id']; ?>">
@@ -75,7 +69,7 @@
 											<td><?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></td>
 											<td><?php if($enabled) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
 										<?php else: ?>
-											<td colspan="3" class="collection_list" data-collection_id="<?php echo $field_id; ?>"><?php do_action('jcf_custom_settings_row', $field_id,$fieldset['id']); ?></td>
+											<td colspan="3" class="collection_list" data-collection_id="<?php echo $field_id; ?>"><?php do_action('jcf_custom_settings_row', $data_layer, $post_type->name, $field_id, $fieldset['id']); ?></td>
 										<?php endif; ?>
 									</tr>
 								<?php endforeach; ?>

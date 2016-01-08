@@ -1,4 +1,6 @@
 <?php
+namespace JCF\components\select;
+use JCF\models\Just_Field;
 /**
  * Class for select list type
  *
@@ -7,9 +9,9 @@
  */
 class Just_Field_Select extends Just_Field{
 	
-	public function __construct(){
+	public function __construct($data_layer, $post_type = NULL){
 		$field_ops = array( 'classname' => 'field_select' );
-		parent::__construct('select', __('Select', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct($data_layer, $post_type,'select', __('Select', JCF_TEXTDOMAIN), $field_ops);
 	}
 	
 	/**

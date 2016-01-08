@@ -1,4 +1,6 @@
 <?php
+namespace JCF\components\relatedcontent;
+use JCF\models\Just_Field;
 
 /**
  *	Fields group field.
@@ -8,9 +10,9 @@ class Just_Field_RelatedContent extends Just_Field{
 	
 	public static $compatibility = '3.3+';
 
-	public function __construct(){
+	public function __construct($data_layer, $post_type = NULL){
 		$field_ops = array( 'classname' => 'field_relatedcontent' );
-		parent::__construct( 'relatedcontent', __('Related Content', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct( $data_layer, $post_type, 'relatedcontent', __('Related Content', JCF_TEXTDOMAIN), $field_ops);
 		
 		// add wp_ajax for autocomplete response
 		add_action('wp_ajax_jcf_related_content_autocomplete', array($this, 'autocomplete'));

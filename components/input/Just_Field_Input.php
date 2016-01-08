@@ -1,15 +1,12 @@
 <?php
-/**
- * Class for input text type
- *
- * @package default
- * @author Alexander Prokopenko
- */
+namespace JCF\components\input;
+use JCF\models\Just_Field;
+
 class Just_Field_Input extends Just_Field{
 	
-	public function __construct(){
+	public function __construct($data_layer, $post_type = NULL){
 		$field_ops = array( 'classname' => 'field_inputtext' );
-		parent::__construct('inputtext', __('Input Text', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct($data_layer, $post_type, 'inputtext', __('Input Text', JCF_TEXTDOMAIN), $field_ops);
 	}
 	
 	/**

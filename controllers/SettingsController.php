@@ -16,8 +16,8 @@ class SettingsController {
 		$this->source = $this->_model->getDataSourceType();
 		$this->network = $this->_model->getNetworkMode();
 		$layerFactory = new DataLayerFactory();
-		$this->_dbLayer = $layerFactory->create('\JCF\models\DBDataLayer');
-		$this->_fileLayer = $layerFactory->create('\JCF\models\FilesDataLayer');
+		$this->_dbLayer = $layerFactory->create('DB', $this->source);
+		$this->_fileLayer = $layerFactory->create('Files', $this->source);
 
 		add_action('wp_ajax_jcf_check_file', array($this, 'check_file'));
 		add_action('wp_ajax_jcf_export_fields', array($this, 'export') );
@@ -180,7 +180,7 @@ class SettingsController {
 		else {
 			$resp = array('status' => '1');
 		}
-		jcf_ajax_reponse($resp, 'json');
+		jcf_ajax_response($resp, 'json');
 	}
 }
 

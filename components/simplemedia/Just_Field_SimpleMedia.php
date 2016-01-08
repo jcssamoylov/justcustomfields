@@ -1,17 +1,19 @@
 <?php
+namespace JCF\components\simplemedia;
+use JCF\models\Just_Field;
 
 /**
  *	Simple Upload media field
  */
-class Just_Field_Simple_Media extends Just_Field
+class Just_Field_SimpleMedia extends Just_Field
 {
 	public static $compatibility = "4.0+";
 
 
-	public function __construct(){
+	public function __construct($data_layer, $post_type = NULL){
 
 		$field_ops = array( 'classname' => 'field_simplemedia' );
-		parent::__construct( 'simplemedia', __('Simple Media', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct( $data_layer, $post_type, 'simplemedia', __('Simple Media', JCF_TEXTDOMAIN), $field_ops);
 			
 	}
 	

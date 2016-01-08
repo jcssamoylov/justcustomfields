@@ -214,12 +214,18 @@ function initFieldsetFields(){
 						});
 				}
 			}
+			var row = jQuery('#field_row_' + response.id);
+			row.find('strong a').text(response.instance.title);
 			if(!response.collection_fields) {
 				// update fieldset row
-				var row = jQuery('#field_row_' + response.id);
-				row.find('strong a').text(response.instance.title);
 				row.find('td:eq(2)').text(response.instance.slug);
 				row.find('td:eq(4)').text( (response.instance.enabled)? jcf_textdomain.yes : jcf_textdomain.no );
+			}
+			else{
+				html = '       <li><strong>' + jcf_textdomain.type + '</strong>: '+response.id_base+'</li>';
+				html += '       <li><strong>' + jcf_textdomain.slug + '</strong>: '+response.instance.slug+'</li>';
+				html += '       <li><strong>' + jcf_textdomain.enabled + '</strong>: '+( (response.instance.enabled)? jcf_textdomain.yes : jcf_textdomain.no )+'</li>';
+				row.find('td:eq(1) ul').html(html);
 			}
 			// close add box at the end
 			jcf_hide_ajax_container();

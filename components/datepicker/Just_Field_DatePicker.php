@@ -1,11 +1,14 @@
 <?php
+namespace JCF\components\datepicker;
+use JCF\models\Just_Field;
+
 class Just_Field_DatePicker extends Just_Field{
 	
 	public static $compatibility = '3.3+';
 
-	public function __construct(){
+	public function __construct($data_layer, $post_type = NULL){
 		$field_ops = array( 'classname' => 'field_datepicker' );
-		parent::__construct('datepicker', __('Date Picker', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct($data_layer, $post_type, 'datepicker', __('Date Picker', JCF_TEXTDOMAIN), $field_ops);
 	}
 	
 	/**

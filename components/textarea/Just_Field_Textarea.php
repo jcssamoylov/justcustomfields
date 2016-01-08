@@ -1,4 +1,6 @@
 <?php
+namespace JCF\components\textarea;
+use JCF\models\Just_Field;
 /**
  * Textarea field type
  *
@@ -7,9 +9,9 @@
  */
 class Just_Field_Textarea extends Just_Field{
 	
-	public function __construct() {
+	public function __construct($data_layer, $post_type = NULL) {
 		$field_ops = array( 'classname' => 'field_textarea' );
-		parent::__construct('textarea', __('Textarea', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct($data_layer, $post_type, 'textarea', __('Textarea', JCF_TEXTDOMAIN), $field_ops);
 	}
 	
 	/**
