@@ -106,6 +106,7 @@ class DBDataLayer implements FieldSettings {
 		$fieldsets = array();
 		$field_settings = array();
 		$field_options = array();
+		
 		foreach($post_types as $key => $value){
 			$fieldsets[$key] = $this->get_fieldsets($key);
 			$field_settings[$key] = $this->get_fields($key);
@@ -143,7 +144,7 @@ class DBDataLayer implements FieldSettings {
 	 * @param string $post_type
 	 * @return int
 	 */
-	public function countFields($post_type){
+	public function countFields($post_type, $source = false){
 		$fieldsets = $this->get_options('jcf_fieldsets-'.$post_type);
 
 		if(!empty($fieldsets)){

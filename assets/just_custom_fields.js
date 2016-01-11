@@ -454,7 +454,7 @@ function initSettings(){
 				'jcf_multisite_setting' : jQuery('#jcform_settings').find('input[name="jcf_multisite_setting"]:checked').val(),
 				'jcf_read_settings' : jQuery('#jcform_settings').find('input[name="jcf_read_settings"]:checked').val()
 		};
-
+console.log(data);
 		jcf_ajax(data, 'json', null, function(response){
 			if( response.msg ){
 				if( confirm(response.msg) ){

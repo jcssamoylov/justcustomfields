@@ -69,7 +69,8 @@
 											<td><?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></td>
 											<td><?php if($enabled) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
 										<?php else: ?>
-											<td colspan="3" class="collection_list" data-collection_id="<?php echo $field_id; ?>"><?php do_action('jcf_custom_settings_row', $data_layer, $post_type->name, $field_id, $fieldset['id']); ?></td>
+											<?php ?>
+											<td colspan="3" class="collection_list" data-collection_id="<?php echo $field_id; ?>"><?php $this->get_collection_settings_row($post_type->name, $fieldset['id'], $field_id); ?></td>
 										<?php endif; ?>
 									</tr>
 								<?php endforeach; ?>

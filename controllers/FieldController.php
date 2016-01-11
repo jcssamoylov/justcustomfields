@@ -7,7 +7,7 @@ use JCF\models\DataLayerFactory;
 class FieldController {
 
 	public $registered_fields;
-	private $_field_factory;
+	public $_field_factory;
 	protected $_dataLayer;
 
 	public function __construct($source_settings){
@@ -40,7 +40,6 @@ class FieldController {
 		$collection_id = (isset($_POST['collection_id'])?$_POST['collection_id']:'');
 		
 		$field_obj = $this->_field_factory->initObject($post_type, $field_type, $fieldset_id, $collection_id);
-
 		$html = $field_obj->do_form();
 		jcf_ajax_response($html, 'html');
 		
@@ -56,13 +55,13 @@ class FieldController {
 		$collection_id = (isset($_POST['collection_id'])?$_POST['collection_id']:'');
 		
 		$field_obj = $this->_field_factory->initObject($post_type, $field_type, $fieldset_id, $collection_id);
-		
+
 		$field_index = $this->_field_factory->getIndex($field_obj->id_base);
 		$resp = $field_obj->do_update($field_index);
 
 		if(isset($resp['id_base']) && $resp['id_base'] == 'collection'){
 			ob_start();
-			$field_obj->settings_row($this->_dataLayer, $post_type, $resp['id'], $fieldset_id);
+			$field_obj->settings_row($post_type, $resp['id'], $fieldset_id);
 			$resp["collection_fields"] = ob_get_clean();
 		}
 		jcf_ajax_response($resp, 'json');

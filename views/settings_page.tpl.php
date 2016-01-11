@@ -15,7 +15,7 @@
 			<div>
 				<ul class="dotted-list jcf-bold">
 				<?php foreach($post_types as $key => $obj) : ?>
-					<?php $fieldsets_count = $this->settings->source != JCF_CONF_SOURCE_DB ? $this->settings->_fileLayer->countFields($key, $this->settings->source) : $this->settings->_dbLayer->countFields($key); ?>
+					<?php $fieldsets_count = $this->settings->_dataLayer->countFields($key, $this->settings->source); ?>
 					<li>
 						<a class="jcf_tile jcf_tile_<?php echo $key; ?>" href="?page=just_custom_fields&amp;pt=<?php echo $key; ?>">
 							<span class="jcf_tile_icon"></span>

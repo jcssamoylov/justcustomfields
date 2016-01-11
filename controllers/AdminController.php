@@ -42,11 +42,14 @@ class AdminController {
 		// save import
 		if( !empty($_POST['save_import']) ) {
 			$import = $this->settings->import( $_POST['import_data'] );
-			
-			$notices = $import['saved'] ? 
-					array('notice', __('<strong>Import</strong> has been completed successfully!', JCF_TEXTDOMAIN)) : 
-					array('error', __('<strong>Import failed!</strong> Please check that your import file has right format.', JCF_TEXTDOMAIN));
-			array_push($notices, $import['notice']);
+			if($import['saved']){
+				$this->add_notice('notice', __('<strong>Import</strong> has been completed successfully!', JCF_TEXTDOMAIN));
+			}
+			else{
+				
+				$notices = array(array('error', __('<strong>Import failed!</strong> Please check that your import file has right format.', JCF_TEXTDOMAIN)));
+				$notices[] = $import['notice'];	
+			}			
 		}
 
 		if( !empty($_POST['jcf_update_settings']) ) {
@@ -56,7 +59,7 @@ class AdminController {
 		// add notices 
 		if( !empty($notices) ){
 			foreach($notices as $notice){
-				$this->add_notice($notice[0], $notice[1]);
+				if(!empty($notice)) $this->add_notice($notice[0], $notice[1]);
 			}
 		}
 
@@ -88,6 +91,11 @@ class AdminController {
 		);
 		$this->render( JCF_ROOT . '/views/fields_ui.tpl.php', $tpl_params );
 	}
+	
+	public function get_collection_settings_row($post_type, $fieldset_id, $field_id){
+		$collection = $this->_fieldsController->_field_factory->initObject($post_type, 'collection', $fieldset_id, $field_id);
+		$collection->settings_row($post_type, $field_id, $fieldset_id);
+	}
 
 	public function enqueue_scripts(){
 		wp_register_script(
@@ -108,13 +116,12 @@ class AdminController {
 	}
 
 	public function add_notice($type, $message){
-		$this->notices += array($type, $message);
+		$this->notices[] = array($type, $message);
 	}
 
 	public function print_notice($args = array()){
 
 		if( empty($this->notices) ) return;
-		
 		foreach($this->notices as $msg)
 		{
 			if(!empty($msg)){

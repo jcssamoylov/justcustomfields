@@ -1,17 +1,4 @@
 <?php
-
-// set post_type in global variable, so we can use it in internal functions
-function jcf_set_post_type( $post_type ){
-	global $jcf_post_type;
-	$jcf_post_type = $post_type;
-}
-
-// return jcf_post_type global variable
-function jcf_get_post_type(){
-	global $jcf_post_type;
-	return $jcf_post_type;
-}
-
 // get registered post types
 function jcf_get_post_types( $format = 'single' ){
 	

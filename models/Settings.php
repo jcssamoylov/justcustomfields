@@ -18,7 +18,6 @@ class Settings {
 	public function updateDataSource($new_value, $new_network, $file_layer) {
 		$current_value = $this->getDataSourceType();
 
-		$notice = array();
 		if( MULTISITE && ($new_network != JCF_CONF_MS_NETWORK && $new_value == JCF_CONF_SOURCE_FS_GLOBAL) ) {
 			$notice[] = array('error', __('<strong>Settings storage update FAILED!</strong>. Your MultiSite Settings do not allow to set global storage in FileSystem', JCF_TEXTDOMAIN));
 			$output = array(

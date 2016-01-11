@@ -24,7 +24,7 @@ class Just_Field_Collection extends Just_Field{
 	public $_collection_field_factory;
 
 	public function __construct($data_layer, $post_type = NULL){
-		$this->_collection_field_factory = new \JCF\models\JustFieldFactory($this->_dataLayer, 1);
+		$this->_collection_field_factory = new \JCF\models\JustFieldFactory($this->_dataLayer, TRUE);
 		$this->_collection_field_factory->register( 'Just_Field_Input' );
 		$this->_collection_field_factory->register( 'Just_Field_Select' );
 		$this->_collection_field_factory->register( 'Just_Field_SelectMultiple' );
@@ -36,8 +36,6 @@ class Just_Field_Collection extends Just_Field{
 
 		$field_ops = array( 'classname' => 'field_collection' );
 		parent::__construct($data_layer, $post_type, 'collection', __('Collection', JCF_TEXTDOMAIN), $field_ops);
-		
-		add_action('jcf_custom_settings_row', array($this, 'settings_row'), 10, 4);
 		
 		if( !empty($_GET['page']) && $_GET['page'] == 'just_custom_fields' ){
 			//add_action('admin_print_styles', 'jcf_admin_add_styles');
@@ -52,7 +50,7 @@ class Just_Field_Collection extends Just_Field{
 	 *	draw field on post edit form
 	 *	you can use $this->instance, $this->entry
 	 */
-	function field( $args ) {
+	public function field( $args ) {
 		extract( $args );
 		
 		self::$current_collection_field_key = 0;
@@ -265,9 +263,9 @@ class Just_Field_Collection extends Just_Field{
 	 * create custom table on jcf settings fields
 	 */
 	
-	public function settings_row($data_layer, $post_type, $collection_id, $fieldset_id)
+	public function settings_row($post_type, $collection_id, $fieldset_id)
 	{
-		$collection = $data_layer->get_fields($post_type, $collection_id);
+		$collection = $this->_dataLayer->get_fields($post_type, $collection_id);
 		$registered_fields = $this->_collection_field_factory->get_registered_fields();
 		include( JCF_ROOT . '/components/collection/templates/fields_ui.tpl.php' );
 	}

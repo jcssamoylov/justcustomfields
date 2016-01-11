@@ -48,12 +48,25 @@
 													<?php if( !empty($fieldset['fields'])) : ?>
 														<?php foreach($fieldset['fields'] as $field_id => $field) : ?>
 															<?php foreach($field as $key_setting => $field_setting): ?>
+																<?php if($key_setting != 'fields'):?>
 																	<input type="hidden" disabled=disabled' 
 																		   data-fieldset ="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
 																		   data-field = 'import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>'  
 																		   name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][<?php echo $key_setting; ?>]" 
 																		   value="<?php echo $field_setting; ?>" 
 																		/>
+																<?php else: ?>
+																	<?php foreach($field_setting as $collection_field_id => $collection_field_value): ?>
+																		<?php foreach($collection_field_value as $c_key => $c_value): ?>
+																			<input type="hidden" disabled=disabled' 
+																				   data-fieldset ="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
+																				   data-field = 'import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>'  
+																				   name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][<?php echo $key_setting; ?>][<?php echo $collection_field_id;?>][<?php echo $c_key;?>]" 
+																				   value="<?php echo $c_value ; ?>"
+																				/>
+																		<?php endforeach; ?>
+																	<?php endforeach; ?>
+																<?php endif; ?>
 															<?php endforeach; ?>
 															<tr id="field_row_<?php echo $field_id; ?>">
 																<td class="check-column"><input type="checkbox" class="choose_field" name="choose_field[]" value="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" id="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>" /></td>
