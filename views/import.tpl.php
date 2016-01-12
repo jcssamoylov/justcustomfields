@@ -49,31 +49,86 @@
 														<?php foreach($fieldset['fields'] as $field_id => $field) : ?>
 															<?php foreach($field as $key_setting => $field_setting): ?>
 																<?php if($key_setting != 'fields'):?>
-																	<input type="hidden" disabled=disabled' 
+																	<input type="hidden" disabled='disabled' 
 																		   data-fieldset ="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
 																		   data-field = 'import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>'  
 																		   name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][<?php echo $key_setting; ?>]" 
 																		   value="<?php echo $field_setting; ?>" 
 																		/>
-																<?php else: ?>
-																	<?php foreach($field_setting as $collection_field_id => $collection_field_value): ?>
-																		<?php foreach($collection_field_value as $c_key => $c_value): ?>
-																			<input type="hidden" disabled=disabled' 
-																				   data-fieldset ="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
-																				   data-field = 'import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>'  
-																				   name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][<?php echo $key_setting; ?>][<?php echo $collection_field_id;?>][<?php echo $c_key;?>]" 
-																				   value="<?php echo $c_value ; ?>"
-																				/>
-																		<?php endforeach; ?>
-																	<?php endforeach; ?>
 																<?php endif; ?>
 															<?php endforeach; ?>
 															<tr id="field_row_<?php echo $field_id; ?>">
-																<td class="check-column"><input type="checkbox" class="choose_field" name="choose_field[]" value="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" id="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>" /></td>
-																<td><strong><?php echo $field['title']; ?></strong></td>
-																<td><?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></td>
-																<td><?php echo $field['slug']; ?></td>
-																<td><?php if($field['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
+																<td class="check-column">
+																	<input type="checkbox" class="choose_field" name="choose_field[]" 
+																		   value="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
+																		   id="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>" 
+																		/>
+																	<input type="hidden" disabled='disabled' 
+																		data-collection="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>"  
+																		name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][title]"
+																		value="<?php echo $field['title']; ?>" class="jcf_collection_settings" 
+																	 />
+																	<input type="hidden" disabled='disabled' 
+																		data-collection="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>"  
+																		name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][slug]"
+																		value="<?php echo $field['slug']; ?>" class="jcf_collection_settings" 
+																	 />
+																	<input type="hidden" disabled='disabled' 
+																		data-collection="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>"  
+																		name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][enabled]"
+																		value="<?php echo $field['enabled']; ?>" class="jcf_collection_settings" 
+																	 />
+																</td>
+																<?php if(preg_replace('/\-[0-9]+$/', '', $field_id) != 'collection'): ?>
+																	<td><strong><?php echo $field['title']; ?></strong></td>
+																	<td><?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></td>
+																	<td><?php echo $field['slug']; ?></td>
+																	<td><?php if($field['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
+																<?php else: ?>
+																	<td>
+																		<ul>
+																			<li><?php echo $field['title']; ?></li>
+																			<li><strong><?php _e('Type', JCF_TEXTDOMAIN); ?></strong>: <em><?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></em></li>
+																			<li><strong><?php _e('Slug', JCF_TEXTDOMAIN); ?></strong>: <em><?php echo $field['slug']; ?></em></li>
+																			<li><strong><?php _e('Enabled', JCF_TEXTDOMAIN); ?></strong>: <em><?php if($field['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></em></li>
+																		</ul>
+																	</td>
+																	<td colspan="3" >
+																		<table class="wp-list-table widefat fixed fieldset-fields-table" cellspacing="0">
+																			<tr>
+																				<th class="check-column">&nbsp;</th>
+																				<th><?php _e('Field', JCF_TEXTDOMAIN); ?></th>
+																				<th><?php _e('Type', JCF_TEXTDOMAIN); ?></th>
+																				<th><?php _e('Slug', JCF_TEXTDOMAIN); ?></th>
+																				<th><?php _e('Enabled', JCF_TEXTDOMAIN); ?></th>
+																			</tr>
+																		<?php foreach($field['fields'] as $collection_field_id => $collection_field_value):  ?>
+																			<tr>
+																				<td>
+																					<input type="checkbox" class="choose_collection_field" name="choose_collection_field[]"
+																					data-fieldset_id="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>"
+																					value="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>" 
+																					id="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>" 
+																				 />
+																				<?php foreach($collection_field_value as $c_key => $c_value): ?>
+																					<input type="hidden" disabled='disabled'
+																						   data-collection="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>"
+																						   data-fieldset="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
+																						   data-field='import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>'  
+																						   name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][<?php echo $key_setting; ?>][<?php echo $collection_field_id;?>][<?php echo $c_key;?>]" 
+																						   value="<?php echo $c_value ; ?>"
+																						/>
+																				<?php endforeach; ?>
+																				</td>
+																				<td><?php echo $collection_field_value['title']; ?></td>
+																				<td><?php echo preg_replace('/\-[0-9]+$/', '', $collection_field_id); ?></td>
+																				<td><?php echo $collection_field_value['slug']; ?></td>
+																				<td><?php if($collection_field_value['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
+																			</tr>
+																		<?php endforeach; ?>
+																		</table>
+																	</td>
+																<?php endif;?>																
 															</tr>
 														<?php endforeach; ?>
 													<?php else : ?>

@@ -7,6 +7,7 @@ jQuery(document).ready(function(){
 	initFieldsetFields();
 	initImport();
 	initExport();
+	initImportExportCheckboxes();
 	initSettings();
 });
 
@@ -330,7 +331,6 @@ function initImport(){
 			}
 		  });
 	});
-	initImportExportCheckboxes();
 }
 
 /**
@@ -345,7 +345,6 @@ function initExport(){
 			modalWindow(response);
 		});
 	});
-	initImportExportCheckboxes();
 }
 
 /**
@@ -358,16 +357,28 @@ function initImportExportCheckboxes(){
 		var data_id =  jQuery( this ).attr('id');
 		var data_checked = jQuery( this ).is(':checked');
 		if( jQuery( this ).hasClass('choose_field') ){
-				jQuery('input[data-fieldset="' + data_val + '"].jcf_hidden_fieldset').attr({'disabled':!data_checked});
-				jQuery('input[data-field="' + data_id + '"]').attr({'disabled':!data_checked});
+			var fieldset_id = data_val;
+			jQuery('input[data-field="' + data_id + '"]').attr({'disabled':!data_checked});
+			jQuery( this ).parent().parent().find('input[type="checkbox"]').attr({'checked':data_checked});
+			jQuery( this ).parent().parent().find('input[type="hidden"]').attr({'disabled':!data_checked});
 		}
 		else if( jQuery( this ).hasClass('jcf-choose_fieldset') ){
-				jQuery( this ).parent().parent().parent().find('input[type="checkbox"]').attr({'checked':!data_checked});
-				jQuery('input[data-fieldset="' + data_val + '"]').attr({'disabled':data_checked});
+			jQuery( this ).parent().parent().parent().find('input[type="checkbox"]').attr({'checked':data_checked});
+			jQuery('input[data-fieldset="' + data_val + '"]').attr({'disabled':!data_checked});
 		}
 		else if( jQuery( this ).hasClass('jcf-select_content_type') ){
-				jQuery( this ).parent().parent().parent().find('input[type="checkbox"]').attr({'checked':!data_checked});
-				jQuery( this ).parent().parent().parent().find('input[type="hidden"]').attr({'disabled':data_checked});
+			jQuery( this ).parent().parent().parent().find('input[type="checkbox"]').attr({'checked':data_checked});
+			jQuery( this ).parent().parent().parent().find('input[type="hidden"]').attr({'disabled':!data_checked});
+		}
+		else if( jQuery( this ).hasClass('choose_collection_field') ){
+			var fieldset_id = jQuery( this ).data('fieldset_id');
+			var collection_activate = jQuery( this ).parents('table').find('input[type="checkbox"].choose_collection_field:checked').length;
+			jQuery('input[data-collection="' + data_val + '"].jcf_collection_settings').attr({'disabled':!collection_activate}); 
+			jQuery('input[data-collection="' + data_id + '"]').attr({'disabled':!data_checked});
+		}
+		if(fieldset_id){
+			var fieldset_activate = jQuery( this ).parents('table').find('input[type="checkbox"].choose_field:checked').length || jQuery( this ).parents('table').find('input[type="checkbox"].choose_collection_field:checked').length;
+			jQuery('input[data-fieldset="' + fieldset_id + '"].jcf_hidden_fieldset').attr({'disabled':!fieldset_activate});
 		}
 	});
 }

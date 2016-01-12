@@ -50,14 +50,17 @@ class SettingsController {
 	public function import($data) {
 		$_fieldsetsController = new FieldsetController($this->source);
 		$_fieldController = new FieldController($this->source);
+
 		foreach($data as $post_type_name => $post_type ){
+
 			if(is_array($post_type) && !empty($post_type['fieldsets'])){
 				foreach($post_type['fieldsets'] as $fieldset_id => $fieldset){
 					$status_fieldset = $this->addImporFieldset($post_type_name, $fieldset['title'], $fieldset_id);
 					if( empty($status_fieldset) ){
 						$notice = array('error', 'Error! Please check <strong>import file</strong>');
 						break;
-					}else{
+					}
+					else {
 						$fieldset_id = $status_fieldset;
 						if(!empty($fieldset['fields'])){
 							$old_fields = $this->_dataLayer->get_fields($post_type_name);
