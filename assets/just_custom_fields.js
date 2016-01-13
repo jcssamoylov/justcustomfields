@@ -128,6 +128,175 @@ function initFieldsetsEdit(){
 			jcf_ajax(data, 'json');
 		}
 	});
+	
+	// choose base for visibility rule
+	jQuery('#rule-based-on').live('change', function() {
+		var data = {
+			'rule': jQuery(this).val(),
+			'action': 'jcf_get_rule_options',
+		};
+
+		var loader = jQuery(this).find('img.ajax-feedback');
+
+		jcf_ajax(data, 'html', loader, function(response){
+			jQuery('.rules-options').html(response);
+		});
+	});
+
+	// choose taxonomy terms for visibility rule
+	jQuery('#rule-taxonomy').live('change', function() {
+		var data = {
+			'taxonomy': jQuery(this).val(),
+			'action': 'jcf_get_taxonomy_terms',
+		};
+
+		var loader = jQuery(this).find('img.ajax-feedback');
+
+		jcf_ajax(data, 'html', loader, function(response){
+			jQuery('.taxonomy-terms-options').html(response);
+			var input = jQuery('#new-term');
+			jcf_attach_autocomplete_event( input );
+		});
+	});
+
+	//parse rule block for saving
+	jQuery('.save_rule_btn, .update_rule_btn').live('click', function() {
+		var f_id = jQuery(this).parents('form').find('input[name=fieldset_id]').val();
+		var rule_id = jQuery(this).data('rule_id');
+
+		var data = { 
+			'action': 'jcf_save_visibility_rules',
+			'fieldset_id': f_id,
+			'rule_id': rule_id,
+			'visibility_rules': {}
+		};
+
+		data.visibility_rules = jcf_form_serialize_object( jQuery(this).parent('fieldset') );
+
+		var loader = jQuery(this).find('img.ajax-feedback');
+
+		jcf_ajax(data, 'html', loader, function(response){
+			jQuery('div.rules').remove();
+			jQuery('div#visibility').append(response);
+			jQuery('fieldset#fieldset_visibility_rules').remove();
+		});
+	});
+
+	// add form for new visibility rule
+	jQuery('.add_rule_btn').live('click', function() {
+		var loader = jQuery(this).find('img.ajax-feedback');
+		var data = {
+			'action': 'jcf_add_visibility_rules_form',
+			'add_rule': true
+		}
+		jcf_ajax(data, 'html', loader, function(response){
+			jQuery('div#visibility').append(response);
+			jQuery('.add_rule_btn').hide();
+		});
+	});
+
+	// delete visibility rule
+	jQuery('a.remove-rule').live('click', function(){
+		var rule_id = jQuery(this).data('rule_id');
+		var loader = jQuery(this).find('img.ajax-feedback');
+		var f_id = jQuery(this).parents('form').find('input[name=fieldset_id]').val();
+		var data = {
+			'action': 'jcf_delete_visibility_rule',
+			'rule_id': rule_id,
+			'fieldset_id' : f_id
+		}
+		jcf_ajax(data, 'html', loader, function(response){
+			jQuery('div.rules').remove();
+			jQuery('div#visibility').append(response);
+			jQuery('fieldset#fieldset_visibility_rules').remove();
+		});
+	});
+
+	// edit visibility rule
+	jQuery('a.edit-rule').live('click', function(){
+		var rule_id = jQuery(this).data('rule_id');
+		var loader = jQuery(this).find('img.ajax-feedback');
+		var f_id = jQuery(this).parents('form').find('input[name=fieldset_id]').val();
+		var data = {
+			'action': 'jcf_add_visibility_rules_form',
+			'rule_id': rule_id,
+			'fieldset_id' : f_id,
+			'edit_rule' : true
+		}
+		jcf_ajax(data, 'html', loader, function(response){
+			jQuery('fieldset#fieldset_visibility_rules').remove();
+			jQuery('div#visibility').append(response);
+			jQuery('.add_rule_btn').hide();
+			var input = jQuery('#new-term');
+			jcf_attach_autocomplete_event( input )
+		});
+	});
+
+	// show/hide visibility options for fieldset
+	jQuery('a.visibility_toggle').live('click', function(){
+		jQuery('#visibility').toggle();
+		jQuery(this).find('span').toggleClass('dashicons-arrow-down-alt2');
+		jQuery(this).find('span').toggleClass('dashicons-arrow-up-alt2');
+	});
+
+	// cancel form for add or edit visibility rule
+	jQuery('.cancel_rule_btn').live('click', function(){
+		jQuery(this).parents('fieldset#fieldset_visibility_rules').remove();
+		jQuery('.add_rule_btn').show();
+	});
+
+	jQuery('.termadd').live('click', function(){
+		if(!jQuery('#new-term').attr('data-term_id') && !jQuery('#new-term').attr('data-term_label')){
+			var taxonomy = jQuery('.taxonomy-options #rule-taxonomy').val();
+			var data = {
+				action: 'jcf_visibility_autocomplete',
+				taxonomy: taxonomy,
+				term: jQuery('#new-term').val()
+			};
+			var status = false;
+			jQuery.post(ajaxurl, data, function(response){
+				for(var key in response){
+					if(response[key].label == data.term) {
+						status = true;
+						jQuery('#new-term').attr({'data-term_id': response[key].id, 'data-term_label': response[key].label});
+						var term_id = response[key].id;
+						var term_label = response[key].label;
+						jcf_add_terms_to_list(term_id, term_label);
+					}
+					break;
+				}
+				if(!status){
+					jQuery('#new-term').removeAttr('data-term_id data-term_label');
+				}
+			});
+		}
+		else{
+			var term_id = jQuery('#new-term').attr('data-term_id');
+			var term_label = jQuery('#new-term').attr('data-term_label');
+			jcf_add_terms_to_list(term_id, term_label);
+		}
+		jQuery('#new-term').val('').focus();
+		return false;
+	});
+	
+	/*
+	 * Add terms to list when add rules
+	 */
+	function jcf_add_terms_to_list(term_id, term_label){
+		var wrapper_for_terms = jQuery('.taxonomy-terms-options ul.visibility-list-items');
+		if( typeof term_id !== 'undefined' && typeof term_label !== 'undefined' ){
+			jQuery('.taxonomy-terms-options p.visible-notice').remove();
+			var label = '<label>' + term_label + '</label>';
+			var chbox = '<input type="checkbox" checked="checked" name="rule_taxonomy_terms" value="' + term_id + '" />';
+			if(wrapper_for_terms.length < 1){
+				jQuery(this).parent().append('<ul class="visibility-list-items"></ul>');
+			}
+			jQuery('.taxonomy-terms-options ul.visibility-list-items').append('<li>' + chbox + label +'</li>');
+		}
+		else{
+			jQuery('.taxonomy-terms-options').append('<p class="visible-notice">' + jcf_textdomain.no_term  + '</p>');
+		}
+	}
 
 }
 
@@ -517,4 +686,64 @@ function initEditFormPosition(){
 	else{
 		edit_form.css({'position':'relative', 'top':'', 'width':'30%', 'left' : ''});
 	}
+}
+
+/**
+ * Add autocomplete
+ */
+function jcf_attach_autocomplete_event( input ){
+	var taxonomy = jQuery('.taxonomy-options #rule-taxonomy').val();
+	var data = {
+		action: 'jcf_visibility_autocomplete',
+		taxonomy: taxonomy
+	};
+	input.autocomplete({
+		minLength: 2,
+		source: function( request, response ) {
+				data.term = request.term;
+				jQuery.post(ajaxurl, data, response);
+			},
+		select: function(event, ui){
+			input.attr({'data-term_id': ui.item.id, 'data-term_label': ui.item.label});
+		},
+		search: function( event, ui ) {
+				input.parent().find('span.loading').remove();
+				input.parent().append('<span class="loading">loading...</span>');
+				input.attr({'data-term_id': '', 'data-term_label': ''});
+			},
+		open: function( event, ui ){
+				input.parent().find('span.loading').remove();
+			}
+	});
+
+}
+
+/**
+ * Serialize object
+ * @param {type} obj
+ * @returns {Array|jQuery}
+ */
+function jcf_form_serialize_object(obj){
+	var data = {};
+	obj.find('input, select').each(function(i, input){
+		if(jQuery(input).attr('type') == 'radio'){
+			if(jQuery(input).is(':checked')){
+				data[ jQuery(input).attr('name') ] = jQuery(input).val();
+			}
+		}
+		else if(jQuery(input).attr('type') == 'checkbox'){
+			if(typeof data[ jQuery(input).attr('name') ] === 'undefined'){
+				data[ jQuery(input).attr('name') ] = new Array();
+			}
+			if(jQuery(input).is(':checked')){
+				data[ jQuery(input).attr('name') ].push(jQuery(this).val());
+			}
+		}
+		else{
+			if(jQuery(input).attr('type') != 'button'){
+				data[ jQuery(input).attr('name') ] = jQuery(input).val();
+			}
+		}
+	});
+	return data;
 }
