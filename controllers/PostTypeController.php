@@ -27,19 +27,16 @@ class PostTypeController {
 		$this->_model = new PostType($this->_dataLayer);
 		$this->_shortcodes = new Shortcodes($this->_dataLayer);
 
-		add_action( 'add_meta_boxes', array($this->_model, 'render_custom_fields'), 10, 1 ); 
-		add_action( 'save_post', array($this->_model, 'save_custom_fields'), 10, 2 );
 		
-		// add custom styles and scripts
 		add_action('admin_print_styles', array($this, 'enqueue_styles'));
-		//add_action('admin_print_scripts', array($this, 'enqueue_scripts'));
+		add_action('admin_print_scripts', array($this, 'enqueue_scripts'));
 		
 	}
 
 	/**
 	 *	add custom scripts to post edit page
 	 */
-	function enqueue_scripts(){
+	public function enqueue_scripts(){
 
 		wp_register_script(
 				'jcf_edit_post',
@@ -54,7 +51,7 @@ class PostTypeController {
 	/**
 	 *	add custom styles to post edit page
 	 */
-	function enqueue_styles(){
+	public function enqueue_styles(){
 		wp_register_style('jcf_edit_post', WP_PLUGIN_URL.'/just-custom-fields/assets/edit_post.css');
 		wp_enqueue_style('jcf_edit_post');
 		

@@ -19,8 +19,13 @@ class JustCustomFields {
 		$this->version = '2.300';
 		$this->settings = new SettingsController();
 		$this->load_dependencies();
-		$this->define_admin_hooks();
-		$this->define_public_hooks();
+		if(is_admin() && !empty($_GET['page']) && $_GET['page'] == 'just_custom_fields'){
+			$this->define_admin_hooks();
+		}
+
+		if(!$_GET['page']){
+			$this->define_public_hooks();
+		}
 	}
 
 	/**
@@ -56,16 +61,12 @@ class JustCustomFields {
 	 */
 	private function define_admin_hooks() {
 		$plugin_admin = new AdminController( $this->get_plugin_name(), $this->get_version(), $this->get_settings() );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 	}
 	/**
 	 * Register all of the hooks related to the public-facing functionality
 	 */
 	private function define_public_hooks() {
 		$plugin_public = new PostTypeController( $this->get_plugin_name(), $this->get_version(), $this->get_settings() );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 	}
 	/**
 	 * Run the loader to execute all of the hooks with WordPress.

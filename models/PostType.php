@@ -11,6 +11,8 @@ class PostType {
 	{
 		$this->_dataLayer = $data_layer;
 		$this->_fieldFactory = new JustFieldFactory($this->_dataLayer);
+		add_action( 'add_meta_boxes', array($this, 'render_custom_fields'), 10, 1 ); 
+		add_action( 'save_post', array($this, 'save_custom_fields'), 10, 2 );
 	}
 
 	/**
@@ -30,7 +32,7 @@ class PostType {
 						unset($fieldset['fields'][$field_id]);
 						continue;
 					}
-					$field_obj = $this->_fieldFactory->initObject($post_type, $field_id, $fieldset['id']);
+					$field_obj = $this->_fieldFactory->initObject($post_type, $field_id, $f_id);
 					$field_obj->do_add_js();
 					$field_obj->do_add_css();
 				}
@@ -122,9 +124,6 @@ class PostType {
 		if ( !current_user_can( $permission, $post_ID ) ) return;
 		
 		// OK, we're authenticated: we need to find and save the data
-		
-		// set global post type
-		jcf_set_post_type( $_POST['post_type'] );
 
 		// get fieldsets
 		$fieldsets = $this->_dataLayer->get_fieldsets($_POST['post_type']);
@@ -145,7 +144,7 @@ class PostType {
 	/**
 	 * get modal window for getting shortcodes
 	 */
-	function print_shortcodes_modal(){
+	public function print_shortcodes_modal(){
 		?>
 		<div class="jcf_shortcodes_tooltip" >
 			<div class="jcf_inner_box">

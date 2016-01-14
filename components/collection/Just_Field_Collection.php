@@ -24,6 +24,9 @@ class Just_Field_Collection extends Just_Field{
 	public $_collection_field_factory;
 
 	public function __construct($data_layer, $post_type = NULL){
+		$field_ops = array( 'classname' => 'field_collection' );
+		parent::__construct($data_layer, $post_type, 'collection', __('Collection', JCF_TEXTDOMAIN), $field_ops);
+		
 		$this->_collection_field_factory = new \JCF\models\JustFieldFactory($this->_dataLayer, TRUE);
 		$this->_collection_field_factory->register( 'Just_Field_Input' );
 		$this->_collection_field_factory->register( 'Just_Field_Select' );
@@ -33,9 +36,6 @@ class Just_Field_Collection extends Just_Field{
 		$this->_collection_field_factory->register( 'Just_Field_DatePicker' );
 		$this->_collection_field_factory->register( 'Just_Field_Simple_Media' );
 		$this->_collection_field_factory->register( 'Just_Field_Table' );
-
-		$field_ops = array( 'classname' => 'field_collection' );
-		parent::__construct($data_layer, $post_type, 'collection', __('Collection', JCF_TEXTDOMAIN), $field_ops);
 		
 		if( !empty($_GET['page']) && $_GET['page'] == 'just_custom_fields' ){
 			//add_action('admin_print_styles', 'jcf_admin_add_styles');

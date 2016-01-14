@@ -21,7 +21,7 @@ class Shortcodes {
 	 *	@param array $args Attributes from shortcode
 	 *	@return string Field content
 	 */
-	function init_shortcode($args){
+	public function init_shortcode($args){
 		extract( shortcode_atts( array(
 			'field' => '',
 			'post_id' => '',
@@ -58,7 +58,7 @@ class Shortcodes {
 	 *	@param array $args Attributes from shortcode
 	 *	@return string Field content
 	 */
-	function set_field_value($args){
+	public function set_field_value($args){
 		if( !empty($args['field']) ){
 			return $this->init_shortcode($args);
 		}else{

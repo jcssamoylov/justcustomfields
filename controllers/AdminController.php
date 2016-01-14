@@ -23,6 +23,9 @@ class AdminController {
 		
 		add_action('admin_menu', array($this, 'admin_menu') );
 		add_action('jcf_print_admin_notice', array($this, 'print_notice') );
+
+		add_action('admin_print_styles', array($this, 'enqueue_styles'));
+		add_action('admin_print_scripts', array($this, 'enqueue_scripts'));
 	}
 	
 	public function admin_menu(){
