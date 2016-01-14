@@ -7,9 +7,9 @@ class FilesDataLayer implements interfaces\FieldSettings {
 	
 	private $source_settings;
 	
-	public function __construct($source_settings)
+	public function __construct()
 	{
-		$this->source_settings = $source_settings;
+		$this->source_settings = \jcf\models\Settings::getDataSourceType();
 	}
 	
 	public function get_fields($post_type, $id = FALSE) {
