@@ -1,78 +1,71 @@
 <?php
 
-namespace JCF;
-use JCF\JustCustomLoader;
-use JCF\controllers\AdminController;
-use JCF\controllers\SettingsController;
-use JCF\controllers\PostTypeController;
+namespace jcf;
+use jcf\controllers;
 
 class JustCustomFields {
-	
-	protected $loader;
+
+	const JCF_TEXTDOMAIN = 'just-custom-fields';
 	protected $plugin_name;
 	protected $version;
-	protected $settings;
-
+	protected $plugin_title;
 	
 	public function __construct() {
+		add_action('admin_menu', array($this, 'admin_menu') );
+
 		$this->plugin_name = 'just_custom_fields';
 		$this->version = '2.300';
-		$this->settings = new SettingsController();
-		$this->load_dependencies();
-		if(is_admin() && !empty($_GET['page']) && $_GET['page'] == 'just_custom_fields'){
-			$this->define_admin_hooks();
-		}
-
-		if(!$_GET['page']){
-			$this->define_public_hooks();
-		}
-	}
-
-	/**
-	 * Load the required dependencies for this plugin.
-	 */
-	private function load_dependencies() {
-		/**
-		 * The class responsible for defining all actions that occur in the public-facing
-		 * side of the site.
-		 */
-		$this->loader = new JustCustomLoader();
-	}
-
-	public function get_plugin_name() {
+		$this->plugin_title = __('Just Custom Fields', self::JCF_TEXTDOMAIN);
 		
-		return $this->plugin_name;
+		new Autoloader();
+
+		if(!empty($_GET['page'])){
+			add_action('admin_print_styles', array($this, 'add_styles'));
+			add_action('admin_print_scripts', array($this, 'add_scripts'));
+		}
 	}
 
-	public function get_version() {
-		return $this->version;
+	public function admin_menu(){
+		add_options_page($this->plugin_title, $this->plugin_title, 'manage_options', $this->plugin_name, array($this, 'admin_page') );		
+		add_submenu_page(null, 'Fields', 'Fields', 'manage_options', 'jcf_fields', array($this, 'fields_page'));
+		add_submenu_page(null, 'Settings', 'Settings', 'manage_options', 'jcf_settings', array($this, 'settings_page'));
+		add_submenu_page(null, 'Transfer', 'Transfer', 'manage_options', 'jcf_transfer', array($this, 'transfer_page'));
 	}
 
-	public function get_loader() {
-		return $this->loader;
+	public function admin_page(){
+		$admin_page = new controllers\AdminController($this->plugin_name);
+		$admin_page->run();
 	}
 	
-	public function get_settings() {
-		return $this->settings;
+	public function fields_page(){
+		$field_page = new controllers\FieldsetController($source_settings);
 	}
-	/**
-	 * Register all of the hooks related to the admin area functionality
-	 * of the plugin.
-	 */
-	private function define_admin_hooks() {
-		$plugin_admin = new AdminController( $this->get_plugin_name(), $this->get_version(), $this->get_settings() );
+	
+	public function settings_page(){
+		$setting_page = new controllers\SettingsController();
 	}
-	/**
-	 * Register all of the hooks related to the public-facing functionality
-	 */
-	private function define_public_hooks() {
-		$plugin_public = new PostTypeController( $this->get_plugin_name(), $this->get_version(), $this->get_settings() );
+
+	public function transfer_page(){
+		$transfer_page = new controllers\TransferController();
 	}
-	/**
-	 * Run the loader to execute all of the hooks with WordPress.
-	 */
-	public function run() {
-		$this->loader->run();
+	
+	
+	public function add_scripts() {
+		wp_register_script(
+			$this->plugin_name,
+			WP_PLUGIN_URL.'/just-custom-fields/assets/just_custom_fields.js',
+			array('jquery', 'json2', 'jquery-form', 'jquery-ui-sortable')
+		);
+		wp_enqueue_script($this->plugin_name);
+		wp_enqueue_script('jquery-ui-autocomplete');
+
+		// add text domain
+		wp_localize_script( $this->plugin_name, 'jcf_textdomain', jcf_get_language_strings() );
+	}
+
+	public function add_styles() {
+		wp_register_style($this->plugin_name, WP_PLUGIN_URL.'/just-custom-fields/assets/styles.css');
+		wp_enqueue_style($this->plugin_name); 
 	}
 }
 

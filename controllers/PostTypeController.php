@@ -1,9 +1,7 @@
 <?php
 
-namespace JCF\controllers;
-use JCF\models\PostType;
-use JCF\models\Shortcodes;
-use JCF\models\DataLayerFactory;
+namespace jcf\controllers;
+use jcf\models;
 
 class PostTypeController {
 	
@@ -21,13 +19,12 @@ class PostTypeController {
 		$this->settings = $settings;
 		
 		$layer_type = $this->settings->source == JCF_CONF_SOURCE_DB ? 'DB' : 'Files';
-		$layer_factory = new DataLayerFactory();
+		$layer_factory = new models\DataLayerFactory();
 		$this->_dataLayer = $layer_factory->create($layer_type, $source_settings);
 		
-		$this->_model = new PostType($this->_dataLayer);
-		$this->_shortcodes = new Shortcodes($this->_dataLayer);
+		$this->_model = new models\PostType($this->_dataLayer);
+		$this->_shortcodes = new models\Shortcodes($this->_dataLayer);
 
-		
 		add_action('admin_print_styles', array($this, 'enqueue_styles'));
 		add_action('admin_print_scripts', array($this, 'enqueue_scripts'));
 		

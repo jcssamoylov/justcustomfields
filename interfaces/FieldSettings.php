@@ -1,6 +1,6 @@
 <?php
 
-namespace JCF\interfaces;
+namespace jcf\interfaces;
 
 interface FieldSettings{
 	public function get_fields($post_type, $id = FALSE);

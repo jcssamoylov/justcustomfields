@@ -11,15 +11,9 @@ Donate link: http://justcoded.com/just-labs/just-custom-fields-for-wordpress-plu
 */
 
 define('JCF_ROOT', dirname(__FILE__));
-define('JCF_TEXTDOMAIN', 'just-custom-fields');
-define('JCF_CONF_MS_NETWORK', 'network');
-define('JCF_CONF_MS_SITE', 'site');
-define('JCF_CONF_SOURCE_DB', 'database');
-define('JCF_CONF_SOURCE_FS_THEME', 'fs_theme');
-define('JCF_CONF_SOURCE_FS_GLOBAL', 'fs_global');
-
-require_once( JCF_ROOT.'/core/Autoloader.php');
-require_once( JCF_ROOT.'/functions/helper.php' );
+require_once( JCF_ROOT.'/functions/helpers.php' );
+require_once( JCF_ROOT.'/core/JustCustomFields.php' );
+require_once( JCF_ROOT.'/core/Autoloader.php' );
 
 if( !function_exists('pa') ) {
 	function pa($mixed, $stop = false) {
@@ -29,15 +23,6 @@ if( !function_exists('pa') ) {
 	}
 }
 
-function run_plugin() {
-
-    spl_autoload_register('JCF\Autoloader::autoload');
-
-    $plugin = new JCF\JustCustomFields();
-    $plugin->run();
-}
-
-run_plugin();
-
+new jcf\JustCustomFields();
 
 ?>

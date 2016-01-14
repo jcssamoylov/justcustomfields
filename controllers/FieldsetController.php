@@ -1,8 +1,7 @@
 <?php
 
-namespace JCF\controllers;
-use JCF\models\DataLayerFactory;
-use JCF\models\Fieldset;
+namespace jcf\controllers;
+use jcf\models;
 
 class FieldsetController {
 	protected $_dataLayer;
@@ -10,10 +9,10 @@ class FieldsetController {
 
 	public function __construct($source_settings){
 		$layer_type = $source_settings == JCF_CONF_SOURCE_DB ? 'DB' : 'Files';
-		$layer_factory = new DataLayerFactory();
+		$layer_factory = new models\DataLayerFactory();
 
 		$this->_dataLayer = $layer_factory->create($layer_type, $source_settings);
-		$this->_model = new Fieldset();
+		$this->_model = new models\Fieldset();
 
 		add_action('wp_ajax_jcf_add_fieldset', array($this, 'ajaxCreate'));
 		add_action('wp_ajax_jcf_delete_fieldset', array($this, 'ajaxDelete'));

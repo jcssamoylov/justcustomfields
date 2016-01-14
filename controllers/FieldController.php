@@ -1,8 +1,7 @@
 <?php
 
-namespace JCF\controllers;
-use JCF\models\JustFieldFactory;
-use JCF\models\DataLayerFactory;
+namespace jcf\controllers;
+use jcf\models;
 
 class FieldController {
 
@@ -12,10 +11,10 @@ class FieldController {
 
 	public function __construct($source_settings){
 		$layer_type = $source_settings == JCF_CONF_SOURCE_DB ? 'DB' : 'Files';
-		$layer_factory = new DataLayerFactory();
+		$layer_factory = new models\DataLayerFactory();
 		$this->_dataLayer = $layer_factory->create($layer_type, $source_settings);
 
-		$this->_field_factory = new JustFieldFactory($this->_dataLayer);
+		$this->_field_factory = new models\JustFieldFactory($this->_dataLayer);
 		$this->registered_fields = $this->_field_factory->get_registered_fields();
 
 		add_action('wp_ajax_jcf_add_field', array($this, 'ajaxCreate'));

@@ -1,9 +1,9 @@
 <?php
 
-namespace JCF\models;
-use JCF\interfaces\FieldSettings;
+namespace jcf\models;
+use jcf\interfaces;
 
-class DBDataLayer implements FieldSettings {
+class DBDataLayer implements interfaces\FieldSettings {
 	
 	private $source_settings;
 	
@@ -121,7 +121,7 @@ class DBDataLayer implements FieldSettings {
 	}
 	
 	public function get_options($key){
-		$settings = new \JCF\models\Settings();
+		$settings = new Settings();
 		$multisite_settings = $settings->getNetworkMode();
 		return $multisite_settings == JCF_CONF_MS_NETWORK ? get_site_option($key, array()) : get_option($key, array());
 	}
@@ -133,7 +133,7 @@ class DBDataLayer implements FieldSettings {
 	 *	@return bollean
 	 */
 	public function update_options($key, $value){
-		$settings = new \JCF\models\Settings();
+		$settings = new Settings();
 		$multisite_settings = $settings->getNetworkMode();
 		$multisite_settings == JCF_CONF_MS_NETWORK ? update_site_option($key, $value) : update_option($key, $value);
 		return true;

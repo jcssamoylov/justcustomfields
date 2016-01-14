@@ -1,9 +1,7 @@
 <?php
 
-namespace JCF\controllers;
-use JCF\models\Settings;
-use JCF\models\DataLayerFactory;
-use JCF\models\JustFieldFactory;
+namespace jcf\controllers;
+use jcf\models;
 
 class SettingsController {
 	public $source;
@@ -14,14 +12,14 @@ class SettingsController {
 	public $_field_factory;
 
 	public function __construct() {
-		$this->_model = new Settings();
+		$this->_model = new models\Settings();
 		$this->source = $this->_model->getDataSourceType();
 		$this->network = $this->_model->getNetworkMode();
 
 		$layer_type = $this->source == JCF_CONF_SOURCE_DB ? 'DB' : 'Files';
-		$this->layer_factory = new DataLayerFactory();
+		$this->layer_factory = new models\DataLayerFactory();
 		$this->_dataLayer = $this->layer_factory->create($layer_type, $this->source);
-		$this->_field_factory = new JustFieldFactory($this->_dataLayer);
+		$this->_field_factory = new models\JustFieldFactory($this->_dataLayer);
 
 		add_action('wp_ajax_jcf_check_file', array($this, 'check_file'));
 		add_action('wp_ajax_jcf_export_fields', array($this, 'export') );
