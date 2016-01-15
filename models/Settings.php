@@ -3,19 +3,25 @@
 namespace jcf\models;
 use jcf\models;
 
-class Settings extends models\MainModel {
+class Settings extends core\Model {
 	
 	const JCF_CONF_MS_NETWORK = 'network';
 	const JCF_CONF_MS_SITE = 'site';
 	const JCF_CONF_SOURCE_DB = 'database';
 	const JCF_CONF_SOURCE_FS_THEME = 'fs_theme';
 	const JCF_CONF_SOURCE_FS_GLOBAL = 'fs_global';
-	protected $layer;
+	
+	protected $dataLayer;
+	
+	public $dataSource;
+	public $networkMode;
 	
 	public function __construct(){
 		parent::__construct();
-		add_action('wp_ajax_jcf_check_file', array($this, 'check_file'));
-		$this->layer = new DataLayerFactory();
+		
+		//$this->layer = new DataLayerFactory();
+		$this->dataSource = self::getDataSourceType();
+		$this->networkMode = self::getNetworkMode();
 	}
 	
 	public static function getDataSourceType() {
@@ -93,7 +99,7 @@ class Settings extends models\MainModel {
 		$output = array('value' => $new_value, 'notice' => $notice);
 		return $output;
 	}
-	
+	/*
 	public function check_file(){
 		$settings_source = $_POST['jcf_read_settings'];
 
@@ -121,4 +127,6 @@ class Settings extends models\MainModel {
 		}
 		jcf_ajax_response($resp, 'json');
 	}
+	 * 
+	 */
 }

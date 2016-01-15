@@ -1,6 +1,6 @@
 <?php
 
-namespace jcf;
+namespace jcf\core;
 
 class Autoloader {
 	public function __construct(){
@@ -55,6 +55,6 @@ class Autoloader {
 			closedir($handle);
 		}
 	}
-  }
+}
 
-
+new Autoloader();
