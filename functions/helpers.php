@@ -126,6 +126,6 @@ function jcf_set_chmod($filename){
 }
 
 // print image with loader
-function print_loader_img(){
+function jcf_print_loader_img(){
 	return '<img class="ajax-feedback " alt="" title="" src="' . get_bloginfo('wpurl') . '/wp-admin/images/wpspin_light.gif" style="visibility: hidden;">';
 }

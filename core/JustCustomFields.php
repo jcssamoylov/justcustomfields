@@ -30,8 +30,8 @@ class JustCustomFields {
 		if(!empty($_GET['page'])) {
 			new controllers\AdminController($this->plugin_name, $this->plugin_title, $this->version);
 			//new controllers\FieldsetController($source_settings);
-			//new controllers\SettingsController();
-			//new controllers\TransferController();
+			new controllers\SettingsController($this->plugin_name, $this->plugin_title, $this->version);
+			//new controllers\ImportExportController();
 		}
 		else {
 			//new controllers\PostTypeController();

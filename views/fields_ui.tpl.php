@@ -25,7 +25,7 @@
 						<a href="#" class="jcf_fieldset_change jcf_change_pt" rel="<?php echo $fieldset['id']; ?>"><?php _e('change', JCF_TEXTDOMAIN); ?></a>
 						<a href="#" class="jcf_fieldset_delete jcf_change_pt" rel="<?php echo $fieldset['id']; ?>"><?php _e('delete', JCF_TEXTDOMAIN); ?></a>
 					</small>
-					<?php echo print_loader_img(); ?>
+					<?php echo jcf_print_loader_img(); ?>
 				</h3>
 				<div class="jcf_inner_content">
 					<table class="wp-list-table widefat fixed fieldset-fields-table" cellspacing="0">
@@ -92,7 +92,7 @@
 								<?php endforeach; ?>
 							</select>
 							<input type="submit" name="add_field" value="<?php _e('Add', JCF_TEXTDOMAIN); ?>" />
-							<?php echo print_loader_img(); ?>
+							<?php echo jcf_print_loader_img(); ?>
 						</fieldset>
 					</form>
 				</div>
@@ -114,7 +114,7 @@
 							<label for="jcf_fieldset_title"><?php _e('Title:', JCF_TEXTDOMAIN); ?> </label>
 							<input type="text" class="text" name="jcf_fieldset_title" id="jcf_fieldset_title" value="" />
 							<input type="submit" name="jcf_add_fieldset" value="<?php _e('Add', JCF_TEXTDOMAIN); ?>" />
-							<?php echo print_loader_img(); ?>
+							<?php echo jcf_print_loader_img(); ?>
 						</fieldset>
 					</form>
 				</div>

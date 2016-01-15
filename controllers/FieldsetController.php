@@ -128,7 +128,7 @@ class FieldsetController {
 								<a href="#close" class="field-control-close"><?php _e('Close', JCF_TEXTDOMAIN); ?></a>
 							</div>
 							<div class="alignright">
-								<?php echo print_loader_img(); ?>
+								<?php echo jcf_print_loader_img(); ?>
 								<input type="submit" value="<?php _e('Save', JCF_TEXTDOMAIN); ?>" class="button-primary" name="savefield">
 							</div>
 							<br class="clear"/>
