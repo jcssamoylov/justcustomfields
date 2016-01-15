@@ -1,16 +1,16 @@
 <?php
 
 namespace jcf\models;
+use jcf\models;
 
-class Fieldset {
+class Fieldset extends models\MainModel  {
 	
 	protected $layer;
 
 	public function __construct(){
-
-		$source = \jcf\models\Settings::getDataSourceType();
-		$this->layer = new DataLayerFactory();
-		$this->layer = $this->layer->create('DB', $source);
+		parent::__construct();
+		$layer_factory = new DataLayerFactory();
+		$this->layer = $layer_factory->create();
 	}
 
 	/**

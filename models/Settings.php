@@ -1,14 +1,19 @@
 <?php
 
 namespace jcf\models;
+use jcf\models;
 
-class Settings {
+class Settings extends models\MainModel {
 	
 	const JCF_CONF_MS_NETWORK = 'network';
 	const JCF_CONF_MS_SITE = 'site';
 	const JCF_CONF_SOURCE_DB = 'database';
 	const JCF_CONF_SOURCE_FS_THEME = 'fs_theme';
 	const JCF_CONF_SOURCE_FS_GLOBAL = 'fs_global';
+	
+	public function __construct(){
+		parent::__construct();
+	}
 	
 	public static function getDataSourceType() {
 		return get_site_option('jcf_read_settings', self::JCF_CONF_SOURCE_DB);

@@ -20,7 +20,7 @@ class SettingsController {
 		$this->layer_factory = new models\DataLayerFactory();
 		$this->_dataLayer = $this->layer_factory->create($layer_type, $this->source);
 		$this->_field_factory = new models\JustFieldFactory($this->_dataLayer);
-
+		add_submenu_page(null, 'Settings', 'Settings', 'manage_options', 'jcf_settings', array($this, 'settings_page'));
 		add_action('wp_ajax_jcf_check_file', array($this, 'check_file'));
 		add_action('wp_ajax_jcf_export_fields', array($this, 'export') );
 		add_action('wp_ajax_jcf_export_fields_form', array($this, 'form_export') );

@@ -13,7 +13,9 @@ class FieldsetController {
 
 		$this->_dataLayer = $layer_factory->create($layer_type, $source_settings);
 		$this->_model = new models\Fieldset();
-
+		
+		add_submenu_page(null, 'Fields', 'Fields', 'manage_options', 'jcf_fields', array($this, 'fields_page'));
+		
 		add_action('wp_ajax_jcf_add_fieldset', array($this, 'ajaxCreate'));
 		add_action('wp_ajax_jcf_delete_fieldset', array($this, 'ajaxDelete'));
 		add_action('wp_ajax_jcf_change_fieldset', array($this, 'ajaxChange'));

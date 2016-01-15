@@ -11,7 +11,6 @@ class JustCustomFields {
 	protected $plugin_title;
 	
 	public function __construct() {
-		add_action('admin_menu', array($this, 'admin_menu') );
 
 		$this->plugin_name = 'just_custom_fields';
 		$this->version = '2.300';
@@ -23,32 +22,21 @@ class JustCustomFields {
 			add_action('admin_print_styles', array($this, 'add_styles'));
 			add_action('admin_print_scripts', array($this, 'add_scripts'));
 		}
+
+		$this->init_controllers();
 	}
 
-	public function admin_menu(){
-		add_options_page($this->plugin_title, $this->plugin_title, 'manage_options', $this->plugin_name, array($this, 'admin_page') );		
-		add_submenu_page(null, 'Fields', 'Fields', 'manage_options', 'jcf_fields', array($this, 'fields_page'));
-		add_submenu_page(null, 'Settings', 'Settings', 'manage_options', 'jcf_settings', array($this, 'settings_page'));
-		add_submenu_page(null, 'Transfer', 'Transfer', 'manage_options', 'jcf_transfer', array($this, 'transfer_page'));
+	public function init_controllers(){
+		if(!empty($_GET['page'])) {
+			new controllers\AdminController($this->plugin_name, $this->plugin_title, $this->version);
+			//new controllers\FieldsetController($source_settings);
+			//new controllers\SettingsController();
+			//new controllers\TransferController();
+		}
+		else {
+			//new controllers\PostTypeController();
+		}
 	}
-
-	public function admin_page(){
-		$admin_page = new controllers\AdminController($this->plugin_name);
-		$admin_page->run();
-	}
-	
-	public function fields_page(){
-		$field_page = new controllers\FieldsetController($source_settings);
-	}
-	
-	public function settings_page(){
-		$setting_page = new controllers\SettingsController();
-	}
-
-	public function transfer_page(){
-		$transfer_page = new controllers\TransferController();
-	}
-	
 	
 	public function add_scripts() {
 		wp_register_script(
