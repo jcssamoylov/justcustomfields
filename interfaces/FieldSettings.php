@@ -3,9 +3,9 @@
 namespace jcf\interfaces;
 
 interface FieldSettings{
-	public function get_fields($post_type, $id = FALSE);
-	public function update_fields($post_type, $key, $values = array(), $fieldset_id = '');
-	public function get_fieldsets($post_type, $id = FALSE);
-	public function update_fieldsets($post_type, $key, $values = array());
+	public function getFields($post_type, $id = FALSE);
+	public function updateFields($post_type, $key, $values = array(), $fieldset_id = '');
+	public function getFieldsets($post_type, $id = FALSE);
+	public function updateFieldsets($post_type, $key, $values = array());
 }
 

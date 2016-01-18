@@ -43,7 +43,7 @@ class FieldsetController {
 		$post_type = strip_tags(trim($_POST['post_type']));
 
 		if( empty($title) ){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Title field is required.', JCF_TEXTDOMAIN)) );
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Title field is required.', TEXTDOMAIN)) );
 		}
 		
 		$slug = preg_replace('/[^a-z0-9\-\_\s]/i', '', $title);
@@ -60,7 +60,7 @@ class FieldsetController {
 
 		// check exists
 		if( isset($fieldsets[$slug]) ){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Such fieldset already exists.', JCF_TEXTDOMAIN)) );
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Such fieldset already exists.', TEXTDOMAIN)) );
 		}
 
 		// create fiedlset
@@ -82,7 +82,7 @@ class FieldsetController {
 		$f_id = $_POST['fieldset_id'];
 
 		if( empty($f_id) ){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Wrong params passed.', JCF_TEXTDOMAIN)) );
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Wrong params passed.', TEXTDOMAIN)) );
 		}
 
 		$this->_dataLayer->update_fieldsets($post_type, $f_id, NULL);
@@ -100,18 +100,18 @@ class FieldsetController {
 
 		ob_start(); ?>
 		<div class="jcf_edit_fieldset">
-			<h3 class="header"><?php echo __('Edit Fieldset:', JCF_TEXTDOMAIN) . ' ' . $fieldset['title']; ?></h3>
+			<h3 class="header"><?php echo __('Edit Fieldset:', TEXTDOMAIN) . ' ' . $fieldset['title']; ?></h3>
 			<div class="jcf_inner_content">
 				<form action="#" method="post" id="jcform_edit_fieldset">
 					<fieldset>
 						<input type="hidden" name="fieldset_id" value="<?php echo $fieldset['id']; ?>" />
 						
-						<p><label for="jcf_edit_fieldset_title"><?php _e('Title:', JCF_TEXTDOMAIN); ?></label> <input class="widefat" id="jcf_edit_fieldset_title" type="text" value="<?php echo esc_attr($fieldset['title']); ?>" /></p>
+						<p><label for="jcf_edit_fieldset_title"><?php _e('Title:', TEXTDOMAIN); ?></label> <input class="widefat" id="jcf_edit_fieldset_title" type="text" value="<?php echo esc_attr($fieldset['title']); ?>" /></p>
 						
 						<div class="field-control-actions">
 							<h4>
 								<a href="#" class="visibility_toggle" >
-									<?php _e('Visibility rules', JCF_TEXTDOMAIN); ?>
+									<?php _e('Visibility rules', TEXTDOMAIN); ?>
 									<span class="<?php echo !empty($fieldset['visibility_rules']) ? 'dashicons-arrow-up-alt2' : 'dashicons-arrow-down-alt2' ?> dashicons-before"></span>
 								</a>
 							</h4>
@@ -124,12 +124,12 @@ class FieldsetController {
 							</div>
 							<br class="clear"/>
 							<div class="alignleft">
-								<a href="#remove" class="field-control-remove"><?php _e('Delete', JCF_TEXTDOMAIN); ?></a> |
-								<a href="#close" class="field-control-close"><?php _e('Close', JCF_TEXTDOMAIN); ?></a>
+								<a href="#remove" class="field-control-remove"><?php _e('Delete', TEXTDOMAIN); ?></a> |
+								<a href="#close" class="field-control-close"><?php _e('Close', TEXTDOMAIN); ?></a>
 							</div>
 							<div class="alignright">
 								<?php echo jcf_print_loader_img(); ?>
-								<input type="submit" value="<?php _e('Save', JCF_TEXTDOMAIN); ?>" class="button-primary" name="savefield">
+								<input type="submit" value="<?php _e('Save', TEXTDOMAIN); ?>" class="button-primary" name="savefield">
 							</div>
 							<br class="clear"/>
 						</div>
@@ -152,12 +152,12 @@ class FieldsetController {
 		$fieldset = $this->_dataLayer->get_fieldsets($post_type, $f_id);
 
 		if(empty($fieldset)){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Wrong data passed.', JCF_TEXTDOMAIN)) );
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Wrong data passed.', TEXTDOMAIN)) );
 		}
 
 		$title = strip_tags(trim($_POST['title']));
 		if( empty($title) ){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Title field is required.', JCF_TEXTDOMAIN)) );
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Title field is required.', TEXTDOMAIN)) );
 		}
 
 		$fieldset['title'] = $title;
@@ -255,39 +255,39 @@ class FieldsetController {
 		ob_start();
 		?>
 		<fieldset id="fieldset_visibility_rules">
-			<legend><?php !empty($edit_rule) ? _e('Edit rule', JCF_TEXTDOMAIN) : _e('Add rule', JCF_TEXTDOMAIN)  ?></legend>
+			<legend><?php !empty($edit_rule) ? _e('Edit rule', TEXTDOMAIN) : _e('Add rule', TEXTDOMAIN)  ?></legend>
 
 			<?php // Status for fieldset ?>
 			<div class="visibility-options">
-				<p><?php _e('You are about to set the visibility option for this fieldset', JCF_TEXTDOMAIN); ?></p>
+				<p><?php _e('You are about to set the visibility option for this fieldset', TEXTDOMAIN); ?></p>
 				<input type="radio" name="visibility_option" id="visibility-option-hide" value="hide" <?php echo (!empty($edit_rule) ? checked( $visibility_rule['visibility_option'], 'hide' ) : 'checked' );  ?> />
-				<label for="visibility-option-hide"><?php _e('Hide fieldset', JCF_TEXTDOMAIN); ?></label>
+				<label for="visibility-option-hide"><?php _e('Hide fieldset', TEXTDOMAIN); ?></label>
 				<br class="clear"/>
 				<input type="radio" name="visibility_option" id="visibility-option-show" value="show" <?php checked( $visibility_rule['visibility_option'], 'show' ); ?> />
-				<label for="visibility-option-show"><?php _e('Show fieldset', JCF_TEXTDOMAIN); ?></label>
+				<label for="visibility-option-show"><?php _e('Show fieldset', TEXTDOMAIN); ?></label>
 			</div>
 			
 			<?php // Condition fields for rule ?>
 			<div class="join-condition <?php echo ( (!empty($add_rule) || $rule_id != 0) ? '' : 'hidden' ); ?>" >
 				<p>
-					<label for="rule-join-condition"><?php _e('Join condition with previous rules with operator:', JCF_TEXTDOMAIN); ?></label>
+					<label for="rule-join-condition"><?php _e('Join condition with previous rules with operator:', TEXTDOMAIN); ?></label>
 					<br />
 					<select name="join_condition" id="rule-join-condition">
-						<option value="and" <?php selected($visibility_rule['join_condition'], 'and'); ?> ><?php _e('AND', JCF_TEXTDOMAIN); ?></option>
-						<option value="or" <?php selected($visibility_rule['join_condition'], 'or'); ?> ><?php _e('OR', JCF_TEXTDOMAIN); ?></option>
+						<option value="and" <?php selected($visibility_rule['join_condition'], 'and'); ?> ><?php _e('AND', TEXTDOMAIN); ?></option>
+						<option value="or" <?php selected($visibility_rule['join_condition'], 'or'); ?> ><?php _e('OR', TEXTDOMAIN); ?></option>
 					</select>
 				</p>
 			</div>
 
 			<?php if($post_type != 'page'): // Form for post types wich are not page ?>
-				<p><?php _e('Based on', JCF_TEXTDOMAIN); ?> <strong><?php _e('Taxonomy terms', JCF_TEXTDOMAIN); ?></strong></p>
+				<p><?php _e('Based on', TEXTDOMAIN); ?> <strong><?php _e('Taxonomy terms', TEXTDOMAIN); ?></strong></p>
 				<input type="hidden" name="based_on" value="taxonomy" />
 				<?php $this->_model->getTaxonomiesHtml($taxonomies, $visibility_rule['rule_taxonomy'], $terms, $visibility_rule['rule_taxonomy_terms']); ?>
 			<?php else: // Form for post type wich is page ?>
 				<p>
-				<label for="rule-based-on"><?php _e('Based on:', JCF_TEXTDOMAIN); ?></label><br />
+				<label for="rule-based-on"><?php _e('Based on:', TEXTDOMAIN); ?></label><br />
 				<select name="based_on" id="rule-based-on">
-					<option value="" disabled="disabled" <?php echo !empty($edit_rule) ? '' : 'selected'; ?> ><?php _e('Choose option', JCF_TEXTDOMAIN); ?></option>
+					<option value="" disabled="disabled" <?php echo !empty($edit_rule) ? '' : 'selected'; ?> ><?php _e('Choose option', TEXTDOMAIN); ?></option>
 					<option value="page_template" <?php selected( $visibility_rule['based_on'], 'page_tempalate' ); ?> >Page template</option>
 					<?php if(!empty($taxonomies)):?>
 						<option value="taxonomy" <?php selected( $visibility_rule['based_on'], 'taxonomy' ); ?> >Taxonomy</option>
@@ -307,12 +307,12 @@ class FieldsetController {
 
 			<?php // From buttons ?>
 			<?php if( !empty($edit_rule) ): ?>
-				<input type="button" class="update_rule_btn button" data-rule_id="<?php echo $_POST['rule_id'];?>" name="update_rule" value="<?php _e('Update rule', JCF_TEXTDOMAIN); ?>"/>
+				<input type="button" class="update_rule_btn button" data-rule_id="<?php echo $_POST['rule_id'];?>" name="update_rule" value="<?php _e('Update rule', TEXTDOMAIN); ?>"/>
 			<?php else: ?>
-				<input type="button" class="save_rule_btn button" name="save_rule" value="<?php _e('Save rule', JCF_TEXTDOMAIN); ?>"/>
+				<input type="button" class="save_rule_btn button" name="save_rule" value="<?php _e('Save rule', TEXTDOMAIN); ?>"/>
 			<?php endif;?>
 			<?php if( $edit_rule || $add_rule ):?>
-				<input type="button" class="cancel_rule_btn button" name="cancel_rule" value="<?php _e('Cancel', JCF_TEXTDOMAIN); ?>" />
+				<input type="button" class="cancel_rule_btn button" name="cancel_rule" value="<?php _e('Cancel', TEXTDOMAIN); ?>" />
 			<?php endif;?>
 
 		</fieldset>

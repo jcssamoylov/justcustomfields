@@ -2,47 +2,80 @@
 
 namespace jcf\controllers;
 use jcf\models;
+use jcf\core;
 
-class AdminController {
+class AdminController extends core\Controller {
 
-	protected $plugin_name;
-	protected $plugin_title;
-	protected $version;
-	protected $model;
-
-	public function __construct($plugin_name, $plugin_title, $version) {
-
-		add_action('admin_menu', array($this, 'admin_menu') );
-		
-		$this->plugin_name = $plugin_name;
-		$this->plugin_title = $plugin_title;
-		$this->version = $version;
-		$this->model = new models\Fieldset();
-	}
-	
-	public function admin_menu(){
-		add_options_page($this->plugin_title, $this->plugin_title, 'manage_options', $this->plugin_name, array($this, 'init_page') );
+	/**
+	 * Init all wp-actions
+	 */
+	public function __construct()
+	{
+		add_action('admin_menu', array($this, 'adminMenu') );
+		add_action('admin_print_styles', array($this, 'addStyles'));
+		add_action('admin_print_scripts', array($this, 'addScripts'));
 	}
 
-	public function init_page() {
+	/**
+	 * Init menu item and index page for plugin
+	 */
+	public function adminMenu()
+	{
+		$plugin = new \jcf\JustCustomFields();
+		$page_title = $plugin->getPluginTitle();
+		$page_slug = $plugin->getPluginName();
+
+		add_options_page( $page_title, $page_title, 'manage_options', $page_slug, array($this, 'index') );
+	}
+
+	/**
+	 * Render index page
+	 */
+	public function index()
+	{
 		$post_types = jcf_get_post_types( 'object' );
-		$tabs = 'fields';
+		$tab = 'fields';
+		$model = new models\Fieldset();
+		$count_fields = $model->getCountFields();
 
 		// load template
-		$tpl_params = array(
-			'tabs' => $tabs,
-			'post_types' => $post_types
+		$template_params = array(
+			'tab' => $tab,
+			'post_types' => $post_types,
+			'count_fields' => $count_fields
 		);
-		$this->render( 'admin_page.tpl.php', $tpl_params );
+
+		$this->_render( 'admin_page', $template_params );
 	}
 
-	protected function render($template, $params) {
-		if( !empty($params) ){
-			foreach($params as $key => $value){
-				$$key = $value;
-			}
-		}
-		include( JCF_ROOT . '/views/' . $template );
-	}
+	/**
+	 *	Include scripts
+	 */
+	public function addScripts()
+	{
+		$plugin = new \jcf\JustCustomFields();
+		$slug = $plugin->getPluginName();
+		wp_register_script(
+			$slug,
+			WP_PLUGIN_URL.'/just-custom-fields/assets/just_custom_fields.js',
+			array('jquery', 'json2', 'jquery-form', 'jquery-ui-sortable')
+		);
+		wp_enqueue_script($slug);
+		wp_enqueue_script('jquery-ui-autocomplete');
+
+		// add text domain
+		wp_localize_script( $slug, 'jcf_textdomain', jcf_get_language_strings() );
+ 	}
+
+	/**
+	 * Include styles
+	 */
+	public function addStyles()
+	{
+		$plugin = new \jcf\JustCustomFields();
+		$slug = $plugin->getPluginName();
+		wp_register_style($slug, WP_PLUGIN_URL.'/just-custom-fields/assets/styles.css');
+		wp_enqueue_style($slug);
+ 	}
 }
 

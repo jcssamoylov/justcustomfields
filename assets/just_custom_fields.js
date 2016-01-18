@@ -628,31 +628,6 @@ function modalWindow(content){
  */
 function initSettings(){
 	var jcf_read_settings_active = jQuery('#jcform_settings').find('input[name="jcf_read_settings"]:checked').attr('id');
-	jQuery('#jcform_settings input[name="jcf_read_settings"]').live('change', function(){
-		var data = {
-				'action' : 'jcf_check_file',
-				'jcf_multisite_setting' : jQuery('#jcform_settings').find('input[name="jcf_multisite_setting"]:checked').val(),
-				'jcf_read_settings' : jQuery('#jcform_settings').find('input[name="jcf_read_settings"]:checked').val()
-		};
-console.log(data);
-		jcf_ajax(data, 'json', null, function(response){
-			if( response.msg ){
-				if( confirm(response.msg) ){
-					jQuery('#jcform_settings').find('input[name="jcf_keep_settings"]').removeAttr('disabled');
-				}
-				else{
-					jQuery('#jcform_settings').find('input[name="jcf_read_settings"]#'+jcf_read_settings_active).attr({'checked':'checked'});
-					jQuery('#jcform_settings').find('input[name="jcf_keep_settings"]').attr({'disabled':'disabled'});
-				}
-			}
-			else if( response.file){
-				jQuery('#jcform_settings').find('input[name="jcf_keep_settings"]').removeAttr('disabled');
-			}
-			else{
-				jQuery('#jcform_settings').find('input[name="jcf_keep_settings"]').attr({'disabled':'disabled'});
-			}
-		});
-	});
 
 	jQuery('#jcform_settings input[name="jcf_multisite_setting"]').change(function(){
 		if( jQuery( this ).val() == 'network' ){
