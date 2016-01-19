@@ -56,9 +56,7 @@ class JustCustomFields {
  		new controllers\AdminController();
 		new controllers\SettingsController();
 		new controllers\ImportExportController();
-		//new controllers\FieldsetController($source_settings);
-		
-		
+		new controllers\FieldsetController();
 	}
 
 	/**

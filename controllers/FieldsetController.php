@@ -2,143 +2,104 @@
 
 namespace jcf\controllers;
 use jcf\models;
+use jcf\core;
 
-class FieldsetController {
-	protected $_dataLayer;
-	protected $_model;
+class FieldsetController extends core\Controller {
 
-	public function __construct($source_settings){
-		$layer_type = $source_settings == JCF_CONF_SOURCE_DB ? 'DB' : 'Files';
-		$layer_factory = new models\DataLayerFactory();
+	public function __construct()
+	{
+		add_action('admin_menu', array($this, 'initRoutes') );
+		
+		//Fieldset actions
+		add_action('wp_ajax_jcf_add_fieldset', array($this, 'ajaxCreateFieldset'));
+		add_action('wp_ajax_jcf_delete_fieldset', array($this, 'ajaxDeleteFieldset'));
+		add_action('wp_ajax_jcf_change_fieldset', array($this, 'ajaxChangeFieldset'));
+		add_action('wp_ajax_jcf_update_fieldset', array($this, 'ajaxUpdateFieldset'));
+		add_action('wp_ajax_jcf_order_fieldsets', array($this, 'ajaxSortFieldsets'));
 
-		$this->_dataLayer = $layer_factory->create($layer_type, $source_settings);
-		$this->_model = new models\Fieldset();
-		
-		add_submenu_page(null, 'Fields', 'Fields', 'manage_options', 'jcf_fields', array($this, 'fields_page'));
-		
-		add_action('wp_ajax_jcf_add_fieldset', array($this, 'ajaxCreate'));
-		add_action('wp_ajax_jcf_delete_fieldset', array($this, 'ajaxDelete'));
-		add_action('wp_ajax_jcf_change_fieldset', array($this, 'ajaxChange'));
-		add_action('wp_ajax_jcf_update_fieldset', array($this, 'ajaxUpdate'));
-		add_action('wp_ajax_jcf_order_fieldsets', array($this, 'ajaxSort'));
-		
+		//Fields actions
+		add_action('wp_ajax_jcf_add_field', array($this, 'ajaxCreateField'));
+		add_action('wp_ajax_jcf_save_field', array($this, 'ajaxSaveField'));
+		add_action('wp_ajax_jcf_delete_field', array($this, 'ajaxDeleteField'));
+		add_action('wp_ajax_jcf_edit_field', array($this, 'ajaxEditField'));
+		add_action('wp_ajax_jcf_fields_order', array($this, 'ajaxSortFields'));
+		add_action('wp_ajax_jcf_collection_order', array($this, 'ajaxCollectionFieldsOrder' ));
+		add_action('wp_ajax_jcf_collection_add_new_field_group', array($this, 'ajaxReturnCollectionFieldGroup' ));
+		add_action('wp_ajax_jcf_related_content_autocomplete', array($this, 'autocomplete'));
+
 		//Visibility options
 		add_action('wp_ajax_jcf_get_rule_options', array($this, 'ajaxGetRuleOptions'));
 		add_action('wp_ajax_jcf_get_taxonomy_terms', array($this, 'ajaGetTaxonomyTerms'));
 		add_action('wp_ajax_jcf_save_visibility_rules', array($this, 'ajaxSaveVisibilityRules'));
 		add_action('wp_ajax_jcf_add_visibility_rules_form', array($this, 'ajaxAddVisibilityRulesForm'));
 		add_action('wp_ajax_jcf_delete_visibility_rule', array($this, 'ajaxDeleteVisibilityRule'));
-		add_action('wp_ajax_jcf_visibility_autocomplete', array($this->_model, 'ajaxVisibilityAutocomplete'));
-	}
-
-	public function findByPostType($post_type){
-		return $fieldsets = $this->_dataLayer->get_fieldsets($post_type);
+		add_action('wp_ajax_jcf_visibility_autocomplete', array($this, 'ajaxVisibilityAutocomplete'));
 	}
 	
 	/**
+	 * Init routes for settings page
+	 */
+	public function initRoutes()
+	{
+		$page_title = __('Fields', \jcf\JustCustomFields::TEXTDOMAIN);
+		$page_slug = 'jcf_fields';
+		add_submenu_page(null, $page_title, $page_title, 'manage_options', $page_slug, array($this, 'initPage'));
+	} 
+
+	/**
+	 * Render settings page
+	 */
+	public function initPage()
+	{
+		$tab = 'fields';
+		$model = new models\Fieldset();
+
+		$name_post_type = $_GET['pt'];
+		$data = $model->findByPostType($name_post_type);
+		$post_types = jcf_get_post_types( 'object' );
+
+		// load template
+		$template_params = array(
+			'tab' => $tab,
+			'post_type' => $post_types[$name_post_type],
+			'fieldsets' => $data['fieldsets'],
+			'field_settings' => $data['fields'],
+			'collections' => $data['collections'],
+			'registered_fields' => $data['registered_fields']
+		);
+		$this->_render( '/views/fieldsets/fields_ui', $template_params );
+	}
+
+	/**
 	 *  add fieldset form process callback
 	 */
-	public function ajaxCreate(){
-		$title = strip_tags(trim($_POST['title']));
-		$post_type = strip_tags(trim($_POST['post_type']));
-
-		if( empty($title) ){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Title field is required.', TEXTDOMAIN)) );
-		}
-		
-		$slug = preg_replace('/[^a-z0-9\-\_\s]/i', '', $title);
-		$trimed_slug = trim($slug);
-
-		if( $trimed_slug == '' ){
-			$slug = 'jcf-fieldset-'.rand(0,10000);
-		}
-		else{
-			$slug = sanitize_title( $title );
-		}
-
-		$fieldsets = $this->_dataLayer->get_fieldsets($post_type);
-
-		// check exists
-		if( isset($fieldsets[$slug]) ){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Such fieldset already exists.', TEXTDOMAIN)) );
-		}
-
-		// create fiedlset
-		$fieldset = array(
-			'id' => $slug,
-			'title' => $title,
-			'fields' => array(),
-		);
-		$this->_dataLayer->update_fieldsets($post_type, $slug, $fieldset);
-
-		jcf_ajax_response( array('status' => "1" ) ); 
+	public function ajaxCreateFieldset()
+	{
+		$model = new models\Fieldset();
+		$model->load($_POST) && $model->createFieldset();
 	}
 	
 	/**
 	 *  delete fieldset link process callback
 	 */
-	public function ajaxDelete(){
-		$post_type = strip_tags(trim($_POST['post_type']));
-		$f_id = $_POST['fieldset_id'];
-
-		if( empty($f_id) ){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Wrong params passed.', TEXTDOMAIN)) );
-		}
-
-		$this->_dataLayer->update_fieldsets($post_type, $f_id, NULL);
-
-		jcf_ajax_response( array('status' => "1") );
+	public function ajaxDeleteFieldset()
+	{
+		$model = new models\Fieldset();
+		$model->load($_POST) && $model->deleteFieldset();
 	}
 	
 	/**
 	 * change fieldset link process callback
 	 */
-	public function ajaxChange(){
-		$f_id = $_POST['fieldset_id'];
+	public function ajaxChangeFieldset()
+	{
+		$model = new models\Fieldset();
+		$fieldset_id = $_POST['fieldset_id'];
 		$post_type = strip_tags(trim($_POST['post_type']));
-		$fieldset = $this->_dataLayer->get_fieldsets($post_type, $f_id);
+		$fieldset = $model->findFieldsetById($post_type, $fieldset_id);
 
-		ob_start(); ?>
-		<div class="jcf_edit_fieldset">
-			<h3 class="header"><?php echo __('Edit Fieldset:', TEXTDOMAIN) . ' ' . $fieldset['title']; ?></h3>
-			<div class="jcf_inner_content">
-				<form action="#" method="post" id="jcform_edit_fieldset">
-					<fieldset>
-						<input type="hidden" name="fieldset_id" value="<?php echo $fieldset['id']; ?>" />
-						
-						<p><label for="jcf_edit_fieldset_title"><?php _e('Title:', TEXTDOMAIN); ?></label> <input class="widefat" id="jcf_edit_fieldset_title" type="text" value="<?php echo esc_attr($fieldset['title']); ?>" /></p>
-						
-						<div class="field-control-actions">
-							<h4>
-								<a href="#" class="visibility_toggle" >
-									<?php _e('Visibility rules', TEXTDOMAIN); ?>
-									<span class="<?php echo !empty($fieldset['visibility_rules']) ? 'dashicons-arrow-up-alt2' : 'dashicons-arrow-down-alt2' ?> dashicons-before"></span>
-								</a>
-							</h4>
-							<div id="visibility" class="<?php echo !empty($fieldset['visibility_rules']) ? '' : 'hidden' ?>">
-								<?php if( !empty($fieldset['visibility_rules']) ): ?>
-									<?php echo $this->_model->getVisibilityRulesHtml($fieldset['visibility_rules']); ?>
-								<?php else: ?>
-									<?php $this->ajaxAddVisibilityRulesForm(); ?>
-								<?php endif; ?>
-							</div>
-							<br class="clear"/>
-							<div class="alignleft">
-								<a href="#remove" class="field-control-remove"><?php _e('Delete', TEXTDOMAIN); ?></a> |
-								<a href="#close" class="field-control-close"><?php _e('Close', TEXTDOMAIN); ?></a>
-							</div>
-							<div class="alignright">
-								<?php echo jcf_print_loader_img(); ?>
-								<input type="submit" value="<?php _e('Save', TEXTDOMAIN); ?>" class="button-primary" name="savefield">
-							</div>
-							<br class="clear"/>
-						</div>
-					</fieldset>
-				</form>
-			</div>
-		</div>
-
-		<?php
+		ob_start(); 
+		$this->_render('/views/fieldsets/change_fieldset', array('fieldset' => $fieldset));
 		$html = ob_get_clean();
 		jcf_ajax_response($html, 'html');
 	}
@@ -146,44 +107,72 @@ class FieldsetController {
 	/**
 	 * save fieldset functions callback
 	 */
-	public function ajaxUpdate(){
-		$f_id = $_POST['fieldset_id'];
-		$post_type = strip_tags(trim($_POST['post_type']));
-		$fieldset = $this->_dataLayer->get_fieldsets($post_type, $f_id);
-
-		if(empty($fieldset)){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Wrong data passed.', TEXTDOMAIN)) );
-		}
-
-		$title = strip_tags(trim($_POST['title']));
-		if( empty($title) ){
-			jcf_ajax_response( array('status' => "0", 'error'=>__('Title field is required.', TEXTDOMAIN)) );
-		}
-
-		$fieldset['title'] = $title;
-		$this->_dataLayer->update_fieldsets($post_type, $f_id, $fieldset);
-		jcf_ajax_response( array('status' => "1", 'title' => $title) );
+	public function ajaxUpdateFieldset()
+	{
+		$model = new models\Fieldset();
+		$model->load($_POST) && $model->updateFieldset();
 	}
 	
 	/**
-	 * fields order change callback
+	 * fieldsets order change callback
 	 */
-	public function ajaxSort(){
-		$post_type = strip_tags(trim($_POST['post_type']));
-		$order  = explode(',' ,trim($_POST['fieldsets_order'], ','));
-		pa($_POST['fieldsets_order']);
-		if(!empty($_POST['fieldsets_order'])){
-			$this->_dataLayer->sort_fieldsets($post_type, $order);
-		}
+	public function ajaxSortFieldsets()
+	{
+		$model = new models\Fieldset();
+		$model->load($_POST) && $model->sortFieldsets();
+	}
 
-		$resp = array('status' => '1');
+	/**
+	 *  add field form show callback
+	 */
+	public function ajaxCreateField()
+	{
+		$model = new models\Fieldset();
+		$model->load($_POST) && $field = $model->createField();
+
+		ob_start();
+		$this->_render('/views/fieldsets/field_form', array('field' => $field));
+		$html = ob_get_clean();
+		jcf_ajax_response($html, 'html');
+	}
+
+	/**
+	 * save field from the form callback
+	 */
+	public function ajaxSaveField()
+	{
+		$model = new models\Fieldset();
+		$model->load($_POST) && $resp = $model->saveField(); 
+
+		if ( isset($resp['id_base']) && $resp['id_base'] == 'collection') {
+			ob_start();
+			$template_params = array(
+				'collection' => $resp['instance'],
+				'collection_id' => $resp['id'],
+				'fieldset_id' => $resp['fieldset_id'],
+				'registered_fields' => $resp['registered_fields']
+			);
+			$this->_render( '/components/collection/views/fields_ui', $template_params);
+			$resp["collection_fields"] = ob_get_clean();
+		}
 		jcf_ajax_response($resp, 'json');
 	}
 
 	/**
+	 * delete field processor callback
+	 */
+	public function ajaxDeleteField()
+	{
+		$model = new models\Fieldset();
+		$model->load($_POST) && $model->deleteField();
+	}
+
+
+	/**
 	 * get base options for visibility rules functions callback
 	 */
-	public function ajaxGetRuleOptions() {
+	public function ajaxGetRuleOptions()
+	{
 		$rule = $_POST['rule'];
 		$post_type = $_POST['post_type'];
 		ob_start();
@@ -204,7 +193,8 @@ class FieldsetController {
 	/**
 	 * Get taxonomy terms options functions callback
 	 */
-	public function ajaGetTaxonomyTerms() {
+	public function ajaGetTaxonomyTerms()
+	{
 		$taxonomy = $_POST['taxonomy'];
 		$terms = get_terms($taxonomy, array('hide_empty' => false));
 		ob_start();
@@ -216,7 +206,8 @@ class FieldsetController {
 	/**
 	 * Save rules for visibility functions callback
 	 */
-	public function ajaxSaveVisibilityRules(){
+	public function ajaxSaveVisibilityRules()
+	{
 		$data = $_POST;
 		$post_type = $_POST['post_type'];
 		if(!empty($data['rule_id'])){
@@ -233,7 +224,8 @@ class FieldsetController {
 	/**
 	 * add form for new rule functions callback
 	 */
-	public function ajaxAddVisibilityRulesForm() {
+	public function ajaxAddVisibilityRulesForm()
+	{
 		$post_type = $_POST['post_type'];
 		$taxonomies = get_object_taxonomies( $post_type, 'objects' );
 		$add_rule = !empty($_POST['add_rule']) ? $_POST['add_rule'] : false;
@@ -330,7 +322,8 @@ class FieldsetController {
 	/**
 	 * Delete rule for visibility functions callback
 	 */
-	public function ajaxDeleteVisibilityRule(){
+	public function ajaxDeleteVisibilityRule()
+	{
 		$data = $_POST;
 		$post_type = $_POST['post_type'];
 
@@ -339,7 +332,116 @@ class FieldsetController {
 		$resp = $this->_model->getVisibilityRulesHtml($fieldset['visibility_rules']);
 		jcf_ajax_response($resp, 'html');
 	}
+	
+		
+	public function ajaxCollectionFieldsOrder()
+	{
+		$field_factory = new models\JustFieldFactory();
+		$fieldset_id = $_POST['fieldset_id'];
+		$collection_id = $_POST['collection_id'];
+		$post_type = $_POST['post_type'];
+		$collection = $field_factory->initObject($post_type, $collection_id, $fieldset_id);
+		$order  = trim($_POST['fields_order'], ',');
 
+		$new_fields = explode(',', $order);
+		$new_order = array();		
+
+		if(! empty($new_fields)){
+			foreach($new_fields as $field_id){
+				if(isset($collection->instance['fields'][$field_id])){
+					$new_order[$field_id] = $collection->instance['fields'][$field_id];					
+				}
+			}
+		}
+		$collection->instance['fields'] = $new_order;
+		$this->_layer->updateFields($post_type, $collection_id, $collection->instance, $fieldset_id);
+		
+		$resp = array('status' => '1');
+		jcf_ajax_response($resp, 'json');
+	}
+	
+	/**
+	 * return empty collection fields group
+	 */
+	public function ajaxReturnCollectionFieldGroup()
+	{
+		$fieldset_id = $_POST['fieldset_id'];
+		$collection_id = $_POST['collection_id'];
+		$collection = $this->_fieldFactory->initObject($this->postType, $collection_id, $fieldset_id);
+		self::$currentCollectionFieldKey = $_POST['group_id'];
+		?>
+		<div class="collection_field_group">
+			<h3>
+				<span class="dashicons dashicons-editor-justify"></span>
+				<span class="collection_group_title">
+				<?php echo $collection->instance['title'].' Item'; ?>
+				</span>
+				<span class="dashicons dashicons-trash"></span>
+
+			</h3>
+			<div class="collection_field_group_entry">
+				<?php					
+					foreach ( $collection->instance['fields'] as $field_id => $field ) {
+						echo '<div class="collection_field_border jcf_collection_'.(intval($field['field_width'])?$field['field_width']:'100').'">';
+						$field_obj = $this->_fieldFactory->initObject($this->postType, $field_id, $collection->fieldsetId, $collection->id);
+						$field_obj->setSlug($field['slug']);
+						$field_obj->instance = $field;
+						$field_obj->isPostEdit = true;
+						$field_obj->field($field_obj->field_options);
+						echo '</div>';
+					}
+				?>
+				<div class="clr"></div>
+			</div>
+		</div>
+		<?php die();
+	}
+	
+	/**
+	 *	autocomplete
+	 */
+	public static function autocomplete(){
+		$term = $_POST['term'];
+		if(empty($term)) die('');
+		
+		$post_type = $_POST['post_types'];
+		
+		$post_types = jcf_get_post_types('object');
+
+		if( $post_type != 'any' ){
+			$post_type_where = " post_type = '$post_type' ";
+		}
+		else{
+			// get all post types
+			$post_type_where = "( post_type = '" . implode("' OR post_type = '", array_keys($post_types)) . "' )";
+		}
+		
+		global $wpdb;
+		$query = "SELECT ID, post_title, post_status, post_type
+			FROM $wpdb->posts
+			WHERE $post_type_where AND (post_status = 'publish' OR post_status = 'draft') AND post_title LIKE '%$term%'
+			ORDER BY post_title";
+		$posts = $wpdb->get_results($query);
+		
+		$response = array();
+		foreach($posts as $p){
+			$draft = ( $p->post_status == 'draft' )? ' (DRAFT)' : '';
+			$type_label = ( $post_type != 'any' )? '' : ' / '.$post_types[$p->post_type]->labels->singular_name;
+			$response[] = array(
+				'id' => $p->ID,
+				'label' => $p->post_title . $draft . $type_label,
+				'value' => $p->post_title . $draft . $type_label,
+				'type' => $p->post_type,
+				'status' => $p->post_status
+			);
+		}
+		
+		$json = json_encode($response);
+		
+		header( "Content-Type: application/json" );
+		echo $json;
+		exit();
+	}
 }
 
 

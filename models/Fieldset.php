@@ -4,7 +4,7 @@ namespace jcf\models;
 use jcf\core;
 use jcf\models;
 
-class Fieldset extends core\Model  {
+class Fieldset extends core\Model {
 	
 	protected $_layer;
 
@@ -13,7 +13,6 @@ class Fieldset extends core\Model  {
 		parent::__construct();
 		$layer_factory = new DataLayerFactory();
 		$this->_layer = $layer_factory->create();
-		$this->_fieldFactory = new models\JustFieldFactory();
 	}
 
 	/**
@@ -53,6 +52,7 @@ class Fieldset extends core\Model  {
 
 	/**
 	 * Get all fields and fieldsets
+	 * @return array
 	 */
 	public function findAll()
 	{
@@ -60,11 +60,203 @@ class Fieldset extends core\Model  {
 	}
 
 	/**
+	 * Get fields and fieldsets by post_type
+	 * @param string $post_type Name post type
+	 * @return array
+	 */
+	public function findByPostType($post_type)
+	{
+		$field_factory = new models\JustFieldFactory();
+		$registered_fields = $field_factory->getRegisteredFields();
+		$fieldsets = $this->_layer->getFieldsets($post_type);
+		$fields = $this->_layer->getFields($post_type);
+		$collections = array();
+
+		if ( !empty($fields) ) {
+			foreach ( $fields as $field_id => $field ) {
+				if ( preg_replace('/\-[0-9]+$/', '', $field_id) != 'collection' ) continue;
+				$collecton = $field_factory->initObject($post_type, $field_id);
+				$collections['registered_fields'] = $collecton->_fieldFactory->getRegisteredFields();
+				$collections[$field_id] = $this->_layer->getFields($post_type, $field_id);
+			}
+		}
+
+		$data = array(
+			'fieldsets' => $fieldsets,
+			'fields' => $fields,
+			'collections' => $collections,
+			'registered_fields' => $registered_fields
+		);
+		return $data;
+	}
+
+	/**
+	 * 
+	 */
+	public function findFieldsetById($post_type, $fieldset_id)
+	{
+		return $this->_layer->getFieldsets($post_type, $fieldset_id);
+	}
+	
+	/**
+	 * Create new fieldset with $_POST params
+	 */
+	public function createFieldset()
+	{
+		$title = strip_tags(trim($this->_request['title']));
+		$post_type = strip_tags(trim($this->_request['post_type']));
+
+		if ( empty($title) ) {
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN)) );
+		}
+		
+		$slug = preg_replace('/[^a-z0-9\-\_\s]/i', '', $title);
+		$trimed_slug = trim($slug);
+
+		if ( $trimed_slug == '' ) {
+			$slug = 'jcf-fieldset-'.rand(0,10000);
+		}
+		else {
+			$slug = sanitize_title( $title );
+		}
+
+		$fieldsets = $this->_layer->getFieldsets($post_type);
+
+		// check exists
+		if ( isset($fieldsets[$slug]) ) {
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Such fieldset already exists.', \jcf\JustCustomFields::TEXTDOMAIN)) );
+		}
+
+		// create fiedlset
+		$fieldset = array(
+			'id' => $slug,
+			'title' => $title,
+			'fields' => array(),
+		);
+		$this->_layer->updateFieldsets($post_type, $slug, $fieldset);
+		jcf_ajax_response( array('status' => "1" ) ); 
+	}
+
+	/**
+	 * Delete fieldset with $_POST params
+	 */
+	public function deleteFieldset()
+	{
+		$post_type = strip_tags(trim($this->_request['post_type']));
+		$f_id = $this->_request['fieldset_id'];
+
+		if ( empty($f_id) ) {
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Wrong params passed.', \jcf\JustCustomFields::TEXTDOMAIN)) );
+		}
+
+		$this->_layer->updateFieldsets($post_type, $f_id, NULL);
+		jcf_ajax_response( array('status' => "1") );
+	}
+
+	/**
+	 * Update fieldset with $_POST params
+	 */
+	public function updateFieldset()
+	{
+		$fieldset_id = $this->_request['fieldset_id'];
+		$post_type = strip_tags(trim($this->_request['post_type']));
+		$fieldset = $this->_layer->getFieldsets($post_type, $fieldset_id);
+
+		if ( empty($fieldset) ) {
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Wrong data passed.', \jcf\JustCustomFields::TEXTDOMAIN)) );
+		}
+
+		$title = strip_tags(trim($this->_request['title']));
+
+		if ( empty($title) ) {
+			jcf_ajax_response( array('status' => "0", 'error'=>__('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN)) );
+		}
+
+		$fieldset['title'] = $title;
+		$this->_layer->updateFieldsets($post_type, $fieldset_id, $fieldset);
+		jcf_ajax_response( array('status' => "1", 'title' => $title) );
+	}
+
+	/**
+	 * Sort fieldsets with $_POST params
+	 */
+	public function sortFieldsets()
+	{
+		$post_type = strip_tags(trim($this->_request['post_type']));
+		$order  = explode(',' ,trim($this->_request['fieldsets_order'], ','));
+
+		if ( !empty($this->_request['fieldsets_order']) ) {
+			$this->_layer->sortFieldsets($post_type, $order);
+		}
+
+		$resp = array('status' => '1');
+		jcf_ajax_response($resp, 'json');
+	}
+
+	/**
+	 * Init new object for new field with $_POST params
+	 * @return object
+	 */
+	public function createField()
+	{
+		$field_factory = new models\JustFieldFactory();
+		$post_type = $this->_request['post_type'];
+		$field_type =  $this->_request['field_type'];
+		$fieldset_id = $this->_request['fieldset_id'];
+		$collection_id = ( isset($this->_request['collection_id']) ? $this->_request['collection_id'] : '' );
+
+		$field_obj = $field_factory->initObject($post_type, $field_type, $fieldset_id, $collection_id);
+
+		return $field_obj;
+	}
+
+	/**
+	 * Save new field with $_POST params
+	 */
+	public function saveField()
+	{
+		$field_factory = new models\JustFieldFactory();
+		$post_type = $this->_request['post_type'];
+		$field_type =  $this->_request['field_id'];
+		$fieldset_id = $this->_request['fieldset_id'];
+		$collection_id = (isset($this->_request['collection_id']) ? $this->_request['collection_id'] : '');
+
+		$field_obj = $field_factory->initObject($post_type, $field_type, $fieldset_id, $collection_id);
+		$field_index = $field_factory->getIndex($field_obj->id_base);
+
+		return $field_obj->doUpdate($field_index);
+	}
+
+	/**
+	 * Delete field with $_POST params
+	 */
+	public function deleteField()
+	{
+		$field_factory = new models\JustFieldFactory();
+		$post_type = $this->_request['post_type'];
+		$field_id = $this->_request['field_id'];
+		$fieldset_id = $this->_request['fieldset_id'];
+		$collection_id = (isset($this->_request['collection_id']) ? $this->_request['collection_id']:'');
+
+		if ( $collection_id ) {
+			$field_obj = $field_factory->initObject($post_type, $collection_id, $fieldset_id);
+			$field_obj->deleteField($field_id);
+		} 
+		else {
+			$field_obj = $field_factory->initObject($post_type, $field_id, $fieldset_id);
+			$field_obj->doDelete();			
+		}
+
+		$resp = array('status' => '1');
+		jcf_ajax_response($resp, 'json');
+	}
+
+	/**
 	 * Export fields
 	 */
 	public function exportFields()
 	{
-		if( $this->_request['export_fields'] && !empty($this->_request['export_data']) ) {
+		if ( $this->_request['export_fields'] && !empty($this->_request['export_data']) ) {
 			$export_data = $this->_request['export_data'];
 			$export_data = json_encode($export_data);
 			$filename = 'jcf_export' . date('Ymd-his') . '.json';
@@ -159,15 +351,16 @@ class Fieldset extends core\Model  {
 	 */
 	protected function _addImportField($post_type, $field_id, $fieldset_id, $params, $collection_id = '')
 	{
-		$field_obj = $this->_fieldFactory->initObject($post_type, $field_id, $fieldset_id, $collection_id);
+		$model = new models\JustFieldFactory();
+		$field_obj = $model->initObject($post_type, $field_id, $fieldset_id, $collection_id);
 		$id_base = preg_replace('/\-([0-9]+)/', '', $field_id);
-		$field_index = $this->_fieldFactory->getIndex($id_base);
+		$field_index = $model->getIndex($id_base);
 
 		if ( $field_obj->slug == $params['slug'] ) {
 			$resp = $field_obj->do_update($field_index, $params);
 		}
 		else {
-			$field_obj = $this->_fieldFactory->initObject($post_type, $field_id, $fieldset_id, $collection_id);
+			$field_obj = $model->initObject($post_type, $field_id, $fieldset_id, $collection_id);
 			$resp = $field_obj->do_update($field_index, $params);
 		}
 		return $resp;
@@ -191,7 +384,7 @@ class Fieldset extends core\Model  {
 						$fieldset_id = $status_fieldset;
 
 						if ( !empty($fieldset['fields']) ) {
-							$old_fields = $this->_dataLayer->get_fields($post_type_name);
+							$old_fields = $this->_layer->get_fields($post_type_name);
 
 							if ( !empty($old_fields) ) {
 								foreach ( $old_fields as $old_field_id => $old_field ) {
@@ -211,7 +404,7 @@ class Fieldset extends core\Model  {
 								}
 								
 								if ( $id_base == 'collection' ) {
-									$old_collection_fields = $this->_dataLayer->get_fields($post_type_name, $field_id);
+									$old_collection_fields = $this->_layer->get_fields($post_type_name, $field_id);
 
 									if ( !empty($old_collection_fields['fields']) ) {
 										foreach ( $old_collection_fields['fields'] as $old_collection_field_id => $old_collection_field ) {

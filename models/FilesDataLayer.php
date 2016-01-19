@@ -96,10 +96,11 @@ class FilesDataLayer implements interfaces\FieldSettings {
 	}
 
 	/**
-	 * update order fieldsets
+	 * Sort fieldsets
+	 * @param string $post_type
 	 * @param array $keys Fieldsets keys
 	 */
-	public function sorFieldsets($post_type, $keys = array())
+	public function sortFieldsets($post_type, $keys = array())
 	{
 		$new_fieldsets = array();
 		
@@ -112,7 +113,7 @@ class FilesDataLayer implements interfaces\FieldSettings {
 		$all_fields['fieldsets'][$post_type] = $new_fieldsets;
 		$this->_save($all_fields);
 	}
-	
+
 	/**
 	 * Get path to file with fields and fieldsets
 	 * @param string $source_settings

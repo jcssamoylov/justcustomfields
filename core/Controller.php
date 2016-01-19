@@ -17,7 +17,6 @@ class Controller
   				$$key = $value;
 			}
   		}
-		$folder = str_replace('jcf\\controllers\\', '', strtolower(str_replace('Controller', '', get_class($this))));
-  		include( JCF_ROOT . '/views/' . $folder . '/' . $template . '.tpl.php' );
+  		include( JCF_ROOT . $template . '.tpl.php' );
 	}
 }

@@ -1,0 +1,560 @@
+<?php
+namespace jcf\models;
+use jcf\models;
+
+class Just_Field {
+	
+	/**
+	 * Root id for all fields of this type (field type)
+	 * @var string
+	 */
+	public $idBase;	
+	public static $compatibility = '3.0+'; // compatibility with WP version + it >=, - it <
+	public $title;				// Name for this field type.
+	public $slug = null;
+	public $fieldOptions = array(
+		'classname' => 'jcf_custom_field',
+		'before_widget' => '<div class="form-field">',
+		'after_widget' => '</div>',
+		'before_title' => '<label>',
+		'after_title' => ':</label>',
+	);
+	
+	public $isNew = false;
+	
+	/**
+	 * check for change field name if it edit on post edit page
+	 */
+	public $isPostEdit = false;
+
+
+	/**
+	 * Unique ID number of the current instance
+	 * 
+	 * @var integer 
+	 */
+	public $number = false;	
+	
+	/**
+	 * Unique ID string of the current instance (id_base-number)
+	 * 
+	 * @var string
+	 */
+	public $id = false;
+	public $fieldsetId = '';
+	public $collectionId = '';
+	public $postType;
+	
+	/**
+	 * this is field settings (like title, slug etc)
+	 * 
+	 * @var array
+	 */
+	public $instance = array(); 
+	
+	public $postID = 0;
+	
+	/**
+	 * Field data for each post
+	 * @var mixed
+	 */
+	public $entry = null;
+
+	public $fieldErrors = array();
+	protected $_layer;
+
+	/** 
+	 *	Constructor
+	 */
+	public function __construct( $id_base, $title, $field_options = array() )
+	{
+		$this->idBase = $id_base;
+		$this->title = $title;
+		$this->fieldOptions = array_merge($this->fieldOptions, $field_options);
+
+		$layer_factory = new DataLayerFactory();
+		$this->_layer = $layer_factory->create();
+	}
+	
+	/**
+	 * check field compatibility with WP version
+	 */
+	public static function checkCompatibility($compatibility)
+	{
+		global $wp_version;
+
+		$operator = '<';
+		if ( strpos($compatibility, '+') ) {
+			$compatibility = substr($compatibility, 0, -1);
+			$operator = '>=';
+		} 
+		elseif ( strpos($compatibility, '-') ) {
+			$compatibility = substr($compatibility, 0, -1);			
+		}
+		
+		if ( !version_compare($wp_version, $compatibility, $operator) ) return false;
+		return true;
+	}
+
+	/**
+	 * check, that this field is part of collection
+	 */
+	
+	public function isCollectionField()
+	{
+		if ( !empty($this->collectionId) ) return true;
+		return false;
+	}
+
+	/**
+	 *	set class property $this->fieldsetId
+	 *	@param   string  $fieldset_id  fieldset string ID
+	 */
+	public function setFieldset( $fieldset_id )
+	{
+		$this->fieldsetId = $fieldset_id;
+	}
+	
+	/**
+	 *	set class property $this->collectionId
+	 *	@param   string  $fieldset_id  fieldset string ID
+	 */
+	public function setCollection( $collection_id )
+	{
+		$this->collectionId = $collection_id;
+	}
+	
+	/**
+	 *	set class propreties "id", "number"
+	 *	load instance and entries for this field
+	 *	@param  string  $id  field id (cosist of id_base + number)
+	 */
+	public function setId( $id )
+	{
+		$this->id = $id;
+
+		// this is add request. so number is 0
+		if( $this->id == $this->idBase ){
+			$this->number = 0;
+			$this->isNew = true;
+		}
+		// parse number
+		else{
+			$this->number = str_replace($this->idBase.'-', '', $this->id);
+
+			// load instance data
+			$this->instance =(array)$this->_layer->getFields( $this->postType, $this->id );
+
+			if( !empty($this->instance) ){
+				$this->slug = $this->instance['slug'];
+			}
+		}
+	}
+	
+	/**
+	 *	setter for slug
+	 *	@param  string  $slug  field slug
+	 */
+	public function setSlug( $slug )
+	{
+		$this->slug = $this->validateInstanceSlug($slug);
+	}
+
+	/**
+	 *	set post ID and load entry from wp-postmeta
+	 *	@param  int  $post_ID  post ID variable
+	 */
+	public function setPostID( $post_ID )
+	{
+		$this->postID = $post_ID;
+
+		// load entry
+		if( !empty($this->slug) ){
+			$this->entry = get_post_meta($this->postID, $this->slug, true);
+		}
+	}
+	
+	/**
+	 * Set post type
+	 * @param string $post_type
+	 */
+	public function setPostType($post_type)
+	{
+		$this->postType = $post_type;
+	}
+	
+	/**
+	 *	generate unique id attribute based on id_base and number
+	 *	@param  string  $str  string to be converted
+	 */
+	public function getFieldId( $str, $delimeter = '-' )
+	{
+		/**
+		 * if is field of collection and itst post edit page create collection field id
+		 */
+		$field_factory = new models\JustFieldFactory();
+
+		if ( $this->isCollectionField() && $this->isPostEdit ) {
+			$collection = $field_factory->initObject($this->postType, $this->collectionId, $this->fieldsetId);
+			return str_replace('-', $delimeter, 'field'.$delimeter.$collection->idBase.$delimeter.$collection->number.$delimeter
+					.\jcf\components\collection\Just_Field_Collection::$currentCollectionFieldKey.$delimeter.$this->id.$delimeter.$str);
+		}
+		return 'field'.$delimeter.$this->idBase.$delimeter.$this->number.$delimeter.$str;
+	}
+
+	/**
+	 *	generate unique name attribute based on id_base and number
+	 *	@param  string  $str  string to be converted
+	 */
+	public function getFieldName( $str )
+	{
+		/**
+		 * if is field of collection and itst post edit page create collection field name
+		 */
+		$field_factory = new models\JustFieldFactory();
+
+		if ( $this->isCollectionField() && $this->isPostEdit ) {
+			$collection = $field_factory->initObject($this->postType, $this->collectionId, $this->fieldsetId);
+			return 'field-'.$collection->idBase.'['.$collection->number.']['. \jcf\components\collection\Just_Field_Collection::$currentCollectionFieldKey.']['.$this->id.']['.$str.']';
+		}
+		return 'field-'.$this->idBase.'['.$this->number.']['.$str.']';
+	}
+	
+	/**
+	 * validates instance. normalize different field values
+	 * @param array $instance
+	 */
+	public function validateInstance( & $instance )
+	{
+		if ( $instance['_version'] >= 1.4 ) {
+			$instance['slug'] = $this->validateInstanceSlug($instance['slug']);
+		}
+	}
+	
+	/**
+	 * validate that slug has first underscore
+	 * @param string $slug
+	 */
+	public function validateInstanceSlug( $slug )
+	{
+		$slug = trim($slug);
+
+		if ( !empty($slug) && $slug{0} != '_' && !$this->isCollectionField() ) {
+			$slug = '_' . $slug;
+		}
+		return $slug;
+	}
+	
+	/**
+	 * get valid value for instance version
+	 * @param array $instance
+	 * @return float
+	 */
+	public function getInstanceVersion( $instance )
+	{
+		if ( empty($instance['_version']) ) return 1.34;
+		else return $instance['_version'];
+	}
+	
+	/**
+	 *	function to save field instance to the database
+	 *	call $this->update inside
+	 *	@param array $params for update field
+	 */
+	public function doUpdate($field_index, $params = array())
+	{
+		$input = !empty($params) ? $params : $_POST['field-'.$this->idBase][$this->number];
+		// remove all slashed from values
+		foreach ( $input as $var => $value ) {
+			if ( is_string($value) ) {
+				$input[$var] = stripslashes($value);
+			}
+		}
+		// validate: title should be always there
+		if ( empty($input['title']) ) {
+			return array('status' => '0', 'error' => __('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN));
+		}
+		
+		// get values from real class:
+		$instance = $this->update($input, $this->instance);
+		$instance['title'] = strip_tags($instance['title']);
+		$instance['slug'] = strip_tags($input['slug']);
+		$instance['enabled'] = (int)@$input['enabled'];
+
+		// starting from vers. 1.4 all new fields should be marked with version of the plugin
+		if ( $this->isNew ) {
+			$instance['_version'] = JCF_VERSION;
+		}
+		// for old records: set 1.34 - last version without versioning the fields
+		if ( empty($instance['_version']) ) {
+			$instance['_version'] = 1.34;
+		}
+		
+		// new from version 1.4: validation/normalization
+		$this->validateInstance( $instance );
+		
+		// check for errors
+		// IMPORTANT: experimental function
+		if ( !empty($this->fieldErrors) ) {
+			$errors = implode('\n', $this->fieldErrors);
+			return array('status' => '0', 'error' => $errors);
+		}
+		
+		if ( $this->isNew ) {
+			$this->number = $field_index;
+			$this->id = $this->idBase . '-' . $this->number;
+		}
+
+		$field_factory = new models\JustFieldFactory();
+		if ( !$this->isCollectionField() ) {
+			// update fieldset
+			$fieldset = $this->_layer->getFieldsets( $this->postType, $this->fieldsetId );
+			$fieldset['fields'][$this->id] = $instance['enabled']; 
+			$this->_layer->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
+
+			// check slug field
+			if( empty($instance['slug']) ){
+				$instance['slug'] = '_field_' . $this->idBase . '__' . $this->number;
+			}
+			// save
+			$this->_layer->updateFields($this->postType, $this->id, $instance, $this->fieldsetId);
+
+			// return status
+			$res = array(
+				'status' => '1',
+				'id' => $this->id,
+				'id_base' => $this->idBase,
+				'fieldset_id' => $this->fieldsetId,
+				'is_new' => $this->isNew,
+				'instance' => $instance,
+				'registered_fields' => $field_factory->getRegisteredFields()
+			);			
+		} 
+		else {
+			$collection = $field_factory->initObject($this->postType, $this->collectionId, $this->fieldsetId);
+			// check slug field
+			if ( empty($instance['slug']) ) {
+				$instance['slug'] = '_field_' . $this->idBase . '__' . $this->number;
+			}
+
+			$instance['field_width'] = $input['field_width'];
+
+			if ( isset($input['group_title']) ) $instance['group_title'] = true;
+
+			$collection->instance['fields'][$this->id] = $instance;
+			// save
+			$this->_layer->updateFields($this->postType, $this->collectionId, $collection->instance, $this->fieldsetId);
+			// return status
+			$res = array(
+				'status' => '1',
+				'id' => $this->id,
+				'id_base' => $this->idBase,
+				'fieldset_id' => $this->fieldsetId,
+				'collection_id' => $this->collectionId,
+				'is_new' => $this->isNew,
+				'instance' => $instance,
+				'registered_fields' => $field_factory->getRegisteredFields()
+			);
+		}
+		return $res;
+	}
+
+	/**
+	 *	function to delete field from the database
+	 */
+	public function doDelete()
+	{
+		// remove from fieldset:
+		$fieldset = $this->_layer->getFieldsets( $this->postType, $this->fieldsetId );
+
+		if ( isset($fieldset['fields'][$this->id]) )
+			unset($fieldset['fields'][$this->id]);
+
+		$this->_layer->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
+		// remove from fields array
+		$this->_layer->updateFields($this->postType, $this->id, NULL, $this->fieldsetId);
+	}
+
+	/**
+	 *	function to save data from edit post page to postmeta
+	 *	call $this->save()
+	 */
+	public function doSave()
+	{
+		// check that number and post_ID is set
+		if ( empty($this->postID) || empty($this->number) ) return false;
+		
+		// check that we have data in POST
+		if ( $this->idBase != 'checkbox' && (
+				empty($_POST['field-'.$this->idBase][$this->number]) ||
+				!is_array($_POST['field-'.$this->idBase][$this->number])
+			)
+		   )
+		{
+			return false;
+		}
+
+		$input = @$_POST['field-'.$this->idBase][$this->number];
+		// get real values
+		$values = $this->save( $input );
+		// save to post meta
+		update_post_meta($this->postID, $this->slug, $values);
+		return true;
+	}
+	
+	/**
+	 *	function that call $this->add_js to enqueue scripts in head section
+	 *	do this only on post edit page and if at least one field is exists.
+	 *	do this only once
+	 */
+	public function doAddJs()
+	{
+		global $jcf_included_assets;
+		
+		if ( !empty($jcf_included_assets['scripts'][get_class($this)]) )
+			return false;
+		
+		if ( method_exists($this, 'add_js') ) {
+			add_action( 'jcf_admin_edit_post_scripts', array($this, 'add_js'), 10 );
+		}
+		$jcf_included_assets['scripts'][get_class($this)] = 1;
+	}
+	
+	/**
+	 *	function that call $this->add_css to enqueue styles in head section
+	 *	do this only on post edit page and if at least one field is exists.
+	 *	do this only once
+	 */
+	public function doAddCss()
+	{
+		global $jcf_included_assets;
+		
+		if ( !empty($jcf_included_assets['styles'][get_class($this)]) )
+			return false;
+		
+		if ( method_exists($this, 'add_css') ) {
+			add_action( 'jcf_admin_edit_post_styles', array($this, 'add_css'), 10 );
+		}
+		$jcf_included_assets['styles'][get_class($this)] = 1;
+	}
+
+	/** Echo the field post edit form.
+	 *
+	 * Subclasses should over-ride this function to generate their field code.
+	 *
+	 * @param array $args  Field options data
+	 */
+	public function field($args) 
+	{
+		die('function cf_Field::field() must be over-ridden in a sub-class.');
+	}
+	
+	
+	/** Pre-process submitted form values
+	 *
+	 * Subclasses should over-ride this function to generate their field code.
+	 *
+	 * @param array $values Form submitted values
+	 */
+	public function save($values) 
+	{
+		die('function cf_Field::save() must be over-ridden in a sub-class.');
+	}
+
+	/** Update a particular instance.
+	 *
+	 * This function should check that $new_instance is set correctly.
+	 * The newly calculated value of $instance should be returned.
+	 * If "false" is returned, the instance won't be saved/updated.
+	 *
+	 * @param array $new_instance New settings for this instance as input by the user via form()
+	 * @param array $old_instance Old settings for this instance
+	 * @return array Settings to save or bool false to cancel saving
+	 */
+	public function update($new_instance, $old_instance) 
+	{
+		return $new_instance;
+	}
+
+	/** Echo the settings update form
+	 *
+	 * @param array $instance Current settings
+	 */
+	public function form($instance) 
+	{
+		echo '<p class="no-options-field">' . __('There are no options for this field.', \jcf\JustCustomFields::TEXTDOMAIN) . '</p>';
+		return 'noform';
+	}
+
+	/**
+	 * print shortcode
+	 * 
+	 * @param array $args shortcode attributes
+	 * @return string
+	 */
+	public function doShortcode($args)
+	{
+		$args = shortcode_atts( array(
+			'id' => '',
+			'class' => '',
+			'field' => '',
+			'post_id' => '',
+			'label' => false,
+		), $args );
+
+		$class_names = array(
+			"jcf-value",
+			"jcf-value-{$this->idBase}",
+			"jcf-value-{$this->idBase}-{$this->slug}",
+		);
+
+		if ( !empty($args['class']) ) {
+			$class_names[] = $args['class'];
+		}
+
+		$class = implode(' ', $class_names);
+		$id = "jcf-value-{$this->id}";
+
+		if ( !empty($args['id']) ) {
+			$id = $args['id'];
+		}
+		
+		$sc = '<div class="' . $class . '" id="' . $id . '">';
+		$args['before_label'] = '<div class="jcf-field-label">';
+		$args['after_label'] = '</div>';
+		$args['before_value'] = '<div class="jcf-field-content">';
+		$args['after_value'] = '</div>';
+
+		if ( !empty($args['label']) )
+			$sc .= $this->shortcode_label($args);
+
+		$sc .= $this->shortcode_value($args);
+		$sc .= '</div>';
+		return $sc;
+	}
+	
+	/**
+	 * print field label inside shortcode call
+	 * 
+	 * @param array $args	shortcode args
+	 */
+	public function shortcodeLabel($args)
+	{
+		return $args['before_label'] . $this->instance['title'] . $args['after_label'];
+	}
+
+	/**
+	 * print fields values from shortcode
+	 * 
+	 * @param array $args	shortcode args
+	 */
+	public function shortcodeValue($args)
+	{
+		return  $args['before_value'] . $this->entry . $args['after_value'];
+	}
+	
+}
+
+
+
+

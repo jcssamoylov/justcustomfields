@@ -1,17 +1,16 @@
 <?php
 
 namespace jcf\models;
+use jcf\core;
 
-class JustFieldFactory {
+class JustFieldFactory extends core\Model {
 	
-	public $registeredFields;
-	protected $_postType;
-	protected $_layer;
+	protected $_registeredFields;
 	
-	public function __construct($data_layer, $noregister = FALSE){
-		$this->data_layer = $data_layer;
-		if(!$noregister){
-			$this->register( 'Just_Field_Input' );
+	public function __construct($noregister = FALSE)
+	{
+		if ( !$noregister ) {
+			$this->register( 'Just_Field_InputText' );
 			$this->register( 'Just_Field_Select' );
 			$this->register( 'Just_Field_SelectMultiple' );
 			$this->register( 'Just_Field_Checkbox' );
@@ -29,70 +28,72 @@ class JustFieldFactory {
 	/**
 	 *	register field in global variable. contain info like id_base, title and class name
 	 */
-	public function register($class_name){
-
+	public function register($class_name)
+	{
+		
 		$class_name = 'jcf\\components\\' . str_replace('just_field_','',  strtolower($class_name)).'\\' . $class_name;
 		// check class exists and try to create class object to get title
-		if( !class_exists($class_name) ) return false;
+		if ( !class_exists($class_name) ) return false; 
 
 		//check field compatibility with WP version
-		if( !$class_name::checkCompatibility($class_name::$compatibility) ) return false;
-		
-		$field_obj = new $class_name($this->data_layer);
+		if ( !$class_name::checkCompatibility($class_name::$compatibility) ) return false;
+
+		$field_obj = new $class_name();
 
 		$field = array(
-			'id_base' => $field_obj->id_base,
+			'id_base' => $field_obj->idBase,
 			'class_name' => $class_name,
 			'title' => $field_obj->title,
 		);
-		
-		$this->registered_fields[$field_obj->id_base] = $field;
+		$this->_registeredFields[$field_obj->idBase] = $field;
 	}
 
 	/**
 	 *	return array of registered fields (or concrete field by id_base)
 	 */
-	public function getRegisteredFields( $id_base = '' ){
-
-		if( !empty($id_base) ){
-			return @$this->registered_fields[$id_base];
+	public function getRegisteredFields($id_base = '')
+	{
+		if ( !empty($id_base) ) {
+			return @$this->_registeredFields[$id_base];
 		}
-		return $this->registered_fields;
+		return $this->_registeredFields;
 	}
-
+	
 	/**
 	 *	init field object
 	 */
-	public function initObject( $post_type, $field_mixed, $fieldset_id = '', $collection_id = ''){
+	public function initObject($post_type, $field_mixed, $fieldset_id = '', $collection_id = '')
+	{
 		// $field_mixed can be real field id or only id_base
 		$id_base = preg_replace('/\-([0-9]+)/', '', $field_mixed);
-		
 		$field = $this->getRegisteredFields( $id_base );
-		$field_obj = new $field['class_name']($this->data_layer, $post_type);
 
-		$field_obj->set_fieldset( $fieldset_id );
-		$field_obj->set_collection( $collection_id );
-		$field_obj->set_id( $field_mixed );
+		$field_obj = new $field['class_name']();
+		$field_obj->setPostType($post_type);
+		$field_obj->setFieldset( $fieldset_id );
+		$field_obj->setCollection( $collection_id );
+		$field_obj->setId( $field_mixed );
+
 		//if is not new field and include to cillection
-		if(!$field_obj->is_new && $collection_id){
-			
-			$collection_obj = new \jcf\components\collection\Just_Field_Collection($this->data_layer, $post_type);
-			$collection_obj->set_fieldset($fieldset_id);
-			$collection_obj->set_id($collection_id);
+		if ( !$field_obj->is_new && $collection_id ) {
+			$collection_obj = new \jcf\components\collection\Just_Field_Collection();
+			$collection_obj->setPostType($post_type);
+			$collection_obj->setFieldset($fieldset_id);
+			$collection_obj->setId($collection_id);
 			$field = $collection_obj->instance['fields'][$field_mixed];
-			$field_obj->set_slug($field['slug']);
+			$field_obj->setSlug($field['slug']);
 			$field_obj->instance = $field;
 		}
-
 		return $field_obj;
 	}
-
+	
 	/**
 	 * get next index for save new instance
 	 * because of ability to import fields now, we can't use DB to save AI. 
 	 * we will use timestamp for this
 	 */
-	public function getIndex( $id_base ){
+	public function getIndex( $id_base )
+	{
 		return time();
 	}
 }

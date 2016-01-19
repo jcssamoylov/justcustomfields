@@ -32,7 +32,7 @@ class ImportExportController extends core\Controller {
 		$model = new models\Fieldset();
 		$model->load($_POST) && $model->importFields();
 		$tab = 'import_export';
-		$this->_render('import_export');
+		$this->_render( '/views/import_export/import_export' , array('tab' => $tab));
 	}
 
 	public function ajaxImportForm()
@@ -40,9 +40,10 @@ class ImportExportController extends core\Controller {
 		$model = new models\Fieldset();
 		$model->load($_POST) && $all_fields = $model->getImportFields();
 
-		header('Content-Type: text/html; charset=' . get_bloginfo('charset'));
-		$this->_render('import', $all_fields);
-		exit();
+		ob_start(); 
+		$this->_render('/views/import_export/import', $all_fields);
+		$html = ob_get_clean();
+		jcf_ajax_response($html, 'html');
 	}
 
 	/**
@@ -64,9 +65,10 @@ class ImportExportController extends core\Controller {
 		$all_fields['post_types'] = !empty($all_fields['post_types']) ? $all_fields['post_types'] : jcf_get_post_types();
 
 		// load template
-		header('Content-Type: text/html; charset=' . get_bloginfo('charset'));
-		$this->_render('export', $all_fields);
-		exit();
+		ob_start(); 
+		$this->_render('/views/import_export/export', $all_fields);
+		$html = ob_get_clean();
+		jcf_ajax_response($html, 'html');
 	}
 }
 

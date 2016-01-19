@@ -38,7 +38,7 @@ class SettingsController extends core\Controller {
 			'tab' => $tab,
 			'model' => $model
 		);
-		$this->_render( 'settings_page', $template_params );
+		$this->_render( '/views/settings/settings_page', $template_params );
 	}
 }
 

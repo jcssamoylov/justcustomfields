@@ -85,7 +85,8 @@ class DBDataLayer implements interfaces\FieldSettings {
 	}
 	
 	/**
-	 * update order fieldsets
+	 * Sort fieldsets
+	 * @param string $post_type
 	 * @param array $keys Fieldsets keys
 	 */
 	public function sortFieldsets($post_type, $keys = array())
@@ -101,7 +102,11 @@ class DBDataLayer implements interfaces\FieldSettings {
 		$this->updateOptions($option_name, $new_fieldsets);
 	}
 	
-	// option name in wp-options table
+	/**
+	 * Option name in wp-options table
+	 * @param string $post_type
+	 * @return string 
+	 */
 	public function getFieldName($post_type)
 	{
 		return 'jcf_fields-' . $post_type;
@@ -109,6 +114,7 @@ class DBDataLayer implements interfaces\FieldSettings {
 
 	/**
 	 * return db fieldset name
+	 * @param string $post_type
 	 * @return string
 	 */
 	public function getFieldsetName($post_type)
