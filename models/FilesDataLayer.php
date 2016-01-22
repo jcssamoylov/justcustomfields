@@ -89,7 +89,7 @@ class FilesDataLayer implements interfaces\FieldSettings {
 			unset($all_fields['fieldsets'][$post_type][$key]);
 		}
 		if ( !empty($values) ) {
-			$fieldset_values = $this->applyVisibilitySettings($values, $all_fields['fieldsets'][$post_type][$key]);
+			$fieldset_values = $this->_applyVisibilitySettings($values, $all_fields['fieldsets'][$post_type][$key]);
 			$all_fields['fieldsets'][$post_type][$key] = $fieldset_values;
 		}
 		$this->_save($all_fields);
@@ -115,14 +115,48 @@ class FilesDataLayer implements interfaces\FieldSettings {
 	}
 
 	/**
+	 * Get all fieldsets and fields
+	 * @return array/boolean
+	 */
+	public function getAllFields()
+	{
+		$source = \jcf\models\Settings::getDataSourceType();
+		$filename = $this->_getConfigFilePath($source);
+
+		if ( file_exists($filename) ) {
+			return $this->getDataFromFile($filename);
+		}
+		return false;
+	}
+
+	/**
+	*	Get fields and fieldsets from file
+	*	@param string $uploadfile File name
+	*	@return boolean/array Array with fields settings from file
+	*/
+	public function getDataFromFile($file = false)
+	{
+		$source = \jcf\models\Settings::getDataSourceType();
+		if ( !$file )
+			$file = $this->_getConfigFilePath($source);
+
+		if ( file_exists($file) ) {
+			$content = file_get_contents($file);
+			$data = json_decode($content, true);
+			return $data;
+		}
+		return false;
+	}
+
+	/**
 	 * Get path to file with fields and fieldsets
 	 * @param string $source_settings
 	 * @return string/boolean
 	 */
-	public function getConfigFilePath($source_settings)
+	protected function _getConfigFilePath($source_settings)
 	{
-		if( !empty($source_settings) && ($source_settings == JCF_CONF_SOURCE_FS_THEME || $source_settings == JCF_CONF_SOURCE_FS_GLOBAL) ) {
-			return ($source_settings == JCF_CONF_SOURCE_FS_THEME)? get_stylesheet_directory() . '/jcf-settings/jcf_settings.json' : get_home_path() . 'wp-content/jcf-settings/jcf_settings.json';
+		if( !empty($source_settings) && ($source_settings == \jcf\models\Settings::JCF_CONF_SOURCE_FS_THEME || $source_settings == \jcf\models\Settings::JCF_CONF_SOURCE_FS_GLOBAL) ) {
+			return ($source_settings == \jcf\models\Settings::JCF_CONF_SOURCE_FS_THEME)? get_stylesheet_directory() . '/jcf-settings/jcf_settings.json' : get_home_path() . 'wp-content/jcf-settings/jcf_settings.json';
 		}
 		return false;
 	}
@@ -135,9 +169,11 @@ class FilesDataLayer implements interfaces\FieldSettings {
 	 */
 	protected function _save($data, $file = false)
 	{
+		$source = \jcf\models\Settings::getDataSourceType();
 		if ( !$file ) {
-			$file = $this->getConfigFilePath($this->_source);
+			$file = $this->_getConfigFilePath($source);
 		}
+		
 		$data = jcf_format_json(json_encode($data));
 		$dir = dirname($file);
 
@@ -157,46 +193,13 @@ class FilesDataLayer implements interfaces\FieldSettings {
 		}
 		return false;
 	}
-	
-	/**
-	 * Get all fieldsets and fields
-	 * @return array/boolean
-	 */
-	public function getAllFields()
-	{
-		$source = \jcf\models\Settings::getDataSourceType();
-		$filename = $this->getConfigFilePath($source);
 
-		if ( file_exists($filename) ) {
-			return $this->getDataFromFile($filename);
-		}
-		return false;
-	}
-	
-	/**
-	*	Get fields and fieldsets from file
-	*	@param string $uploadfile File name
-	*	@return boolean/array Array with fields settings from file
-	*/
-	function getDataFromFile($file = false)
-	{
-		if ( !$file )
-			$file = $this->getConfigFilePath($this->_source);
-
-		if ( file_exists($file) ) {
-			$content = file_get_contents($file);
-			$data = json_decode($content, true);
-			return $data;
-		}
-		return false;
-	}
-	
 	/**
 	 * Apply viibility settings for fieldsets
 	 * @param array $values Visibility values
 	 * @return array Fieldsets visibility values
 	 */
-	public function applyVisibilitySettings($values, $fieldset)
+	protected function _applyVisibilitySettings($values, $fieldset)
 	{
 		$visibility_rules = array();
 

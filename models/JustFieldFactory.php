@@ -7,9 +7,9 @@ class JustFieldFactory extends core\Model {
 	
 	protected $_registeredFields;
 	
-	public function __construct($noregister = FALSE)
+	public function __construct($collection = FALSE)
 	{
-		if ( !$noregister ) {
+		if ( !$collection ) {
 			$this->register( 'Just_Field_InputText' );
 			$this->register( 'Just_Field_Select' );
 			$this->register( 'Just_Field_SelectMultiple' );
@@ -23,6 +23,16 @@ class JustFieldFactory extends core\Model {
 			$this->register( 'Just_Field_UploadMedia' );
 			$this->register( 'Just_Field_FieldsGroup' );
 		}
+		else {
+			$this->register( 'Just_Field_InputText' );
+			$this->register( 'Just_Field_Select' );
+			$this->register( 'Just_Field_SelectMultiple' );
+			$this->register( 'Just_Field_Checkbox' );
+			$this->register( 'Just_Field_Textarea' );
+			$this->register( 'Just_Field_DatePicker' );
+			$this->register( 'Just_Field_Simple_Media' );
+			$this->register( 'Just_Field_Table' );
+		}
 	}
 
 	/**
@@ -30,7 +40,6 @@ class JustFieldFactory extends core\Model {
 	 */
 	public function register($class_name)
 	{
-		
 		$class_name = 'jcf\\components\\' . str_replace('just_field_','',  strtolower($class_name)).'\\' . $class_name;
 		// check class exists and try to create class object to get title
 		if ( !class_exists($class_name) ) return false; 

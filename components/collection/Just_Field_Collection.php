@@ -29,14 +29,6 @@ class Just_Field_Collection extends models\Just_Field{
 		parent::__construct('collection', __('Collection', \jcf\JustCustomFields::TEXTDOMAIN), $field_ops);
 		
 		$this->_fieldFactory = new models\JustFieldFactory(TRUE);
-		$this->_fieldFactory->register( 'Just_Field_InputText' );
-		$this->_fieldFactory->register( 'Just_Field_Select' );
-		$this->_fieldFactory->register( 'Just_Field_SelectMultiple' );
-		$this->_fieldFactory->register( 'Just_Field_Checkbox' );
-		$this->_fieldFactory->register( 'Just_Field_Textarea' );
-		$this->_fieldFactory->register( 'Just_Field_DatePicker' );
-		$this->_fieldFactory->register( 'Just_Field_Simple_Media' );
-		$this->_fieldFactory->register( 'Just_Field_Table' );
 	}
 	
 	/**

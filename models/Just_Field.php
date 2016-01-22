@@ -280,10 +280,12 @@ class Just_Field {
 		$instance['title'] = strip_tags($instance['title']);
 		$instance['slug'] = strip_tags($input['slug']);
 		$instance['enabled'] = (int)@$input['enabled'];
+		if ( $this->idBase == 'inputtext' )
+			$instance['group_title'] = (int)@$input['group_title'];
 
 		// starting from vers. 1.4 all new fields should be marked with version of the plugin
 		if ( $this->isNew ) {
-			$instance['_version'] = JCF_VERSION;
+			$instance['_version'] = \jcf\JustCustomFields::VERSION;
 		}
 		// for old records: set 1.34 - last version without versioning the fields
 		if ( empty($instance['_version']) ) {
@@ -306,6 +308,7 @@ class Just_Field {
 		}
 
 		$field_factory = new models\JustFieldFactory();
+
 		if ( !$this->isCollectionField() ) {
 			// update fieldset
 			$fieldset = $this->_layer->getFieldsets( $this->postType, $this->fieldsetId );

@@ -27,9 +27,9 @@ if( !function_exists('pa') ) {
 class JustCustomFields {
 
 	const TEXTDOMAIN = 'just-custom-fields';
+	const VERSION = '2.300';
 
 	protected $_pluginName = 'just_custom_fields';
-	protected $_version = '2.300';
 	protected $_pluginTitle;
 
 	protected static $_instance = NULL;
@@ -57,6 +57,7 @@ class JustCustomFields {
 		new controllers\SettingsController();
 		new controllers\ImportExportController();
 		new controllers\FieldsetController();
+		new controllers\FieldController();
 	}
 
 	/**
@@ -75,15 +76,6 @@ class JustCustomFields {
 	public function getPluginTitle()
 	{
 		return $this->_pluginTitle;
-	}
-
-	/**
-	 * Getting plugin's version
-	 * @return string
-	 */
-	public function getVersion()
-	{
-		return $this->_version;
 	}
 
 	/**

@@ -13,8 +13,8 @@ class DBDataLayer implements interfaces\FieldSettings {
 	 */
 	public function getFields($post_type, $id = FALSE)
 	{
-		$option_name = $this->getFieldName($post_type);
-		$fields = $this->getOptions($option_name);
+		$option_name = $this->_getFieldName($post_type);
+		$fields = $this->_getOptions($option_name);
 
 		if ( !empty($id) ) {
 			return $fields[$id];
@@ -27,8 +27,8 @@ class DBDataLayer implements interfaces\FieldSettings {
 	 */
 	public function updateFields( $post_type, $key, $values = array(), $fieldset_id = '', $collection_id = '')
 	{
-		$option_name = $this->getFieldName($post_type);
-		$fields = $this->getOptions($option_name);
+		$option_name = $this->_getFieldName($post_type);
+		$fields = $this->_getOptions($option_name);
 
 		if ( $values === NULL && ( isset($fields[$key]) || isset($fields[$collection_id]['fields'][$key]) ) ) {
 			if ( !empty($collection_id) ) {
@@ -42,7 +42,7 @@ class DBDataLayer implements interfaces\FieldSettings {
 		if ( !empty($values) ) {
 			$fields[$key] = $values;
 		}
-		$this->updateOptions($option_name, $fields);
+		$this->_updateOptions($option_name, $fields);
 	}
 	
 	/**
@@ -53,8 +53,8 @@ class DBDataLayer implements interfaces\FieldSettings {
 	 */
 	public function getFieldsets($post_type, $id = FALSE)
 	{
-		$option_name = $this->getFieldsetName($post_type);
-		$fieldsets = $this->getOptions($option_name);
+		$option_name = $this->_getFieldsetName($post_type);
+		$fieldsets = $this->_getOptions($option_name);
 
 		if ( !empty($id) ) {
 			return @$fieldsets[$id];
@@ -70,18 +70,18 @@ class DBDataLayer implements interfaces\FieldSettings {
 	 */
 	public function updateFieldsets($post_type, $key, $values = array())
 	{
-		$option_name = $this->getFieldsetName($post_type);
-		$fieldsets = $this->getOptions($option_name);
+		$option_name = $this->_getFieldsetName($post_type);
+		$fieldsets = $this->_getOptions($option_name);
 
 		if ( $values === NULL && isset($fieldsets[$key]) ) {
 			unset($fieldsets[$key]);
 		}
 
 		if( !empty($values) ){
-			$fielset_values = $this->applyVisibilitySettings($values, $fieldsets[$key]);
+			$fielset_values = $this->_applyVisibilitySettings($values, $fieldsets[$key]);
 			$fieldsets[$key] = $fielset_values;
 		}
-		$this->updateOptions($option_name, $fieldsets);
+		$this->_updateOptions($option_name, $fieldsets);
 	}
 	
 	/**
@@ -91,37 +91,17 @@ class DBDataLayer implements interfaces\FieldSettings {
 	 */
 	public function sortFieldsets($post_type, $keys = array())
 	{
-		$option_name = $this->getFieldsetName($post_type);
+		$option_name = $this->_getFieldsetName($post_type);
 		$new_fieldsets = array();
-		$fieldsets = $this->getOptions($option_name);
+		$fieldsets = $this->_getOptions($option_name);
 
 		foreach ( $keys as $key ) {
 			$new_fieldsets[$key] = $fieldsets[$key];
 			unset($fieldsets[$key]);
 		}
-		$this->updateOptions($option_name, $new_fieldsets);
-	}
-	
-	/**
-	 * Option name in wp-options table
-	 * @param string $post_type
-	 * @return string 
-	 */
-	public function getFieldName($post_type)
-	{
-		return 'jcf_fields-' . $post_type;
+		$this->_updateOptions($option_name, $new_fieldsets);
 	}
 
-	/**
-	 * return db fieldset name
-	 * @param string $post_type
-	 * @return string
-	 */
-	public function getFieldsetName($post_type)
-	{
-		return 'jcf_fieldsets-' . $post_type;
-	}
-	
 	/**
 	 * Get all fieldsets and fields
 	 * @return array/boolean
@@ -146,8 +126,30 @@ class DBDataLayer implements interfaces\FieldSettings {
 		);
 		return $settings;
 	}
+
+	/**
+	 * Option name in wp-options table
+	 * @param string $post_type
+	 * @return string 
+	 */
+	protected function _getFieldName($post_type)
+	{
+		return 'jcf_fields-' . $post_type;
+	}
+
+	/**
+	 * return db fieldset name
+	 * @param string $post_type
+	 * @return string
+	 */
+	protected function _getFieldsetName($post_type)
+	{
+		return 'jcf_fieldsets-' . $post_type;
+	}
 	
-	public function getOptions($key)
+	
+	
+	protected function _getOptions($key)
 	{
 		$multisite_settings = \jcf\models\Settings::getNetworkMode();
 		return $multisite_settings == \jcf\models\Settings::JCF_CONF_MS_NETWORK ? get_site_option($key, array()) : get_option($key, array());
@@ -159,7 +161,7 @@ class DBDataLayer implements interfaces\FieldSettings {
 	 *	@param array $value Values with option name
 	 *	@return bollean
 	 */
-	public function updateOptions($key, $value)
+	protected function _updateOptions($key, $value)
 	{
 		$multisite_settings = \jcf\models\Settings::getNetworkMode();
 		$multisite_settings == \jcf\models\Settings::JCF_CONF_MS_NETWORK ? update_site_option($key, $value) : update_option($key, $value);
@@ -171,7 +173,7 @@ class DBDataLayer implements interfaces\FieldSettings {
 	 * @param array $values Visibility values
 	 * @return array Fieldsets visibility values
 	 */
-	public function applyVisibilitySettings($values, $fieldset)
+	protected function _applyVisibilitySettings($values, $fieldset)
 	{
 		$visibility_rules = array();
 
