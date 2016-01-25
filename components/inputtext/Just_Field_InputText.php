@@ -14,17 +14,9 @@ class Just_Field_InputText extends models\Just_Field{
 	 *	draw field on post edit form
 	 *	you can use $this->instance, $this->entry
 	 */
-	public function field( $args )
+	public function field()
 	{
-		extract( $args );
-		echo $before_widget;
-		echo $before_title . $this->instance['title'] . $after_title;
-		echo '<input type="text" name="'.$this->getFieldName('val').'" id="'.$this->getFieldId('val').'" value="'.esc_attr($this->entry).'"/> ';
-		
-		if ( $this->instance['description'] != '' )
-			echo '<p class="description">' . $this->instance['description'] . '</p>';
-
-		echo $after_widget;
+		include(JCF_ROOT . '/components/inputtext/views/field.tpl.php');
 	}
 	
 	/**

@@ -21,21 +21,20 @@ class Just_Field_Table extends models\Just_Field{
 	 *	you can use $this->instance, $this->entry
 	 */
 	
-	public function field( $args ) 
+	public function field() 
 	{
-		extract( $args );
 		
-		echo $before_widget;
-		echo $before_title . $this->instance['title'] . $after_title;
-		
-		if(empty($this->entry)) $this->entry = array('0' => '');
+
+		if ( empty($this->entry) ) 
+			$this->entry = array('0' => '');
+
 		// add null element for etalon copy
 		$entries = (array)$this->entry;
 
 		// get fields
 		$columns = $this->parseColumnsOptions();
 
-		if( empty($columns) ){
+		if ( empty($columns) ) {
 			echo '<p>'.__('Wrong columns configuration. Please check widget settings.', \jcf\JustCustomFields::TEXTDOMAIN).'</p>';
 		}
 
@@ -43,8 +42,8 @@ class Just_Field_Table extends models\Just_Field{
 		$table_head = '<thead>';
 		$rows = '';
 		
-		foreach($entries as $key => $entry){
-			if( $key == 0 ){
+		foreach ( $entries as $key => $entry ) {
+			if ( $key == 0 ) {
 				$table_head .= '<tr ' . ($key == 0 ? 'class="table-header"' : '') . '><th class="jcf_option_column">Options</th>';
 				$first_row = '<tr class="hide"><td>
 						<span class="drag-handle" >' . __('move', \jcf\JustCustomFields::TEXTDOMAIN) . '</span>
@@ -57,8 +56,8 @@ class Just_Field_Table extends models\Just_Field{
 						<span class="jcf_delete_row" >' . __('delete', \jcf\JustCustomFields::TEXTDOMAIN) . '</span>
 					</td>';
 
-			foreach($columns as $col_name => $col_title){
-				if( $key == 0 ){
+			foreach ( $columns as $col_name => $col_title ) {
+				if ( $key == 0 ) {
 					$table_head .= '<th>' . $col_name . '</th>';
 					$first_row .= '<td><input type="text" value=""
 									id="' . $this->getFieldIdL2($col_name, '00') . '"
@@ -71,31 +70,14 @@ class Just_Field_Table extends models\Just_Field{
 				</td>';
 			}
 
-			if( $key == 0 ){
+			if ( $key == 0 ) {
 				$table_head .= '</tr></thead>';
 				$first_row .= '</tr>';
 			}
 			$rows .= '</tr>';
 		}
 
-		if( !empty($columns) ) :
-		?>
-		<div class="jcf-table jcf-field-container">
-			<table class="sortable wp-list-table widefat fixed">
-				<?php echo $table_head; ?>
-				<?php echo $rows; ?>
-				<?php echo $first_row; ?>
-			</table>
-			<p><a href="#" class="button button-large jcf_add_row"><?php _e('+ Add row', \jcf\JustCustomFields::TEXTDOMAIN); ?></a></p>
-		</div>
-		<?php
-		endif; 
-
-		if( $this->instance['description'] != '' )
-			echo '<p class="description">' . $this->instance['description'] . '</p>';
-		
-		echo $after_widget;
-		
+		include(JCF_ROOT . '/components/table/views/field.tpl.php'); 
 		return true;
 	}
 	

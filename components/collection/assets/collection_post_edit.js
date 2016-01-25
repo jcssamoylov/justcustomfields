@@ -4,7 +4,7 @@
 
 jQuery(document).ready(function(){
 	jcf_collection_fields_control();
-	
+	jQuery('.collection_field_group').find('.jcf-get-shortcode').remove();
 	
 	//accordion
 	jQuery('.collection_fields').accordion({

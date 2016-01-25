@@ -193,11 +193,20 @@ class Fieldset extends core\Model {
 		jcf_ajax_response($resp, 'json');
 	}
 
+	/**
+	 * Get form data for visibility rules form
+	 * @return array
+	 */
 	public function getVisibilityRulesForm()
 	{
+		$output = array();
 		$post_type = $this->_request['post_type'];
 		$taxonomies = get_object_taxonomies( $post_type, 'objects' );
 		$add_rule = !empty($this->_request['add_rule']) ? $this->_request['add_rule'] : false;
+
+		$output['post_type'] = $post_type;
+		$output['taxonomies'] = $taxonomies;
+		$output['add_rule'] = $add_rule;
 
 		if ( !empty($this->_request['edit_rule'] ) ) {
 			$rule_id = $this->_request['rule_id'] - 1;
@@ -205,13 +214,24 @@ class Fieldset extends core\Model {
 			$fieldset = $this->_layer->getFieldsets($post_type, $fieldset_id);
 			$edit_rule = $this->_request['edit_rule']; 
 			$visibility_rule = $fieldset['visibility_rules'][$rule_id];
-			if($visibility_rule['based_on'] == 'taxonomy'){
+
+			if ( $visibility_rule['based_on'] == 'taxonomy' ) {
 				$terms = get_terms($visibility_rule['rule_taxonomy'], array('hide_empty' => false));
+				$output['terms'] = $terms;
 			}
-			else{
+			else {
 				$templates = get_page_templates();
+				$output['templates'] = $templates;
 			}
+
+			$output['rule_id'] = $rule_id;
+			$output['fieldset_id'] = $fieldset_id;
+			$output['fieldset'] = $fieldset;
+			$output['visibility_rule'] = $visibility_rule;
+			$output['edit_rule'] = $edit_rule;
 		}
+
+		return $output;
 	}
 
 	/**
@@ -231,8 +251,71 @@ class Fieldset extends core\Model {
 			$taxonomies = get_object_taxonomies( $post_type, 'objects' );
 			$output = $taxonomies;
 		}
+
 		return array('type' => $type, 'data' => $output);
 	}
+
+	/**
+	 * Save visibility rule
+	 * @return array
+	 */
+	public function saveVisibilityRules()
+	{
+		$post_type = $this->_request['post_type'];
+
+		if ( !empty($this->_request['rule_id']) ) {
+			$this->_layer->updateFieldsets($post_type, $this->_request['fieldset_id'], array('rules' => array('update' => $this->_request['rule_id'], 'data' => $this->_request['visibility_rules'])));
+		}
+		else {
+			$this->_layer->updateFieldsets($post_type, $this->_request['fieldset_id'], array('rules' => $this->_request['visibility_rules']));
+		}
+
+		$fieldset = $this->_layer->getFieldsets($post_type, $this->_request['fieldset_id']);
+		return $fieldset['visibility_rules'];
+	}
+
+	/**
+	 * Delete visibility rule
+	 * @return array
+	 */
+	public function deleteVisibilityRules()
+	{
+		$post_type = $this->_request['post_type'];
+		$this->_layer->updateFieldsets($post_type, $this->_request['fieldset_id'], array('rules' => array('remove' => $this->_request['rule_id'])));
+		$fieldset = $this->_layer->getFieldsets($post_type, $this->_request['fieldset_id']);
+		return $fieldset['visibility_rules'];
+	}
+
+	/**
+	 * 
+	 */
+	public function getVisibilityAutocompleteData()
+	{
+		global $wpdb;
+		$taxonomy = $this->_request['taxonomy'];
+		$term = $this->_request['term'];
+
+		$query = "SELECT t.term_id, t.name
+			FROM wp_terms AS t
+			LEFT JOIN wp_term_taxonomy AS tt ON t.term_id = tt.term_id
+			WHERE t.name LIKE '%$term%' AND tt.taxonomy = '$taxonomy'";
+		$terms = $wpdb->get_results($query);
+		$response = array();
+
+		foreach ( $terms as $p ) {
+			$response[] = array(
+				'id' => $p->term_id,
+				'label' => $p->name,
+				'value' => $p->name,
+			);
+		}
+		$json = json_encode($response);
+
+		header( "Content-Type: application/json; charset=" . get_bloginfo('charset') );
+		echo $json;
+		exit();
+	}
+
 	/**
 	 * Export fields
 	 */

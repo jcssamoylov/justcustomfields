@@ -14,32 +14,17 @@ class Just_Field_Select extends models\Just_Field{
 		$field_ops = array( 'classname' => 'field_select' );
 		parent::__construct('select', __('Select', \jcf\JustCustomFields::TEXTDOMAIN), $field_ops);
 	}
-	
+
 	/**
 	 *	draw field on post edit form
 	 *	you can use $this->instance, $this->entry
 	 */
-	public function field( $args )
+	public function field()
 	{
-		extract( $args );
-		
 		$values = $this->parsedSelectOptions($this->instance);
-		
-		echo $before_widget;
-		echo $before_title . $this->instance['title'] . $after_title;
-		echo '<div class="select-field">';
-		echo '<select name="'.$this->getFieldName('val').'" id="'.$this->getFieldId('val').'" style="width: 47%;">';
-			echo '<option value="'.esc_attr($this->instance['empty_option']).'" '.selected($this->instance['empty_option'], $this->entry, false).'>'.esc_attr($this->instance['empty_option']).'</option>';
-			foreach( (array) $values as $key => $val ) {
-				echo '<option value="'.esc_attr($val).'" '.selected($val, $this->entry, false).'>'.esc_html(ucfirst($key)).'</option>' . "\n";
-			}
-		echo '</select>' . "\n";
-		echo '</div>';
-		if( !empty($this->instance['description']) )
-			echo '<p class="description">' . $this->instance['description'] . '</p>';
-		echo $after_widget;
+		include(JCF_ROOT . '/components/select/views/field.tpl.php');
 	}
-	
+
 	/**
 	 *	save field on post edit form
 	 */

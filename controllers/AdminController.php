@@ -12,8 +12,10 @@ class AdminController extends core\Controller {
 	public function __construct()
 	{
 		add_action('admin_menu', array($this, 'adminMenu') );
+		if ( isset($_GET['page']) ) {
+			add_action('admin_print_scripts', array($this, 'addScripts'));
+		}
 		add_action('admin_print_styles', array($this, 'addStyles'));
-		add_action('admin_print_scripts', array($this, 'addScripts'));
 		add_action('admin_print_scripts', array($this, 'addCollectionJs'));
 		add_action('admin_head' , array($this , 'addMediaUploaderJs'));
 	}

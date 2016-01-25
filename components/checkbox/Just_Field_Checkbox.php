@@ -12,46 +12,25 @@ class Just_Field_Checkbox extends models\Just_Field{
 	
 	public function __construct() {
 		$field_ops = array('classname' => 'field_checkbox' );
-		parent::__construct('checkbox', __('Checkbox', JCF_TEXTDOMAIN), $field_ops);
+		parent::__construct('checkbox', __('Checkbox', \jcf\JustCustomFields::TEXTDOMAIN), $field_ops);
 	}
 	
 	/**
 	 *	draw field on post edit form
 	 *	you can use $this->instance, $this->entry
 	 */
-	public function field( $args ) 
-	{
-		extract( $args );
-		
+	public function field() 
+	{		
 		// prepare options array
 		$values = $this->parsedSelectOptions($this->instance);
 		
-		if( empty($values)){
-			echo '<p>'.__('Please check settings. Values are empty', JCF_TEXTDOMAIN).'</p>';
+		if ( empty($values) ) {
+			echo '<p>'.__('Please check settings. Values are empty', \jcf\JustCustomFields::TEXTDOMAIN).'</p>';
 			return false;
 		}
 
-		$single_checkbox = (count($values) == 1)? true : false;
-		
-		echo $before_widget;
-		echo $before_title . $this->instance['title'] . $after_title;
-		echo '<div class="checkboxes-set">';
-		echo '<div class="checkbox-row">';
-			foreach( (array) $values as $key => $val ) {
-				if( $single_checkbox )
-					$checked = ($val == $this->entry)? true : false;
-				else
-					$checked = in_array($val, (array)$this->entry);
-					
-				echo '<label><input type="checkbox" name="'.$this->getFieldName('val'). ($single_checkbox ? '' : '[]') . '" id="'.$this->getFieldId('val').'" value="'.esc_attr($val).'" '.checked(true, $checked, false).'/> '.$key.'</label>' . "\n";
-			}
-		echo '</div>';
-		echo '</div>';
-		
-		if( !empty($this->instance['description']) )
-			echo '<p class="description">' . $this->instance['description'] . '</p>';
-			
-		echo $after_widget;
+		$single_checkbox = (count($values) == 1) ? true : false;
+		include(JCF_ROOT . '/components/checkbox/views/field.tpl.php');
 	}
 	
 	/**

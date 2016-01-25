@@ -20,29 +20,13 @@ class Just_Field_SelectMultiple extends models\Just_Field{
 	 *	draw field on post edit form
 	 *	you can use $this->instance, $this->entry
 	 */
-	public function field( $args ) 
+	public function field() 
 	{
-		extract( $args );
-		
 		if( !is_array($this->entry) )
 			$this->entry = array();
-
 		// prepare options array
 		$values = $this->parsedSelectOptions($this->instance);
-			
-		echo $before_widget;
-		echo $before_title . $this->instance['title'] . $after_title;
-		echo '<div class="select_multiple_field">';
-		echo '<select name="'.$this->getFieldName('val').'[]" id="'.$this->getFieldId('val').'" multiple="multiple" style="height:200px; width:47%;">';
-			foreach( $values as $key => $val ) {
-				echo '<option value="'.esc_attr($val).'" '.selected(true, in_array($val, $this->entry), false).'>'.esc_html(ucfirst($key)).'</option>' . "\n";
-			}
-		echo '</select>' . "\n";
-		echo '</div>';
-		if( $this->instance['description'] != '' )
-			echo '<p class="description">' . $this->instance['description'] . '</p>';
-		echo $after_widget;
-
+		include(JCF_ROOT . '/components/selectmultiple/views/field.tpl.php');
 	}
 	
 	/**

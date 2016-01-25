@@ -13,11 +13,7 @@ class Just_Field {
 	public $title;				// Name for this field type.
 	public $slug = null;
 	public $fieldOptions = array(
-		'classname' => 'jcf_custom_field',
-		'before_widget' => '<div class="form-field">',
-		'after_widget' => '</div>',
-		'before_title' => '<label>',
-		'after_title' => ':</label>',
+		'classname' => 'jcf_custom_field'
 	);
 	
 	public $isNew = false;
@@ -417,8 +413,8 @@ class Just_Field {
 		if ( !empty($jcf_included_assets['scripts'][get_class($this)]) )
 			return false;
 		
-		if ( method_exists($this, 'add_js') ) {
-			add_action( 'jcf_admin_edit_post_scripts', array($this, 'add_js'), 10 );
+		if ( method_exists($this, 'addJs') ) {
+			add_action( 'jcf_admin_edit_post_scripts', array($this, 'addJs'), 10 );
 		}
 		$jcf_included_assets['scripts'][get_class($this)] = 1;
 	}
@@ -435,8 +431,8 @@ class Just_Field {
 		if ( !empty($jcf_included_assets['styles'][get_class($this)]) )
 			return false;
 		
-		if ( method_exists($this, 'add_css') ) {
-			add_action( 'jcf_admin_edit_post_styles', array($this, 'add_css'), 10 );
+		if ( method_exists($this, 'addCss') ) {
+			add_action( 'jcf_admin_edit_post_styles', array($this, 'addCss'), 10 );
 		}
 		$jcf_included_assets['styles'][get_class($this)] = 1;
 	}
@@ -447,7 +443,7 @@ class Just_Field {
 	 *
 	 * @param array $args  Field options data
 	 */
-	public function field($args) 
+	public function field() 
 	{
 		die('function cf_Field::field() must be over-ridden in a sub-class.');
 	}
@@ -529,9 +525,9 @@ class Just_Field {
 		$args['after_value'] = '</div>';
 
 		if ( !empty($args['label']) )
-			$sc .= $this->shortcode_label($args);
+			$sc .= $this->shortcodeLabel($args);
 
-		$sc .= $this->shortcode_value($args);
+		$sc .= $this->shortcodeValue($args);
 		$sc .= '</div>';
 		return $sc;
 	}

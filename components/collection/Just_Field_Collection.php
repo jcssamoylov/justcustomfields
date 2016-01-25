@@ -35,75 +35,14 @@ class Just_Field_Collection extends models\Just_Field{
 	 *	draw field on post edit form
 	 *	you can use $this->instance, $this->entry
 	 */
-	public function field( $args ) 
+	public function field() 
 	{
-		extract( $args );
 		self::$currentCollectionFieldKey = 0;
 
-		if (empty($this->entry)) $this->entry = array('0' => '');
+		if ( empty($this->entry) ) $this->entry = array('0' => '');
 
 		$entries = (array)$this->entry;
-		echo $before_widget;
-		echo $before_title . $this->instance['title'] . $after_title;
-		
-		if ( empty($this->instance['fields']) ) {
-			echo '<p class="error">Collection element has no fields registered. Please check component settings</p>';
-			echo $after_widget;
-			return;
-		}
-		?>
-
-		<div class="collection_fields">
-		<?php foreach ( $entries as $key => $fields ) { ?>
-			<div class="collection_field_group">
-				<h3>
-					<span class="dashicons dashicons-editor-justify"></span>
-					<span class="collection_group_title">
-					<?php
-						$group_title = $this->instance['title'].' Item';
-						foreach($this->instance['fields'] as $field_id => $field){
-							if(isset($field['group_title'])){
-								if(isset($fields[$field['slug']])) $group_title = $group_title.' : '.$fields[$field['slug']];
-								break;
-							}
-						}
-						echo $group_title;
-					 ?>
-					</span>
-					<a href="#" class="collection_undo_remove_group"><?php _e('UNDO',\jcf\JustCustomFields::TEXTDOMAIN); ?></a>
-					<span class="dashicons dashicons-trash"></span>
-
-				</h3>
-				<div class="collection_field_group_entry">
-					<?php					
-						foreach ( $this->instance['fields'] as $field_id => $field ) {
-							echo '<div class="collection_field_border jcf_collection_'.(intval($field['field_width'])?$field['field_width']:'100').'">';
-							$field_obj = $this->_fieldFactory->initObject($this->postType, $field_id, $this->fieldsetId, $this->id);
-							$field_obj->setSlug($field['slug']);
-
-							if ( isset($fields[$field['slug']]) ) {
-								$field_obj->entry = $fields[$field['slug']];
-							}
-
-							$field_obj->instance = $field;
-							$field_obj->isPostEdit = true;
-							$field_obj->field($field_obj->field_options);
-							echo '</div>';
-						}
-					?>
-					<div class="clr"></div>
-				</div>
-			</div>
-			<?php self::$currentCollectionFieldKey = self::$currentCollectionFieldKey + 1; } ?>
-			<div class="clr"></div>
-			<input type="button" value="<?php echo sprintf(__('Add %s Item', \jcf\JustCustomFields::TEXTDOMAIN),$this->instance['title']); ?>" 
-				   class="button button-large jcf_add_more_collection"
-				   data-collection_id="<?php echo $this->id; ?>"
-				   data-fieldset_id="<?php echo $this->fieldsetId; ?>"
-				   name="jcf_add_more_collection">
-			<div class="clr"></div>
-		</div>
-		<?php echo $after_widget;
+		include(JCF_ROOT . '/components/collection/views/field.tpl.php');
 	}
 
 	/**

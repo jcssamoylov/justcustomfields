@@ -20,36 +20,32 @@ class Just_Field_RelatedContent extends models\Just_Field{
 	 *	draw field on post edit form
 	 *	you can use $this->instance, $this->entry
 	 */
-	public function field( $args )
-	{
-		extract( $args );
-		echo $before_widget;
-		echo $before_title . $this->instance['title'] . $after_title;
-			
-		$del_image = WP_PLUGIN_URL.'/just-custom-fields/components/uploadmedia/assets/jcf-delimage.png';
+	public function field()
+	{	
+		$del_image = WP_PLUGIN_URL . '/just-custom-fields/components/uploadmedia/assets/jcf-delimage.png';
 		$delete_class = ' jcf-hide';
-		
-		if(empty($this->entry)) $this->entry = array('0' => 0);
+
+		if (empty($this->entry) ) $this->entry = array('0' => 0);
 		// add null element for etalon copy
 		$entries = array( '00' => '' ) + (array)$this->entry;
-		
+
 		// get posts data
 		$type = $this->instance['input_type'];
 		$post_type = $this->instance['post_type'];
-
 		$post_types = jcf_get_post_types('object');
-		
+
 		if ( $type == 'select' ) {
 			// get posts list
 			global $wpdb;
 			
-			if( $post_type != 'any' ){
+			if ( $post_type != 'any' ) {
 				$post_type_where = " post_type = '$post_type' ";
 			}
-			else{
+			else {
 				// get all post types
 				$post_type_where = "( post_type = '" . implode("' OR post_type = '", array_keys($post_types)) . "' )";
 			}
+
 			$query = "SELECT ID, post_title, post_status, post_type
 				FROM $wpdb->posts
 				WHERE $post_type_where AND (post_status = 'publish' OR post_status = 'draft')
@@ -57,72 +53,31 @@ class Just_Field_RelatedContent extends models\Just_Field{
 			$posts = $wpdb->get_results($query);
 			
 			$options = array();
-			foreach($posts as $p){
+
+			foreach ( $posts as $p ) {
 				$draft = ( $p->post_status == 'draft' )? ' (DRAFT)' : '';
 				$type_label = ( $post_type == 'any' )? ' / '.$post_types[$p->post_type]->labels->singular_name : '';
 				$options[ "".$p->ID."" ] = $p->post_title . $draft . $type_label;
 			}
 		}
-		elseif( $type == 'autocomplete' && !empty($this->entry[0]) ){
+		elseif ( $type == 'autocomplete' && !empty($this->entry[0]) ) {
 			global $wpdb;
+
 			$query = "SELECT ID, post_title, post_status, post_type
 				FROM $wpdb->posts
 				WHERE ID IN(" . implode(',', $this->entry) . ")";
 			$posts = $wpdb->get_results($query);
 			
 			$options = array();
-			foreach($posts as $p){
+
+			foreach ( $posts as $p ) {
 				$draft = ( $p->post_status == 'draft' )? ' (DRAFT)' : '';
 				$type_label = ( $post_type == 'any' )? ' / '.$post_types[$p->post_type]->labels->singular_name : '';
 				$options[ "".$p->ID."" ] = esc_attr($p->post_title . $draft . $type_label);
 			}
 		}
 		
-		?>
-		<div class="jcf-relatedcontent-field jcf-field-container">
-			<?php
-			foreach($entries as $key => $entry) : 
-			?>
-			<div class="jcf-relatedcontent-row<?php if('00' === $key) echo ' jcf-hide'; ?>">
-				<div class="jcf-relatedcontent-container">
-					<p>
-						<span class="drag-handle" >move</span>
-						<?php if( $type == 'select' ) : ?>
-							<select id="<?php echo $this->getFieldIdL2('related_id', $key); ?>" 
-								name="<?php echo $this->getFieldNameL2('related_id', $key); ?>">
-								<option value="">&nbsp;</option>
-								<?php foreach($options as $val => $label) : ?>
-								<option value="<?php echo $val; ?>" <?php selected($val, $entry); ?>><?php echo $label; ?></option>
-								<?php endforeach; ?>
-							</select>
-						<?php else : // input field for autocomplete ?>
-							<input type="text" value="<?php echo @$options[$entry]; ?>" 
-								id="<?php echo $this->getFieldIdL2('related_title', $key); ?>" 
-								name="<?php echo $this->getFieldNameL2('related_title', $key); ?>" 
-								alt="<?php echo $post_type; ?>" />
-							<input type="hidden" value="<?php echo $entry; ?>" 
-								id="<?php echo $this->getFieldIdL2('related_id', $key); ?>" 
-								name="<?php echo $this->getFieldNameL2('related_id', $key); ?>" />
-						<?php endif; ?>
-						<a href="#" class="jcf-btn jcf_delete"><?php _e('Delete', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
-					</p>
-				</div>
-				<div class="jcf-delete-layer">
-					<img src="<?php echo $del_image; ?>" alt="" />
-					<input type="hidden" id="<?php echo $this->getFieldIdL2('__delete__', $key); ?>" name="<?php echo $this->getFieldNameL2('__delete__', $key); ?>" value="" />
-					<a href="#" class="jcf-btn jcf_cancel"><?php _e('Cancel', \jcf\JustCustomFields::TEXTDOMAIN); ?></a><br/>
-				</div>
-			</div>
-			<?php endforeach; ?>
-			<a href="#" class="jcf-btn jcf_add_more"><?php _e('+ Add another', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
-		</div>
-		<?php
-
-		if( $this->instance['description'] != '' )
-			echo '<p class="description">' . $this->instance['description'] . '</p>';
-		
-		echo $after_widget;
-		
+		include(JCF_ROOT . '/components/relatedcontent/views/field.tpl.php');
 		return true;
 	}
 	

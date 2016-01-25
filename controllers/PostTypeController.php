@@ -4,36 +4,40 @@ namespace jcf\controllers;
 use jcf\models;
 
 class PostTypeController {
-	
-	private $_dataLayer;
-	private $version;
-	private $plugin_name;
-	private $settings;
-	private $_model;
-	private $_shortcodes;
 
-	public function __construct($plugin_name, $version, $settings)
+	public function __construct()
 	{
-		$this->plugin_name = $plugin_name;
-		$this->version = $version;
-		$this->settings = $settings;
-		
-		$layer_type = $this->settings->source == JCF_CONF_SOURCE_DB ? 'DB' : 'Files';
-		$layer_factory = new models\DataLayerFactory();
-		$this->_dataLayer = $layer_factory->create($layer_type, $source_settings);
-		
-		$this->_model = new models\PostType($this->_dataLayer);
-		$this->_shortcodes = new models\Shortcodes($this->_dataLayer);
+		if ( !isset($_GET['page']) ) {
+			add_action('admin_print_scripts', array($this, 'addScripts'));
+		}
+		add_action('admin_print_styles', array($this, 'addStyles'));
+		add_action('add_meta_boxes', array($this, 'renderFields'), 10, 1); 
+		add_action('save_post', array($this, 'saveFields'), 10, 2);
+		add_shortcode('jcf-value',  array($this, 'setShortcodeValue'));
+	}
 
-		add_action('admin_print_styles', array($this, 'enqueue_styles'));
-		add_action('admin_print_scripts', array($this, 'enqueue_scripts'));
-		
+	public function renderFields( $post_type = '' )
+	{
+		$model = new models\PostType();
+		$model->renderCustomFields($post_type);
+	}
+
+	public function saveFields($post_ID = 0, $post = null)
+	{
+		$model = new models\PostType();
+		$model->saveCustomFields($post_ID, $post);
+	}
+
+	public function setShortcodeValue()
+	{
+		$model = new models\Shortcodes();
+		$shortcode_data = $model->setFieldValue();
 	}
 
 	/**
 	 *	add custom scripts to post edit page
 	 */
-	public function enqueue_scripts(){
+	public function addScripts(){
 
 		wp_register_script(
 				'jcf_edit_post',
@@ -48,7 +52,7 @@ class PostTypeController {
 	/**
 	 *	add custom styles to post edit page
 	 */
-	public function enqueue_styles(){
+	public function addStyles(){
 		wp_register_style('jcf_edit_post', WP_PLUGIN_URL.'/just-custom-fields/assets/edit_post.css');
 		wp_enqueue_style('jcf_edit_post');
 		

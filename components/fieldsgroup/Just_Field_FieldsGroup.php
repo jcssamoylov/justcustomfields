@@ -18,13 +18,13 @@ class Just_Field_FieldsGroup extends models\Just_Field{
 	 *	draw field on post edit form
 	 *	you can use $this->instance, $this->entry
 	 */
-	public function field( $args ) 
+	public function field() 
 	{
 		extract( $args );
 		echo $before_widget;
 		echo $before_title . $this->instance['title'] . $after_title;
 
-		$del_image = WP_PLUGIN_URL.'/just-custom-fields/components/uploadmedia/assets/jcf-delimage.png';
+		$del_image = WP_PLUGIN_URL . '/just-custom-fields/components/uploadmedia/assets/jcf-delimage.png';
 		$delete_class = ' jcf-hide';
 		
 		if ( empty($this->entry) ) $this->entry = array('0' => '');
@@ -34,47 +34,7 @@ class Just_Field_FieldsGroup extends models\Just_Field{
 
 		// get fields
 		$fields = $this->parseFieldsOptions();
-		
-		if ( empty($fields) ) {
-			echo '<p>'.__('Wrong fields configuration. Please check widget settings.', \jcf\JustCustomFields::TEXTDOMAIN).'</p>';
-		}
-		
-		if ( !empty($fields) ) :
-		?>
-		<div class="jcf-fieldsgroup-field jcf-field-container">
-			<?php
-			foreach($entries as $key => $entry) : 
-			?>
-			<div class="jcf-fieldsgroup-row<?php if('00' === $key) echo ' jcf-hide'; ?>">
-				<span class="drag-handle" >move</span>
-				<div class="jcf-fieldsgroup-container">
-					<?php foreach($fields as $field_name => $field_title) : 
-						$field_value = esc_attr(@$entry[$field_name]);
-					?>
-						<p><?php echo $field_title ?>: <br/>
-							<input type="text" value="<?php echo $field_value; ?>" 
-								id="<?php echo $this->getFieldIdL2($field_name, $key); ?>" 
-								name="<?php echo $this->getFieldNameL2($field_name, $key); ?>">
-						</p>
-					<?php endforeach; ?>
-					<a href="#" class="jcf-btn jcf_delete"><?php _e('Delete', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
-				</div>
-				<div class="jcf-delete-layer">
-					<img src="<?php echo $del_image; ?>" alt="" />
-					<input type="hidden" id="<?php echo $this->getFieldIdL2('__delete__', $key); ?>" name="<?php echo $this->getFieldNameL2('__delete__', $key); ?>" value="" />
-					<a href="#" class="jcf-btn jcf_cancel"><?php _e('Cancel', \jcf\JustCustomFields::TEXTDOMAIN); ?></a><br/>
-				</div>
-			</div>
-			<?php endforeach; ?>
-			<a href="#" class="jcf-btn jcf_add_more"><?php _e('+ Add another', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
-		</div>
-		<?php
-		endif; 
-
-		if( $this->instance['description'] != '' )
-			echo '<p class="description">' . $this->instance['description'] . '</p>';
-		
-		echo $after_widget;
+		include(JCF_ROOT . '/components/fieldgroup/views/field.tpl.php');
 		return true;
 	}
 	

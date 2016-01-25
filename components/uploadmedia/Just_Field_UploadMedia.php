@@ -19,89 +19,21 @@ class Just_Field_UploadMedia extends models\Just_Field{
 	 *	draw field on post edit form
 	 *	you can use $this->instance, $this->entry
 	 */
-	public function field( $args )
+	public function field()
 	{
-		extract( $args );
-		echo $before_widget;
-		echo $before_title . $this->instance['title'] . $after_title;
-
-		$del_image = WP_PLUGIN_URL.'/just-custom-fields/components/uploadmedia/assets/jcf-delimage.png';
-		$noimage = $image = WP_PLUGIN_URL.'/just-custom-fields/components/uploadmedia/assets/jcf-noimage100x77.jpg';
-
+		$del_image = WP_PLUGIN_URL . '/just-custom-fields/components/uploadmedia/assets/jcf-delimage.png';
+		$noimage = $image = WP_PLUGIN_URL . '/just-custom-fields/components/uploadmedia/assets/jcf-noimage100x77.jpg';
 		$upload_text = __('Upload', \jcf\JustCustomFields::TEXTDOMAIN);
 		$delete_class = ' jcf-hide';
-
 		$upload_type = $this->instance['type'];
-
 		$value = '#';
-			
 		$img_title = $img_descr = '';
 		
-		if(empty($this->entry)) $this->entry = array('0' => '');
+		if ( empty($this->entry) ) $this->entry = array('0' => '');
 		// add null element for etalon copy
 		$entries = array( '00' => '' ) + (array)$this->entry;
-		?>
-		<div class="jcf-upload-field jcf-upload-type-<?php echo $upload_type; ?> jcf-field-container">
-			<?php
-			foreach($entries as $key => $entry) : 
-				if( !empty($entry) ){
-					$value = esc_attr( $entry['image'] );
-					$image = $this->getThumbPath( $entry['image'] );
-					$upload_text = ($upload_type == 'image')? __('Update image', \jcf\JustCustomFields::TEXTDOMAIN) : __('Update file', \jcf\JustCustomFields::TEXTDOMAIN);
-					$delete_class = '';
-	
-					$img_title = esc_attr( @$entry['title'] );
-					$img_descr = esc_attr( @$entry['description'] );
-				}
-			?>
-			<div class="jcf-upload-row<?php if('00' === $key) echo ' jcf-hide'; ?>">
-				<div class="jcf-upload-container">
-					<span class="drag-handle" >move</span>
-					<?php if( $upload_type == 'image' ) : ?>
-					<div class="jcf-upload-image">
-						<a href="<?php echo $value; ?>" class="jcf-btn" target="_blank"><img src="<?php echo $image; ?>" height="77" alt="" /></a>
-					</div>
-					<?php endif; ?>
-					<div class="jcf-upload-file-info">
-						<input type="hidden"
-							   id="<?php echo $this->getFieldIdL2('uploaded_file', $key); ?>"
-								name="<?php echo $this->getFieldNameL2('uploaded_file', $key); ?>"
-								value="<?php echo $value; ?>" />
-						<p class="<?php echo $delete_class; ?>"><a href="<?php echo $value; ?>" target="_blank"><?php echo basename($value); ?></a></p>
-						<?php if($this->instance['alt_title']) : ?>
-							<p><?php _e('Title:', \jcf\JustCustomFields::TEXTDOMAIN); ?> <br/>
-								<input type="text" value="<?php echo $img_title; ?>" 
-									id="<?php echo $this->getFieldIdL2('alt_title', $key); ?>" 
-									name="<?php echo $this->getFieldNameL2('alt_title', $key); ?>"></p>
-						<?php endif; ?>
-						<?php if($this->instance['alt_descr']) : ?>
-							<p><?php _e('Description:', \jcf\JustCustomFields::TEXTDOMAIN); ?> <br/>
-								<textarea cols="95" row="3"
-									id="<?php echo $this->getFieldIdL2('alt_descr', $key); ?>" 
-									name="<?php echo $this->getFieldNameL2('alt_descr', $key); ?>"
-									><?php echo $img_descr; ?></textarea></p>
-						<?php endif; ?>
-						<a href="media-upload.php?jcf_media=true&amp;type=<?php echo $upload_type; ?>&amp;TB_iframe=true" class="jcf-btn jcf_upload"
-								rel="<?php echo $this->getFieldIdL2('uploaded_file', $key); ?>"><?php echo $upload_text; ?></a>
-						<a href="#" class="jcf-btn jcf_delete<?php echo $delete_class; ?>"><?php _e('Delete', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
-					</div>
-				</div>
-				<div class="jcf-delete-layer">
-					<img src="<?php echo $del_image; ?>" alt="" />
-					<input type="hidden" id="<?php echo $this->getFieldIdL2('delete', $key); ?>" name="<?php echo $this->getFieldNameL2('delete', $key); ?>" value="" />
-					<a href="#" class="jcf-btn jcf_cancel"><?php _e('Cancel', \jcf\JustCustomFields::TEXTDOMAIN); ?></a><br/>
-				</div>
-			</div>
-			<?php endforeach; ?>
-			<a href="#" class="jcf-btn jcf_add_more"><?php if($upload_type == 'image') _e('+ Add another image', \jcf\JustCustomFields::TEXTDOMAIN); else _e('+ Add another file', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
-		</div>
-
-		<?php
-		if( $this->instance['description'] != '' )
-			echo '<p class="description">' . $this->instance['description'] . '</p>';
 		
-		echo $after_widget;
-		
+		include(JCF_ROOT . '/components/uploadmedia/views/field.tpl.php');
 		return true;
 	}
 	

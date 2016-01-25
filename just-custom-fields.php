@@ -51,6 +51,8 @@ class JustCustomFields {
 	 */
 	public function initControllers()
 	{
+		new controllers\PostTypeController();
+
 		if ( !is_admin() ) return;
 
  		new controllers\AdminController();

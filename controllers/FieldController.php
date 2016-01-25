@@ -89,7 +89,7 @@ class FieldController extends core\Controller {
 		$model = new models\Field();
 		$model->load($_POST);
 		$collection = $model->groupCollectionFields();
-		$this->_render('/components/collection/views/group_fields', $collection);
+		$this->_render('/components/collection/views/group_fields', array('collection' => $collection));
 		die();
 	}
 
