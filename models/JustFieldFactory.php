@@ -3,74 +3,39 @@
 namespace jcf\models;
 use jcf\core;
 
-class JustFieldFactory extends core\Model {
+class JustFieldFactory {
 	
-	protected $_registeredFields;
-	
-	public function __construct($collection = FALSE)
+	public static function create( \jcf\models\Field $field )
 	{
-		if ( !$collection ) {
-			$this->register( 'Just_Field_InputText' );
-			$this->register( 'Just_Field_Select' );
-			$this->register( 'Just_Field_SelectMultiple' );
-			$this->register( 'Just_Field_Checkbox' );
-			$this->register( 'Just_Field_Textarea' );
-			$this->register( 'Just_Field_DatePicker' );
-			$this->register( 'Just_Field_SimpleMedia' );
-			$this->register( 'Just_Field_Table' );
-			$this->register( 'Just_Field_Collection' );
-			$this->register( 'Just_Field_RelatedContent' );
-			$this->register( 'Just_Field_UploadMedia' );
-			$this->register( 'Just_Field_FieldsGroup' );
+		// $field_mixed can be real field id or only id_base
+		$id_base = preg_replace('/\-([0-9]+)/', '', $field->id);
+
+		$jcf = \jcf\JustCustomFields();
+		$field_info = $jcf->getFieldInfo($id_base);
+		
+		$model = new $field_info['class']();
+		$model->setPostType($field->post_type);
+		$model->setFieldset($field->fieldset_id);
+		$model->setCollection($field->collection_id);
+		$model->setId($field->id);
+		
+		if ( !$model->is_new && $field->collection_id ) {
+			$collection = new \jcf\components\collection\Just_Field_Collection();
+			$collection->setPostType($field->post_type);
+			$collection->setFieldset($field->fieldset_id);
+			$collection->setId($field->collection_id);
+			
+			$field_instance = $collection->instance['fields'][$field->id];
+			$model->setSlug($field_instance['slug']);
+			$model->instance = $field_instance;
 		}
-		else {
-			$this->register( 'Just_Field_InputText' );
-			$this->register( 'Just_Field_Select' );
-			$this->register( 'Just_Field_SelectMultiple' );
-			$this->register( 'Just_Field_Checkbox' );
-			$this->register( 'Just_Field_Textarea' );
-			$this->register( 'Just_Field_DatePicker' );
-			$this->register( 'Just_Field_Simple_Media' );
-			$this->register( 'Just_Field_Table' );
-		}
-	}
-
-	/**
-	 *	register field in global variable. contain info like id_base, title and class name
-	 */
-	public function register($class_name)
-	{
-		$class_name = 'jcf\\components\\' . str_replace('just_field_','',  strtolower($class_name)).'\\' . $class_name;
-		// check class exists and try to create class object to get title
-		if ( !class_exists($class_name) ) return false; 
-
-		//check field compatibility with WP version
-		if ( !$class_name::checkCompatibility($class_name::$compatibility) ) return false;
-
-		$field_obj = new $class_name();
-
-		$field = array(
-			'id_base' => $field_obj->idBase,
-			'class_name' => $class_name,
-			'title' => $field_obj->title,
-		);
-		$this->_registeredFields[$field_obj->idBase] = $field;
-	}
-
-	/**
-	 *	return array of registered fields (or concrete field by id_base)
-	 */
-	public function getRegisteredFields($id_base = '')
-	{
-		if ( !empty($id_base) ) {
-			return @$this->_registeredFields[$id_base];
-		}
-		return $this->_registeredFields;
+		
+		return $model;
 	}
 	
 	/**
 	 *	init field object
-	 */
+	 /
 	public function initObject($post_type, $field_mixed, $fieldset_id = '', $collection_id = '')
 	{
 		// $field_mixed can be real field id or only id_base
@@ -101,7 +66,7 @@ class JustFieldFactory extends core\Model {
 	 * because of ability to import fields now, we can't use DB to save AI. 
 	 * we will use timestamp for this
 	 */
-	public function getIndex( $id_base )
+	public static function createFieldIndex( $id_base )
 	{
 		return time();
 	}
