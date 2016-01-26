@@ -81,12 +81,13 @@ class Just_Field_Checkbox extends models\Just_Field{
 	/**
 	 *	print fields values from shortcode
 	 */
-	public function shortcodeValue($args){
+	public function shortcodeValue($args)
+	{
 		$options = $this->parsedSelectOptions($this->instance);
 		$options = array_flip($options);
-		
+
 		if ( empty($this->entry) ) return '';
-		
+
 		$html = '<ul class="jcf-list">';
 		foreach ( $this->entry as $value ) {
 			$key = preg_replace('/\s+/', '-', $value);

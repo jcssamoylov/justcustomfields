@@ -116,18 +116,18 @@ function jcf_apply_visibility_rules(checked_taxonomies) {
 		else { //fieldset has many rules
 			for(var key in visibility_rules[fieldset_id]) {
 				var rule = visibility_rules[fieldset_id][key];
-				if(key == 0) { //set default visibility option
+				if (key == 0) { //set default visibility option
 					var default_display = (rule.visibility_option == 'hide');
 					var display = jcf_set_display_option(rule, checked_taxonomies, default_display);
 				}
-				else{ //set options in dependence of conditions
+				else { //set options in dependence of conditions
 					if(rule.join_condition == 'and') {
-						default_display += (rule.visibility_option == 'hide');
-						display += jcf_set_display_option(rule, checked_taxonomies, default_display);
+						default_display &= (rule.visibility_option == 'hide');
+						display &= jcf_set_display_option(rule, checked_taxonomies, default_display);
 					}
 					else {
-						default_display *= (rule.visibility_option == 'hide');
-						display *= jcf_set_display_option(rule, checked_taxonomies, default_display);
+						default_display |= (rule.visibility_option == 'hide');
+						display |= jcf_set_display_option(rule, checked_taxonomies, default_display);
 					}
 				}
 			}
@@ -153,15 +153,21 @@ function jcf_set_display_option(rule, checked_taxonomies, default_display){
 	if(rule.based_on == 'page_template') {
 		var templates = rule.rule_templates;
 		var selected_template = jQuery('#page_template').val();
-		if(templates.indexOf(selected_template) > -1){
+		if (templates.indexOf(selected_template) > -1) {
 			return (rule.visibility_option == 'show');
+		}
+		else {
+			return (rule.visibility_option == 'hide');
 		}
 	}
 	else if( rule.based_on == 'taxonomy' ) {
 		var terms = rule.rule_taxonomy_terms;
 		for(var i = 0; i < terms.length; i++){
-			if(checked_taxonomies.indexOf(terms[i].name) > -1){
+			if (checked_taxonomies.indexOf(terms[i].name) > -1) {
 				return (rule.visibility_option == 'show');
+			}
+			else {
+				return (rule.visibility_option == 'hide');
 			}
 		}
 	}

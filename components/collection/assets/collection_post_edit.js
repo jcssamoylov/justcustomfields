@@ -53,7 +53,9 @@ function jcf_collection_fields_control(){
 			container.find('div.collection_field_group:last').after( response );
 			jQuery('.collection_fields').accordion('refresh');
 			container.find('div.collection_field_group:last').find('h3').click();
+			jQuery('.collection_field_group').find('.jcf-get-shortcode').remove();
 		});
+		
 		return false;
 	})
 	

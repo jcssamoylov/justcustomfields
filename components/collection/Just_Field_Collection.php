@@ -21,14 +21,14 @@ class Just_Field_Collection extends models\Just_Field{
 		'33' => '33%',
 		'25' => '25%',
 	);
-	public $_fieldFactory;
+	public $fieldFactory;
 
 	public function __construct()
 	{
 		$field_ops = array( 'classname' => 'field_collection' );
 		parent::__construct('collection', __('Collection', \jcf\JustCustomFields::TEXTDOMAIN), $field_ops);
 		
-		$this->_fieldFactory = new models\JustFieldFactory(TRUE);
+		$this->fieldFactory = new models\JustFieldFactory(TRUE);
 	}
 	
 	/**
@@ -56,7 +56,7 @@ class Just_Field_Collection extends models\Just_Field{
 			$item = array();
 
 			foreach ( $this->instance['fields'] as $field_id => $field ) {
-				$field_obj = $this->_fieldFactory->initObject($this->postType, $field_id, $this->fieldsetId, $this->id);
+				$field_obj = $this->fieldFactory->initObject($this->postType, $field_id, $this->fieldsetId, $this->id);
 
 				if ( isset($_value[$field_id]) ) {
 					$item[$field['slug']] = $field_obj->save($_value[$field_id]);
@@ -96,7 +96,7 @@ class Just_Field_Collection extends models\Just_Field{
 		wp_enqueue_script('jcf_collection_post_edit');
 
 		foreach ( $this->instance['fields'] as $field_id => $field ) {
-			$field_obj = $this->_fieldFactory->initObject($this->postType, $field_id, $this->fieldsetId, $this->id);
+			$field_obj = $this->fieldFactory->initObject($this->postType, $field_id, $this->fieldsetId, $this->id);
 			if(  method_exists($field_obj, 'addJs')) $field_obj->addJs();
 			if(  method_exists($field_obj, 'addCss')) $field_obj->addCss();
 		}
@@ -112,8 +112,6 @@ class Just_Field_Collection extends models\Just_Field{
 				array('thickbox'));
 		wp_enqueue_style('jcf_collection');
 	}
-	
-
 
 	/**
 	 * Get nice name for width attribute
@@ -136,8 +134,24 @@ class Just_Field_Collection extends models\Just_Field{
 	{
 		// remove from fields array
 		$this->_layer->updateFields($this->postType, $field_id, NULL, $this->fieldsetId, $this->id);
-				
 	}
 
-	
+	/**
+	 * print fields values from shortcode
+	 * 
+	 * @param array $args	shortcode args
+	 */
+	public function shortcodeValue($args)
+	{
+		foreach ( $this->entry as $key => $entry_values ) {
+			foreach ( $entry_values as $field_slug => $field_value ) {
+				$field_mixed = str_replace('__', '-', str_replace('_field_', '', $field_slug));
+				$field_obj = $this->fieldFactory->initObject($this->postType, $field_mixed, '', $this->id);
+				$field_obj->setPostID( $this->postID, $key );
+				$shortcode_value .= $field_obj->doShortcode($args); 
+				unset($field_obj);
+			}
+		}
+		return  $args['before_value'] . $shortcode_value . $args['after_value'];
+	}
 }

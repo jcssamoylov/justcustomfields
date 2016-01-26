@@ -160,16 +160,26 @@ class Just_Field {
 	 *	set post ID and load entry from wp-postmeta
 	 *	@param  int  $post_ID  post ID variable
 	 */
-	public function setPostID( $post_ID )
+	public function setPostID( $post_ID, $key_from_collection = FALSE )
 	{
 		$this->postID = $post_ID;
-
-		// load entry
-		if( !empty($this->slug) ){
-			$this->entry = get_post_meta($this->postID, $this->slug, true);
+		
+		if ( !empty($this->collectionId) ) {
+			// load entry
+			if ( !empty($this->slug) ) {
+				$slug = str_replace('collection-', '_field_collection__', $this->collectionId);
+				$data = get_post_meta($this->postID, $slug, true);
+				$this->entry = $data[$key_from_collection][$this->slug];
+			}
+		}
+		else {
+			// load entry
+			if ( !empty($this->slug) ) {
+				$this->entry = get_post_meta($this->postID, $this->slug, true);
+			}
 		}
 	}
-	
+
 	/**
 	 * Set post type
 	 * @param string $post_type
@@ -385,15 +395,15 @@ class Just_Field {
 		
 		// check that we have data in POST
 		if ( $this->idBase != 'checkbox' && (
-				empty($_POST['field-'.$this->idBase][$this->number]) ||
-				!is_array($_POST['field-'.$this->idBase][$this->number])
+				empty($_POST['field-' . $this->idBase][$this->number]) ||
+				!is_array($_POST['field-' . $this->idBase][$this->number])
 			)
 		   )
 		{
 			return false;
 		}
 
-		$input = @$_POST['field-'.$this->idBase][$this->number];
+		$input = @$_POST['field-' . $this->idBase][$this->number];
 		// get real values
 		$values = $this->save( $input );
 		// save to post meta
@@ -551,7 +561,6 @@ class Just_Field {
 	{
 		return  $args['before_value'] . $this->entry . $args['after_value'];
 	}
-	
 }
 
 

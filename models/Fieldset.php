@@ -76,7 +76,7 @@ class Fieldset extends core\Model {
 			foreach ( $fields as $field_id => $field ) {
 				if ( preg_replace('/\-[0-9]+$/', '', $field_id) != 'collection' ) continue;
 				$collecton = $field_factory->initObject($post_type, $field_id);
-				$collections['registered_fields'] = $collecton->_fieldFactory->getRegisteredFields();
+				$collections['registered_fields'] = $collecton->fieldFactory->getRegisteredFields();
 				$collections[$field_id] = $this->_layer->getFields($post_type, $field_id);
 			}
 		}

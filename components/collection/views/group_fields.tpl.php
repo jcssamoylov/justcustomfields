@@ -8,13 +8,11 @@
 
 	</h3>
 	<div class="collection_field_group_entry">
-		<?php
-			foreach ( $collection->instance['fields'] as $field_id => $field ) {
-				echo '<div class="collection_field_border jcf_collection_' . ( intval($field['field_width']) ? $field['field_width'] : '100' ).'">';
-				$field['field'];
-				echo '</div>';
-			}
-		?>
+		<?php foreach ( $collection->instance['fields'] as $field_id => $field ) : ?>
+				<div class="collection_field_border jcf_collection_<?php echo ( intval($field['field_width']) ? $field['field_width'] : '100' ); ?>">
+				<?php echo $field['field']; ?>
+				</div>
+		<?php endforeach; ?>
 		<div class="clr"></div>
 	</div>
 </div>

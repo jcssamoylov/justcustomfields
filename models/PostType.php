@@ -104,8 +104,8 @@ class PostType extends core\Model {
 	/**
 	 *	callback function for "save_post" action
 	 */
-	public function saveCustomFields( $post_ID = 0, $post = null ){
-
+	public function saveCustomFields( $post_ID = 0, $post = null )
+	{
 		// do not save anything on autosave
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
 			return;

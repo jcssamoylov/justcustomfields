@@ -144,7 +144,9 @@ class Field extends core\Model {
 			$field_obj->setSlug($field['slug']);
 			$field_obj->instance = $field;
 			$field_obj->isPostEdit = true;
-			$field['field'] = $field_obj->field($field_obj->fieldOptions);
+			ob_start();
+			$field_obj->field();
+			$field['field'] = ob_get_clean();
 			$collection->instance['fields'][$field_id] = $field;
 		}
 

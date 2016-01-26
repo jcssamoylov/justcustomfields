@@ -15,8 +15,6 @@ class FieldController extends core\Controller {
 		add_action('wp_ajax_jcf_edit_field', array($this, 'ajaxChangeField'));
 		add_action('wp_ajax_jcf_fields_order', array($this, 'ajaxSortFields'));
 		add_action('wp_ajax_jcf_collection_order', array($this, 'ajaxCollectionSortFields' ));
-		add_action('wp_ajax_jcf_collection_add_new_field_group', array($this, 'ajaxReturnCollectionFieldGroup' ));
-		add_action('wp_ajax_jcf_related_content_autocomplete', array($this, 'ajaxRelatedContentAutocomplete'));
 	}
 
 	/**
@@ -66,7 +64,7 @@ class FieldController extends core\Controller {
 	/**
 	 * fields sort change callback
 	 */
-	public function ajaxSortField()
+	public function ajaxSortFields()
 	{
 		$model = new models\Field();
 		$model->load($_POST) && $model->sortFields();
@@ -79,26 +77,5 @@ class FieldController extends core\Controller {
 	{
 		$model = new models\Field();
 		$model->load($_POST) && $model->sortCollectionFields();
-	}
-
-	/**
-	 * return empty collection fields group
-	 */
-	public function ajaxReturnCollectionFieldGroup()
-	{
-		$model = new models\Field();
-		$model->load($_POST);
-		$collection = $model->groupCollectionFields();
-		$this->_render('/components/collection/views/group_fields', array('collection' => $collection));
-		die();
-	}
-
-	/**
-	 *	Autocomplete for related content field callback
-	 */
-	public static function ajaxRelatedContentAutocomplete()
-	{
-		$model = new models\Field();
-		$model->load($_POST) && $model->autocompleteRelatedContentField();
 	}
 }

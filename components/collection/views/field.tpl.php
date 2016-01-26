@@ -32,7 +32,7 @@
 						<?php foreach ( $this->instance['fields'] as $field_id => $field ) : ?>
 							<div class="collection_field_border jcf_collection_<?php echo (intval($field['field_width']) ? $field['field_width'] : '100'); ?>">
 								<?php 
-									$field_obj = $this->_fieldFactory->initObject($this->postType, $field_id, $this->fieldsetId, $this->id);
+									$field_obj = $this->fieldFactory->initObject($this->postType, $field_id, $this->fieldsetId, $this->id);
 									$field_obj->setSlug($field['slug']);
 
 									if ( isset($fields[$field['slug']]) ) {

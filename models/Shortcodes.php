@@ -19,7 +19,7 @@ class Shortcodes extends core\Model {
 	 *	@param array $args Attributes from shortcode
 	 *	@return string Field content
 	 */
-	public function _initShortcode($args)
+	protected function _initShortcode($args)
 	{
 		extract( shortcode_atts( array(
 			'field' => '',
@@ -44,7 +44,7 @@ class Shortcodes extends core\Model {
 			$factory = new JustFieldFactory();
 			$field_obj = $factory->initObject($post_type, $field_id);
 			$field_obj->setPostID( $post_id );
-
+			
 			unset($args['field']);
 			return $field_obj->doShortcode($args);
 		}
@@ -58,7 +58,7 @@ class Shortcodes extends core\Model {
 	 *	@param array $args Attributes from shortcode
 	 *	@return string Field content
 	 */
-	public function setFieldValue($args)
+	public function getFieldValue($args)
 	{
 		if ( !empty($args['field']) ) {
 			return $this->_initShortcode($args);
