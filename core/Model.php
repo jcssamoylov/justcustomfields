@@ -43,20 +43,7 @@ class Model
 	{
 		if( empty($this->_messages) && empty($this->_errors) ) return;
 
-		$all_messages = array();
-
-		if ( !empty($this->_messages) ) {
-			foreach ( $this->_messages as $msg ) {
-				$all_messages[] = array('notice', $msg);
-			}
-		}
-		
-		if ( !empty($this->_errors) ) {
-			foreach ( $this->_errors as $msg ) {
-				$all_messages[] = array('error', $msg);
-			}
-		}
-
+		global $wp_version;
 		include( JCF_ROOT . '/views/notices.tpl.php');
  	}
 
@@ -68,10 +55,17 @@ class Model
 	public function load($params)
 	{
 		if ( !empty($params) ) {
-			$this->_request = $params;
+			$this->_setAttributes($params);
 			return true;
 		}
 		return false;
+	}
+	
+	protected function _setAttributes($params)
+	{
+		foreach ( $params as $key => $value) {		
+			property_exists(get_class($this), $key) && $this->$key = strip_tags(trim($value));
+		}
 	}
 }
 

@@ -23,8 +23,6 @@ class Just_Field_Table extends models\Just_Field{
 	
 	public function field() 
 	{
-		
-
 		if ( empty($this->entry) ) 
 			$this->entry = array('0' => '');
 
@@ -76,11 +74,55 @@ class Just_Field_Table extends models\Just_Field{
 			}
 			$rows .= '</tr>';
 		}
+		?>
+			<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
+				<div class="form-field">
+					<label><?php echo $this->instance['title']; ?>:</label>
+					<div class="jcf-get-shortcode" rel="<?php echo $this->slug; ?>">
+						<span class="dashicons dashicons-editor-help wp-ui-text-highlight"></span>
+					</div>
+					<?php if( !empty($columns) ) : ?>
+						<div class="jcf-table jcf-field-container">
+							<table class="sortable wp-list-table widefat fixed">
+								<?php echo $table_head; ?>
+								<?php echo $rows; ?>
+								<?php echo $first_row; ?>
+							</table>
+							<p><a href="#" class="button button-large jcf_add_row"><?php _e('+ Add row', \jcf\JustCustomFields::TEXTDOMAIN); ?></a></p>
+						</div>
+					<?php endif; ?>
 
-		include(JCF_ROOT . '/components/table/views/field.tpl.php'); 
+					<?php if( $this->instance['description'] != '' ): ?>
+						<p class="description"><?php echo $this->instance['description']; ?></p>
+					<?php endif; ?>
+				</div>
+			</div>
+		<?php 
 		return true;
 	}
-	
+
+	/**
+	 * draw form for edit field
+	 */
+	public function form()
+	{
+		//Defaults
+		$instance = wp_parse_args( (array) $this->instance, array( 'title' => '', 'columns' => '', 'description' => '' ) );
+
+		$title = esc_attr( $instance['title'] );
+		$columns = esc_html( $instance['columns'] );
+		$description = esc_html($instance['description']);
+		?>
+		<p><label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label>
+			<input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" /></p>
+		<p><label for="<?php echo $this->getFieldId('fields'); ?>"><?php _e('Columns:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label>
+			<textarea name="<?php echo $this->getFieldName('columns'); ?>" id="<?php echo $this->getFieldId('columns'); ?>" cols="20" rows="4" class="widefat"><?php echo $columns; ?></textarea>
+			<br/><small><?php _e('Format: %colname|%coltitle<br/><i>Example: username|User name', \jcf\JustCustomFields::TEXTDOMAIN); ?></i></small></p>
+		<p><label for="<?php echo $this->getFieldId('description'); ?>"><?php _e('Description:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> 
+			<textarea name="<?php echo $this->getFieldName('description'); ?>" id="<?php echo $this->getFieldId('description'); ?>" cols="20" rows="2" class="widefat"><?php echo $description; ?></textarea></p>
+		<?php
+	}
+
 	/**
 	 *	save field on post edit form
 	 */

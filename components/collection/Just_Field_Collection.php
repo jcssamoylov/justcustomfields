@@ -21,14 +21,11 @@ class Just_Field_Collection extends models\Just_Field{
 		'33' => '33%',
 		'25' => '25%',
 	);
-	public $fieldFactory;
 
 	public function __construct()
 	{
 		$field_ops = array( 'classname' => 'field_collection' );
 		parent::__construct('collection', __('Collection', \jcf\JustCustomFields::TEXTDOMAIN), $field_ops);
-		
-		$this->fieldFactory = new models\JustFieldFactory(TRUE);
 	}
 	
 	/**
@@ -42,7 +39,94 @@ class Just_Field_Collection extends models\Just_Field{
 		if ( empty($this->entry) ) $this->entry = array('0' => '');
 
 		$entries = (array)$this->entry;
-		include(JCF_ROOT . '/components/collection/views/field.tpl.php');
+		?>
+		<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
+			<div class="form-field">
+				<label><?php echo $this->instance['title']; ?>:</label>
+				<div class="jcf-get-shortcode" rel="<?php echo $this->slug; ?>">
+					<span class="dashicons dashicons-editor-help wp-ui-text-highlight"></span>
+				</div>
+
+				<?php if ( empty($this->instance['fields']) ) : ?>
+					<p class="error">Collection element has no fields registered. Please check component settings</p>
+				<?php else: ?>
+					<div class="collection_fields">
+					<?php foreach ( $entries as $key => $fields ) : ?>
+						<div class="collection_field_group">
+							<h3>
+								<span class="dashicons dashicons-editor-justify"></span>
+								<span class="collection_group_title">
+								<?php
+									$group_title = $this->instance['title'] . ' Item';
+									foreach ( $this->instance['fields'] as $field_id => $field) {
+										if ( isset($field['group_title']) ) {
+											if ( isset($fields[$field['slug']]) ) $group_title = $group_title.' : '.$fields[$field['slug']];
+											break;
+										}
+									}
+									echo $group_title;
+								 ?>
+								</span>
+								<a href="#" class="collection_undo_remove_group"><?php _e('UNDO', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
+								<span class="dashicons dashicons-trash"></span>
+							</h3>
+							<div class="collection_field_group_entry">
+								<?php foreach ( $this->instance['fields'] as $field_id => $field ) : ?>
+									<div class="collection_field_border jcf_collection_<?php echo (intval($field['field_width']) ? $field['field_width'] : '100'); ?>">
+										<?php 
+											$params = array(
+												'post_type' => $this->postType,
+												'field_id' => $field_id,
+												'fieldset_id' => $this->fieldsetId,
+												'collection_id' => $this->id,
+											);
+											$field_model = new models\Field();
+											
+											$field_model->load($params) && $field_obj = models\JustFieldFactory::create($field_model);
+
+											if ( isset($fields[$field['slug']]) ) {
+												$field_obj->entry = $fields[$field['slug']];
+											}
+\jcf\pa($field_obj->field());
+											$field_obj->isPostEdit = true;
+											$field_obj->field();
+											
+										?>
+									</div>
+								<?php endforeach; ?>
+								<div class="clr"></div>
+							</div>
+						</div>
+						<?php 
+							self::$currentCollectionFieldKey = self::$currentCollectionFieldKey + 1; 
+							endforeach; 
+						?>
+						<div class="clr"></div>
+						<input type="button" value="<?php echo sprintf(__('Add %s Item', \jcf\JustCustomFields::TEXTDOMAIN), $this->instance['title']); ?>" 
+							   class="button button-large jcf_add_more_collection"
+							   data-collection_id="<?php echo $this->id; ?>"
+							   data-fieldset_id="<?php echo $this->fieldsetId; ?>"
+							   name="jcf_add_more_collection">
+						<div class="clr"></div>
+					</div>
+				<?php endif; ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * draw form for edit field
+	 */
+	public function form()
+	{
+		//Defaults
+		$instance = wp_parse_args( (array) $this->instance, array( 'title' => '', 'description' => '' ) );
+		$description = esc_html($instance['description']);
+		$title = esc_attr( $instance['title'] );
+		?>
+			<p><label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> <input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" /></p>
+		<?php
 	}
 
 	/**
@@ -56,7 +140,14 @@ class Just_Field_Collection extends models\Just_Field{
 			$item = array();
 
 			foreach ( $this->instance['fields'] as $field_id => $field ) {
-				$field_obj = $this->fieldFactory->initObject($this->postType, $field_id, $this->fieldsetId, $this->id);
+				$params = array(
+					'post_type' => $this->postType,
+					'field_id' => $field_id,
+					'fieldset_id' => $this->fieldsetId,
+					'collection_id' => $this->id,
+				);
+				$field_model = new models\Field();
+				$field_model->load($params) && $field_obj = models\JustFieldFactory::create($field_model);
 
 				if ( isset($_value[$field_id]) ) {
 					$item[$field['slug']] = $field_obj->save($_value[$field_id]);
@@ -96,7 +187,15 @@ class Just_Field_Collection extends models\Just_Field{
 		wp_enqueue_script('jcf_collection_post_edit');
 
 		foreach ( $this->instance['fields'] as $field_id => $field ) {
-			$field_obj = $this->fieldFactory->initObject($this->postType, $field_id, $this->fieldsetId, $this->id);
+			$params = array(
+				'post_type' => $this->postType,
+				'field_id' => $field_id,
+				'fieldset_id' => $this->fieldsetId,
+				'collection_id' => $this->id,
+			);
+			$field_model = new models\Field();
+			$field_model->load($params) && $field_obj = models\JustFieldFactory::create($field_model);
+
 			if(  method_exists($field_obj, 'addJs')) $field_obj->addJs();
 			if(  method_exists($field_obj, 'addCss')) $field_obj->addCss();
 		}
@@ -128,15 +227,6 @@ class Just_Field_Collection extends models\Just_Field{
 	}
 
 	/**
-	 * delete field from collection
-	 */
-	public function deleteField($field_id)
-	{
-		// remove from fields array
-		$this->_layer->updateFields($this->postType, $field_id, NULL, $this->fieldsetId, $this->id);
-	}
-
-	/**
 	 * print fields values from shortcode
 	 * 
 	 * @param array $args	shortcode args
@@ -146,7 +236,15 @@ class Just_Field_Collection extends models\Just_Field{
 		foreach ( $this->entry as $key => $entry_values ) {
 			foreach ( $entry_values as $field_slug => $field_value ) {
 				$field_mixed = str_replace('__', '-', str_replace('_field_', '', $field_slug));
-				$field_obj = $this->fieldFactory->initObject($this->postType, $field_mixed, '', $this->id);
+				$params = array(
+					'post_type' => $this->postType,
+					'field_type' => $field_mixed,
+					'fieldset_id' => '',
+					'collection_id' => $this->id,
+				);
+				$field_model = new models\Field();
+				$field_model->load($params) && $field_obj = models\JustFieldFactory::create($field_model);
+
 				$field_obj->setPostID( $this->postID, $key );
 				$shortcode_value .= $field_obj->doShortcode($args); 
 				unset($field_obj);

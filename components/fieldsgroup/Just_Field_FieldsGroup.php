@@ -34,10 +34,76 @@ class Just_Field_FieldsGroup extends models\Just_Field{
 
 		// get fields
 		$fields = $this->parseFieldsOptions();
-		include(JCF_ROOT . '/components/fieldgroup/views/field.tpl.php');
+		?>
+		<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
+			<div class="form-field">
+				<label><?php echo $this->instance['title']; ?>:</label>
+				<div class="jcf-get-shortcode" rel="<?php echo $this->slug; ?>">
+					<span class="dashicons dashicons-editor-help wp-ui-text-highlight"></span>
+				</div>
+
+				<?php if ( empty($fields) ) : ?>
+					<p><?php echo __('Wrong fields configuration. Please check widget settings.', \jcf\JustCustomFields::TEXTDOMAIN); ?></p>
+				<?php else : ?>
+				<div class="jcf-fieldsgroup-field jcf-field-container">
+					<?php foreach( $entries as $key => $entry ) : ?>
+					<div class="jcf-fieldsgroup-row<?php if('00' === $key) echo ' jcf-hide'; ?>">
+						<span class="drag-handle" >move</span>
+						<div class="jcf-fieldsgroup-container">
+							<?php foreach ( $fields as $field_name => $field_title ) : 
+								$field_value = esc_attr(@$entry[$field_name]);
+							?>
+								<p><?php echo $field_title ?>: <br/>
+									<input type="text" value="<?php echo $field_value; ?>" 
+										id="<?php echo $this->getFieldIdL2($field_name, $key); ?>" 
+										name="<?php echo $this->getFieldNameL2($field_name, $key); ?>">
+								</p>
+							<?php endforeach; ?>
+							<a href="#" class="jcf-btn jcf_delete"><?php _e('Delete', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
+						</div>
+						<div class="jcf-delete-layer">
+							<img src="<?php echo $del_image; ?>" alt="" />
+							<input type="hidden" id="<?php echo $this->getFieldIdL2('__delete__', $key); ?>" name="<?php echo $this->getFieldNameL2('__delete__', $key); ?>" value="" />
+							<a href="#" class="jcf-btn jcf_cancel"><?php _e('Cancel', \jcf\JustCustomFields::TEXTDOMAIN); ?></a><br/>
+						</div>
+					</div>
+					<?php endforeach; ?>
+					<a href="#" class="jcf-btn jcf_add_more"><?php _e('+ Add another', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
+				</div>
+				<?php endif; ?>
+
+				<?php if( !empty($this->instance['description']) ) : ?>
+					<p class="description"><?php echo $this->instance['description']; ?></p>
+				<?php endif; ?>
+			</div>
+		</div>
+		<?php
 		return true;
 	}
-	
+
+	/**
+	 * draw form for edit field
+	 */
+	public function form()
+	{
+		//Defaults
+		$instance = wp_parse_args( (array) $this->instance, array( 'title' => '', 'fields' => '', 'description' => '' ) );
+		$title = esc_attr( $instance['title'] );
+		$fields = esc_html( $instance['fields'] );
+		$description = esc_html($instance['description']);
+		?>
+		<div class="error"><?php _e('This field is <b>deprecated</b>. Please use Collection instead.', \jcf\JustCustomFields::TEXTDOMAIN); ?></div>
+
+		<p><label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label>
+			<input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" /></p>
+		<p><label for="<?php echo $this->getFieldId('fields'); ?>"><?php _e('Fields:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> 
+			<textarea name="<?php echo $this->getFieldName('fields'); ?>" id="<?php echo $this->getFieldId('fields'); ?>" cols="20" rows="4" class="widefat"><?php echo $fields; ?></textarea>
+			<br/><small><?php _e('Format: %fieldname|%fieldtitle<br/><i>Example: price|Product Price', \jcf\JustCustomFields::TEXTDOMAIN); ?></i></small></p>
+		<p><label for="<?php echo $this->getFieldId('description'); ?>"><?php _e('Description:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> 
+			<textarea name="<?php echo $this->getFieldName('description'); ?>" id="<?php echo $this->getFieldId('description'); ?>" cols="20" rows="2" class="widefat"><?php echo $description; ?></textarea></p>
+		<?php
+	}
+
 	/**
 	 *	save field on post edit form
 	 */

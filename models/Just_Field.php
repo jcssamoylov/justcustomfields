@@ -313,7 +313,7 @@ class Just_Field {
 			$this->id = $this->idBase . '-' . $this->number;
 		}
 
-		$field_factory = new models\JustFieldFactory();
+		$jcf = new \jcf\JustCustomFields();
 
 		if ( !$this->isCollectionField() ) {
 			// update fieldset
@@ -336,11 +336,18 @@ class Just_Field {
 				'fieldset_id' => $this->fieldsetId,
 				'is_new' => $this->isNew,
 				'instance' => $instance,
-				'registered_fields' => $field_factory->getRegisteredFields()
+				'registered_fields' => $jcf->getFields()
 			);			
 		} 
 		else {
-			$collection = $field_factory->initObject($this->postType, $this->collectionId, $this->fieldsetId);
+			$params = array(
+				'post_type' => $this->postType,
+				'field_id' => $this->collectionId,
+				'fieldset_id' => $this->fieldsetId
+			);
+			$field_model = new models\Field();
+			$field_model->load($params) && $collection = models\JustFieldFactory::create($field_model);
+
 			// check slug field
 			if ( empty($instance['slug']) ) {
 				$instance['slug'] = '_field_' . $this->idBase . '__' . $this->number;
@@ -362,7 +369,7 @@ class Just_Field {
 				'collection_id' => $this->collectionId,
 				'is_new' => $this->isNew,
 				'instance' => $instance,
-				'registered_fields' => $field_factory->getRegisteredFields()
+				'registered_fields' => $jcf->getFields(true)
 			);
 		}
 		return $res;
@@ -373,15 +380,20 @@ class Just_Field {
 	 */
 	public function doDelete()
 	{
-		// remove from fieldset:
-		$fieldset = $this->_layer->getFieldsets( $this->postType, $this->fieldsetId );
+		if ( !empty($this->collectionId) ) {
+			$this->_layer->updateFields($this->postType, $this->id, NULL, $this->fieldsetId, $this->collectionId);
+		}
+		else {
+			// remove from fieldset:
+			$fieldset = $this->_layer->getFieldsets( $this->postType, $this->fieldsetId );
 
-		if ( isset($fieldset['fields'][$this->id]) )
-			unset($fieldset['fields'][$this->id]);
+			if ( isset($fieldset['fields'][$this->id]) )
+				unset($fieldset['fields'][$this->id]);
 
-		$this->_layer->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
-		// remove from fields array
-		$this->_layer->updateFields($this->postType, $this->id, NULL, $this->fieldsetId);
+			$this->_layer->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
+			// remove from fields array
+			$this->_layer->updateFields($this->postType, $this->id, NULL, $this->fieldsetId);
+		}
 	}
 
 	/**

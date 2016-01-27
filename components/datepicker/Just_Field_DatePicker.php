@@ -18,7 +18,51 @@ class Just_Field_DatePicker extends models\Just_Field {
 	 */
 	public function field() 
 	{
-		include(JCF_ROOT . '/components/datepicker/views/field.tpl.php');
+		?>
+			<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
+				<div class="form-field">
+					<label><?php echo $this->instance['title']; ?>:</label>
+					<div class="jcf-get-shortcode" rel="<?php echo $this->slug; ?>">
+						<span class="dashicons dashicons-editor-help wp-ui-text-highlight"></span>
+					</div>
+					<div>
+					<input id="<?php echo $this->getFieldId('val'); ?>" name="<?php echo $this->getFieldName('val'); ?>" type="text" value="<?php echo esc_attr($this->entry); ?>" size="20" style="width:25%;" />
+					</div>
+
+					<script type="text/javascript"><!--
+						jQuery(document).ready(function(){
+							jQuery("#<?php echo $this->getFieldId('val'); ?>").datepicker({
+								dateFormat: "<?php echo !empty($this->instance['date_format']) ? $this->instance['date_format'] : 'yy-mm-dd'; ?>"
+								<?php if(!empty($this->instance['show_monthes'])) echo ', changeMonth: true, changeYear: true'; ?>
+							});
+						});
+					--></script>
+				</div>
+			</div>
+		<?php
+	}
+
+	/**
+	 * draw form for edit field
+	 */
+	public function form()
+	{
+		//Defaults
+		$instance = wp_parse_args( (array) $this->instance, array( 'title' => '' ) );
+
+		$title = esc_attr( $instance['title'] );
+		$show_monthes = !empty($instance['show_monthes'])? ' checked="checked" ' : '';
+		$date_format =  !empty($instance['date_format']) ? $instance['date_format'] : 'yy-mm-dd' ;
+		?>
+		<p><label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> <input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" /></p>
+		<p><label for="<?php echo $this->getFieldId('show_monthes'); ?>"><input class="checkbox" id="<?php echo $this->getFieldId('show_monthes'); ?>" name="<?php echo $this->getFieldName('show_monthes'); ?>" type="checkbox" value="1" <?php echo $show_monthes; ?> /> <?php _e('Show month/year select boxes', \jcf\JustCustomFields::TEXTDOMAIN); ?></label></p>
+		<p><label for="<?php echo $this->getFieldId('date_format'); ?>"><?php _e('Date format:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label>
+			<input class="widefat" id="<?php echo $this->getFieldId('date_format'); ?>"
+				   name="<?php echo $this->getFieldName('date_format'); ?>" type="text"
+				   value="<?php echo $date_format; ?>" /><br />
+			<small><?php _e('Example:', \jcf\JustCustomFields::TEXTDOMAIN);?> yy-mm-dd <a href="http://api.jqueryui.com/datepicker/#option-dateFormat" target="_blank"><?php _e('look more about date formats', \jcf\JustCustomFields::TEXTDOMAIN);?></a></small>
+		</p>
+		<?php
 	}
 
 	/**

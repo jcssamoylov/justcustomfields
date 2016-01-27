@@ -11,10 +11,13 @@ class AdminController extends core\Controller {
 	 */
 	public function __construct()
 	{
+		parent::__construct();
 		add_action('admin_menu', array($this, 'adminMenu') );
+
 		if ( isset($_GET['page']) ) {
 			add_action('admin_print_scripts', array($this, 'addScripts'));
 		}
+
 		add_action('admin_print_styles', array($this, 'addStyles'));
 		add_action('admin_print_scripts', array($this, 'addCollectionJs'));
 		add_action('admin_head' , array($this , 'addMediaUploaderJs'));
@@ -25,17 +28,16 @@ class AdminController extends core\Controller {
 	 */
 	public function adminMenu()
 	{
-		$plugin = new \jcf\JustCustomFields();
-		$page_title = $plugin->getPluginTitle();
-		$page_slug = $plugin->getPluginName();
+		$page_title = \jcf\JustCustomFields::getPluginTitle();
+		$page_slug = \jcf\JustCustomFields::getPluginName();
 
-		add_options_page( $page_title, $page_title, 'manage_options', $page_slug, array($this, 'index') );
+		add_options_page( $page_title, $page_title, 'manage_options', $page_slug, array($this, 'actionIndex') );
 	}
 
 	/**
 	 * Render index page
 	 */
-	public function index()
+	public function actionIndex()
 	{
 		$post_types = jcf_get_post_types( 'object' );
 		$tab = 'fields';
@@ -43,13 +45,11 @@ class AdminController extends core\Controller {
 		$count_fields = $model->getCountFields();
 
 		// load template
-		$template_params = array(
+		$this->_render( 'admin/admin_page', array(
 			'tab' => $tab,
 			'post_types' => $post_types,
 			'count_fields' => $count_fields
-		);
-
-		$this->_render( '/views/admin/admin_page', $template_params );
+		));
 	}
 
 	/**
@@ -57,8 +57,7 @@ class AdminController extends core\Controller {
 	 */
 	public function addScripts()
 	{
-		$plugin = new \jcf\JustCustomFields();
-		$slug = $plugin->getPluginName();
+		$slug = \jcf\JustCustomFields::getPluginName();
 		wp_register_script(
 			$slug,
 			WP_PLUGIN_URL.'/just-custom-fields/assets/just_custom_fields.js',
@@ -76,8 +75,7 @@ class AdminController extends core\Controller {
 	 */
 	public function addStyles()
 	{
-		$plugin = new \jcf\JustCustomFields();
-		$slug = $plugin->getPluginName();
+		$slug = \jcf\JustCustomFields::getPluginName();
 		wp_register_style($slug, WP_PLUGIN_URL.'/just-custom-fields/assets/styles.css');
 		wp_enqueue_style($slug);
  	}
@@ -95,21 +93,23 @@ class AdminController extends core\Controller {
 		wp_enqueue_script('jcf_collections');
 	}
 
-		/**
+	/**
 	 *	this add js script to the Upload Media wordpress popup
 	 */
-	public function addMediaUploaderJs(){
+	public function addMediaUploaderJs()
+	{
 		global $pagenow;
+
 		if ($pagenow != 'media-upload.php' || empty($_GET ['jcf_media']))
 			return;
-		
+
 		// Gets the right label depending on the caller widget
-		switch ($_GET ['type'])
-		{
+		switch ($_GET ['type']) {
 			case 'image': $button_label = __('Select Picture', \jcf\JustCustomFields::TEXTDOMAIN); break;
 			case 'file': $button_label = __('Select File', \jcf\JustCustomFields::TEXTDOMAIN); break;
 			default: $button_label = __('Insert into Post', \jcf\JustCustomFields::TEXTDOMAIN); break;
 		}
+
 		// Overrides the label when displaying the media uploader panels
 		?>
 			<script type="text/javascript">

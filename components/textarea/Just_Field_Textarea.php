@@ -21,9 +21,82 @@ class Just_Field_Textarea extends models\Just_Field{
 	 */
 	public function field() 
 	{
-		include(JCF_ROOT . '/components/textarea/views/field.tpl.php');
+		?>
+		<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
+			<div class="form-field">
+				<label><?php echo $this->instance['title']; ?>:</label>
+				<div class="jcf-get-shortcode" rel="<?php echo $this->slug; ?>">
+					<span class="dashicons dashicons-editor-help wp-ui-text-highlight"></span>
+				</div>
+
+				<?php if ( !empty($this->instance['editor']) ) : // check editor
+					// WP 3.3+ >> we have new cool function to make wysiwyg field
+					 if ( function_exists('wp_editor') ) :
+						ob_start();
+						/**
+						 * @todo have bug with switching editor/text after ajax field loading, now disabled this functionality
+						 * @author Kirill Samojlenko
+						 */
+						wp_editor($this->entry, $this->getFieldId('val'), array(
+							'textarea_name' => $this->getFieldName('val'),
+							'textarea_rows' => 5,
+							'media_buttons' => true,
+							'wpautop' => true,
+							'quicktags' => false,
+							'tinymce' => array(
+								'theme_advanced_buttons1' => 'bold,italic,strikethrough,|,bullist,numlist,blockquote,|,justifyleft,justifycenter,justifyright,|,link,unlink,|,spellchecker,fullscreen,wp_adv',
+							),
+						));
+						echo ob_get_clean();
+
+						if ( defined('DOING_AJAX') && DOING_AJAX ) :
+						?>
+							<script type="text/javascript">
+								jQuery(document).ready(function(){
+									tinymce.execCommand( 'mceRemoveEditor', false, '<?php echo $this->getFieldId('val'); ?>' );
+									tinymce.execCommand( 'mceAddEditor', false, '<?php echo $this->getFieldId('val'); ?>' );
+								})
+							</script>
+						<?php endif; ?>
+
+					<?php else :
+						add_action( 'admin_print_footer_scripts', array(&$this, 'customTinyMCE'), 9999 );
+						$entry = wpautop($this->entry);
+						$entry = esc_html($entry);
+						?>
+						<textarea class="mceEditor" name="<?php echo $this->getFieldName('val'); ?>" id="<?php echo $this->getFieldId('val'); ?>" rows="5" cols="50"><?php echo $entry?></textarea>
+					<?php endif; ?>
+
+				<?php else: // no editor - print textarea ?>
+					<?php $entry = esc_html($this->entry); 	?>
+					<textarea name="<?php echo $this->getFieldName('val'); ?>" id="<?php echo $this->getFieldId('val'); ?>" rows="5" cols="50"><?php echo $entry?></textarea>
+				<?php endif; ?>
+
+				<?php if( !empty($this->instance['description']) ) :?>
+					<p class="description"><?php echo $this->instance['description']; ?></p>
+				<?php endif; ?>
+			</div>
+		</div>
+		<?php
 	}
-	
+
+	/**
+	 * draw form for edit field
+	 */
+	public function form()
+	{
+		//Defaults
+		$instance = wp_parse_args( (array) $this->instance, array( 'title' => '', 'description' => '' ) );
+		$title = esc_attr( $instance['title'] );
+		$description = esc_html($instance['description']);
+		$checked = !empty($instance['editor']) ? ' checked="checked" ' : '';
+		?>
+		<p><label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', JCF_TEXTDOMAIN); ?></label> <input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" /></p>
+		<p><label for="<?php echo $this->getFieldId('editor'); ?>"><input class="checkbox" id="<?php echo $this->getFieldId('editor'); ?>" name="<?php echo $this->getFieldName('editor'); ?>" type="checkbox" value="1" <?php echo $checked; ?> /> <?php _e('Use Editor for this textarea:', JCF_TEXTDOMAIN); ?></label></p>
+		<p><label for="<?php echo $this->getFieldId('description'); ?>"><?php _e('Description:', JCF_TEXTDOMAIN); ?></label> <textarea name="<?php echo $this->getFieldName('description'); ?>" id="<?php echo $this->getFieldId('description'); ?>" cols="20" rows="4" class="widefat"><?php echo $description; ?></textarea></p>
+		<?php
+	}
+
 	/**
 	 *	save field on post edit form
 	 */
@@ -42,7 +115,7 @@ class Just_Field_Textarea extends models\Just_Field{
 		}
 		return $values;
 	}
-	
+
 	/**
 	 *	update instance (settings) for current field
 	 */

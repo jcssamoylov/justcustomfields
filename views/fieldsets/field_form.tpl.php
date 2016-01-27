@@ -12,7 +12,7 @@
 							<input type="hidden" name="collection_id" value="<?php echo $field->collectionId; ?>" />
 						<?php
 							endif;
-							$this->_render('/components/' . $field->idBase . '/views/form', array('field_obj' => $field));
+							$field->form();
 							// need to add slug field too
 							$slug = esc_attr($field->slug);
 						?>

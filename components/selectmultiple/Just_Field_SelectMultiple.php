@@ -26,9 +26,49 @@ class Just_Field_SelectMultiple extends models\Just_Field{
 			$this->entry = array();
 		// prepare options array
 		$values = $this->parsedSelectOptions($this->instance);
-		include(JCF_ROOT . '/components/selectmultiple/views/field.tpl.php');
+		?>
+			<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
+				<div class="form-field">
+					<label><?php echo $this->instance['title']; ?>:</label>
+					<div class="jcf-get-shortcode" rel="<?php echo $this->slug; ?>">
+						<span class="dashicons dashicons-editor-help wp-ui-text-highlight"></span>
+					</div>
+					<div class="select_multiple_field">
+					<select name="<?php echo $this->getFieldName('val'); ?>[]" id="<?php echo $this->getFieldId('val'); ?>" multiple="multiple" style="height:200px; width:47%;">
+						<?php foreach( $values as $key => $val ): ?>
+							<option value="<?php echo esc_attr($val); ?>" <?php echo selected(true, in_array($val, $this->entry), false); ?>><?php echo esc_html(ucfirst($key)); ?></option>
+						<?php endforeach; ?>
+					</select>
+					</div>
+					<?php if( $this->instance['description'] != '' ) : ?>
+						<p class="description"><?php echo $this->instance['description']; ?></p>
+					<?php endif; ?>
+				</div>
+			</div>
+		<?php
 	}
-	
+
+	/**
+	 * draw form for edit field
+	 */
+	public function form()
+	{
+		//Defaults
+		$instance = wp_parse_args( (array) $this->instance, array( 'title' => '', 'description' => '', 'settings' => '' ) );
+
+		$title = esc_attr( $instance['title'] );
+		$settings = esc_attr( $instance['settings'] );
+		$description = esc_html($instance['description']);
+		?>
+		<p><label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> <input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" /></p>
+
+		<p><label for="<?php echo $this->getFieldId('settings'); ?>"><?php _e('Settings:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> 
+		<textarea class="widefat" id="<?php echo $this->getFieldId('settings'); ?>" name="<?php echo $this->getFieldName('settings'); ?>" ><?php echo $settings; ?></textarea>
+		<br/><small><?php _e('Parameters like (you can use just "label" if "id" is the same):<br>label1|id1<br>label2|id2<br>label3', \jcf\JustCustomFields::TEXTDOMAIN); ?></small></p>
+		<p><label for="<?php echo $this->getFieldId('description'); ?>"><?php _e('Description:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> <textarea name="<?php echo $this->getFieldName('description'); ?>" id="<?php echo $this->getFieldId('description'); ?>" cols="20" rows="4" class="widefat"><?php echo $description; ?></textarea></p>
+		<?php
+	}
+
 	/**
 	 *	save field on post edit form
 	 */

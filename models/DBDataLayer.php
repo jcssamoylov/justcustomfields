@@ -152,7 +152,7 @@ class DBDataLayer implements interfaces\FieldSettings {
 	protected function _getOptions($key)
 	{
 		$multisite_settings = \jcf\models\Settings::getNetworkMode();
-		return $multisite_settings == \jcf\models\Settings::JCF_CONF_MS_NETWORK ? get_site_option($key, array()) : get_option($key, array());
+		return $multisite_settings == \jcf\models\Settings::CONF_MS_NETWORK ? get_site_option($key, array()) : get_option($key, array());
 	}
 	
 	/**
@@ -164,7 +164,7 @@ class DBDataLayer implements interfaces\FieldSettings {
 	protected function _updateOptions($key, $value)
 	{
 		$multisite_settings = \jcf\models\Settings::getNetworkMode();
-		$multisite_settings == \jcf\models\Settings::JCF_CONF_MS_NETWORK ? update_site_option($key, $value) : update_option($key, $value);
+		$multisite_settings == \jcf\models\Settings::CONF_MS_NETWORK ? update_site_option($key, $value) : update_option($key, $value);
 		return true;
 	}
 	

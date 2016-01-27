@@ -6,24 +6,27 @@ use jcf\core;
 
 class PostTypeController extends core\Controller {
 
+	/**
+	 * Init all wp-actions
+	 */
 	public function __construct()
 	{
 		if ( !isset($_GET['page']) ) {
 			add_action('admin_print_scripts', array($this, 'addScripts'));
 		}
 		add_action('admin_print_styles', array($this, 'addStyles'));
-		add_action('add_meta_boxes', array($this, 'renderFields'), 10, 1); 
-		add_action('save_post', array($this, 'saveFields'), 10, 2);
+		add_action('add_meta_boxes', array($this, 'actionRenderFields'), 10, 1); 
+		add_action('save_post', array($this, 'actionSaveFields'), 10, 2);
 		add_action('wp_ajax_jcf_related_content_autocomplete', array($this, 'ajaxRelatedContentAutocomplete'));
 		add_action('wp_ajax_jcf_collection_add_new_field_group', array($this, 'ajaxReturnCollectionFieldGroup'));
-		add_shortcode('jcf-value',  array($this, 'getShortcodeValue'));
+		add_shortcode('jcf-value',  array($this, 'actionGetShortcodeValue'));
 	}
 
 	/**
 	 * Get fields by post type
 	 * @param string $post_type
 	 */
-	public function renderFields( $post_type = '' )
+	public function actionRenderFields( $post_type = '' )
 	{
 		$model = new models\PostType();
 		$model->renderCustomFields($post_type);
@@ -34,7 +37,7 @@ class PostTypeController extends core\Controller {
 	 * @param int $post_ID
 	 * @param array $post
 	 */
-	public function saveFields($post_ID = 0, $post = null)
+	public function actionSaveFields($post_ID = 0, $post = null)
 	{
 		$model = new models\PostType();
 		$model->saveCustomFields($post_ID, $post);
@@ -43,7 +46,7 @@ class PostTypeController extends core\Controller {
 	/**
 	 * Set value of shortcode
 	 */
-	public function getShortcodeValue($args)
+	public function actionGetShortcodeValue($args)
 	{
 		$model = new models\Shortcodes();
 		return $model->getFieldValue($args);
@@ -57,7 +60,7 @@ class PostTypeController extends core\Controller {
 		$model = new models\Field();
 		$model->load($_POST);
 		$collection = $model->groupCollectionFields();
-		$this->_render('/components/collection/views/group_fields', array('collection' => $collection));
+		$this->_render('fieldsets/collection_group_fields', array('collection' => $collection));
 		die();
 	}
 
@@ -73,8 +76,8 @@ class PostTypeController extends core\Controller {
 	/**
 	 *	add custom scripts to post edit page
 	 */
-	public function addScripts(){
-
+	public function addScripts()
+	{
 		wp_register_script(
 				'jcf_edit_post',
 				WP_PLUGIN_URL.'/just-custom-fields/assets/edit_post.js',
@@ -88,7 +91,8 @@ class PostTypeController extends core\Controller {
 	/**
 	 *	add custom styles to post edit page
 	 */
-	public function addStyles(){
+	public function addStyles()
+	{
 		wp_register_style('jcf_edit_post', WP_PLUGIN_URL.'/just-custom-fields/assets/edit_post.css');
 		wp_enqueue_style('jcf_edit_post');
 		

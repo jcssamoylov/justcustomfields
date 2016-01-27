@@ -8,6 +8,7 @@ class ImportExportController extends core\Controller {
 
 	public function __construct()
 	{
+		parent::__construct();
 		add_action('admin_menu', array($this, 'initRoutes'));
 		add_action('wp_ajax_jcf_export_fields', array($this, 'ajaxExport'));
 		add_action('wp_ajax_jcf_export_fields_form', array($this, 'ajaxExportForm'));
@@ -20,30 +21,28 @@ class ImportExportController extends core\Controller {
 	public function initRoutes()
 	{
 		$page_title = __('Import/Export', \jcf\JustCustomFields::TEXTDOMAIN);
-		$page_slug = 'jcf_import_export';
-		add_submenu_page(null, $page_title, $page_title, 'manage_options', $page_slug, array($this, 'initPage'));
+		add_submenu_page(null, $page_title, $page_title, 'manage_options', 'jcf_import_export', array($this, 'actionIndex'));
 	}
 
 	/**
 	 * Render import/export page
 	 */
-	public function initPage()
+	public function actionIndex()
 	{
 		$model = new models\Fieldset();
 		$model->load($_POST) && $model->importFields();
-		$tab = 'import_export';
-		$this->_render( '/views/import_export/import_export' , array('tab' => $tab));
+
+		//load template
+		$this->_render('import_export/import_export' , array('tab' => 'import_export'));
 	}
 
 	public function ajaxImportForm()
 	{
 		$model = new models\Fieldset();
 		$model->load($_POST) && $all_fields = $model->getImportFields();
-
-		ob_start(); 
-		$this->_render('/views/import_export/import', $all_fields);
-		$html = ob_get_clean();
-		jcf_ajax_response($html, 'html');
+		
+		// load template
+		$this->_renderAjax('import_export/import', 'html', $all_fields);
 	}
 
 	/**
@@ -52,7 +51,14 @@ class ImportExportController extends core\Controller {
 	public function ajaxExport()
 	{
 		$model = new models\Fieldset();
-		$model->load($_POST) && $model->exportFields();
+		$model->load($_POST) && $data = $model->exportFields();
+
+		$filename = 'jcf_export' . date('Ymd-his') . '.json';
+		header('Content-Type: text/json; charset=' . get_bloginfo('charset'));
+		header("Content-Disposition: attachment;filename=" . $filename);
+		header("Content-Transfer-Encoding: binary ");
+		echo $data;
+		exit();
 	}
 
 	/**
@@ -65,10 +71,7 @@ class ImportExportController extends core\Controller {
 		$all_fields['post_types'] = !empty($all_fields['post_types']) ? $all_fields['post_types'] : jcf_get_post_types();
 
 		// load template
-		ob_start(); 
-		$this->_render('/views/import_export/export', $all_fields);
-		$html = ob_get_clean();
-		jcf_ajax_response($html, 'html');
+		$this->_renderAjax('import_export/export', 'html', $all_fields);
 	}
 }
 

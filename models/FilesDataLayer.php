@@ -155,8 +155,8 @@ class FilesDataLayer implements interfaces\FieldSettings {
 	 */
 	protected function _getConfigFilePath($source_settings)
 	{
-		if( !empty($source_settings) && ($source_settings == \jcf\models\Settings::JCF_CONF_SOURCE_FS_THEME || $source_settings == \jcf\models\Settings::JCF_CONF_SOURCE_FS_GLOBAL) ) {
-			return ($source_settings == \jcf\models\Settings::JCF_CONF_SOURCE_FS_THEME)? get_stylesheet_directory() . '/jcf-settings/jcf_settings.json' : get_home_path() . 'wp-content/jcf-settings/jcf_settings.json';
+		if( !empty($source_settings) && ($source_settings == \jcf\models\Settings::CONF_SOURCE_FS_THEME || $source_settings == \jcf\models\Settings::CONF_SOURCE_FS_GLOBAL) ) {
+			return ($source_settings == \jcf\models\Settings::CONF_SOURCE_FS_THEME)? get_stylesheet_directory() . '/jcf-settings/jcf_settings.json' : get_home_path() . 'wp-content/jcf-settings/jcf_settings.json';
 		}
 		return false;
 	}

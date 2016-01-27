@@ -76,11 +76,97 @@ class Just_Field_RelatedContent extends models\Just_Field{
 				$options[ "".$p->ID."" ] = esc_attr($p->post_title . $draft . $type_label);
 			}
 		}
-		
-		include(JCF_ROOT . '/components/relatedcontent/views/field.tpl.php');
+		?>
+		<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
+			<div class="form-field">
+				<label><?php echo $this->instance['title']; ?>:</label>
+				<div class="jcf-get-shortcode" rel="<?php echo $this->slug; ?>">
+					<span class="dashicons dashicons-editor-help wp-ui-text-highlight"></span>
+				</div>
+				<div class="jcf-relatedcontent-field jcf-field-container">
+					<?php foreach ( $entries as $key => $entry ) : ?>
+						<div class="jcf-relatedcontent-row<?php if('00' === $key) echo ' jcf-hide'; ?>">
+							<div class="jcf-relatedcontent-container">
+								<p>
+									<span class="drag-handle" >move</span>
+									<?php if( $type == 'select' ) : ?>
+										<select id="<?php echo $this->getFieldIdL2('related_id', $key); ?>" 
+											name="<?php echo $this->getFieldNameL2('related_id', $key); ?>">
+											<option value="">&nbsp;</option>
+											<?php foreach ( $options as $val => $label ) : ?>
+											<option value="<?php echo $val; ?>" <?php selected($val, $entry); ?>><?php echo $label; ?></option>
+											<?php endforeach; ?>
+										</select>
+									<?php else : // input field for autocomplete ?>
+										<input type="text" value="<?php echo @$options[$entry]; ?>" 
+											id="<?php echo $this->getFieldIdL2('related_title', $key); ?>" 
+											name="<?php echo $this->getFieldNameL2('related_title', $key); ?>" 
+											alt="<?php echo $post_type; ?>" />
+										<input type="hidden" value="<?php echo $entry; ?>" 
+											id="<?php echo $this->getFieldIdL2('related_id', $key); ?>" 
+											name="<?php echo $this->getFieldNameL2('related_id', $key); ?>" />
+									<?php endif; ?>
+									<a href="#" class="jcf-btn jcf_delete"><?php _e('Delete', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
+								</p>
+							</div>
+							<div class="jcf-delete-layer">
+								<img src="<?php echo $del_image; ?>" alt="" />
+								<input type="hidden" id="<?php echo $this->getFieldIdL2('__delete__', $key); ?>" name="<?php echo $this->getFieldNameL2('__delete__', $key); ?>" value="" />
+								<a href="#" class="jcf-btn jcf_cancel"><?php _e('Cancel', \jcf\JustCustomFields::TEXTDOMAIN); ?></a><br/>
+							</div>
+						</div>
+					<?php endforeach; ?>
+					<a href="#" class="jcf-btn jcf_add_more"><?php _e('+ Add another', \jcf\JustCustomFields::TEXTDOMAIN); ?></a>
+				</div>
+
+				<?php if( $this->instance['description'] != '' ): ?>
+					<p class="description"><?php echo $this->instance['description']; ?></p>
+				<?php endif; ?>
+			</div>
+		</div>
+		<?php
 		return true;
 	}
-	
+
+	/**
+	 * draw form for edit field
+	 */
+	public function form()
+	{
+		//Defaults
+		$instance = wp_parse_args( (array) $this->instance, array( 'title' => '', 'post_type' => 'page', 'input_type' => 'autocomplete',
+				'description' => __('Start typing entry Title to see the list.', \jcf\JustCustomFields::TEXTDOMAIN) ) );
+
+		$title = esc_attr( $instance['title'] );
+		$description = esc_html($instance['description']);
+
+		$post_types = jcf_get_post_types( 'object' );
+
+		?>
+		<p><label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label>
+			<input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" /></p>
+
+		<p><label for="<?php echo $this->getFieldId('post_type'); ?>"><?php _e('Post type:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> 
+			<select name="<?php echo $this->getFieldName('post_type'); ?>" id="<?php echo $this->getFieldId('post_type'); ?>">
+				<option value="any" <?php selected('any', $instance['post_type']); ?>><?php _e('All', \jcf\JustCustomFields::TEXTDOMAIN); ?></option>
+				<?php foreach($post_types as $pt_id => $pt) : ?>
+				<option value="<?php echo $pt_id; ?>" <?php selected($pt_id, $instance['post_type']); ?>><?php echo $pt->label; ?></option>
+				<?php endforeach; ?>
+			</select>
+		</p>
+
+		<p><label for="<?php echo $this->getFieldId('input_type'); ?>"><?php _e('Input type:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> 
+			<select name="<?php echo $this->getFieldName('input_type'); ?>" id="<?php echo $this->getFieldId('input_type'); ?>">
+				<option value="autocomplete" <?php selected('autocomplete', $instance['input_type']); ?>><?php _e('Autocomplete', \jcf\JustCustomFields::TEXTDOMAIN); ?></option>
+				<option value="select" <?php selected('select', $instance['input_type']); ?>><?php _e('Dropdown list', \jcf\JustCustomFields::TEXTDOMAIN); ?></option>
+			</select>
+		</p>
+
+		<p><label for="<?php echo $this->getFieldId('description'); ?>"><?php _e('Description:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> 
+			<textarea name="<?php echo $this->getFieldName('description'); ?>" id="<?php echo $this->getFieldId('description'); ?>" cols="20" rows="2" class="widefat"><?php echo $description; ?></textarea></p>
+		<?php
+	}
+
 	/**
 	 *	save field on post edit form
 	 */

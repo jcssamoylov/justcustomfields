@@ -11,6 +11,7 @@ class SettingsController extends core\Controller {
 	 */
 	public function __construct() 
 	{
+		parent::__construct();
 		add_action('admin_menu', array($this, 'initRoutes') );
 	}
 
@@ -20,14 +21,13 @@ class SettingsController extends core\Controller {
 	public function initRoutes()
 	{
 		$page_title = __('Settings', \jcf\JustCustomFields::TEXTDOMAIN);
-		$page_slug = 'jcf_settings';
-		add_submenu_page(null, $page_title, $page_title, 'manage_options', $page_slug, array($this, 'initPage'));
+		add_submenu_page(null, $page_title, $page_title, 'manage_options', 'jcf_settings', array($this, 'actionIndex'));
 	}
 
 	/**
 	 * Render settings page
 	 */
-	public function initPage()
+	public function actionIndex()
 	{
 		$tab = 'settings';
 		$model = new models\Settings();
@@ -38,7 +38,8 @@ class SettingsController extends core\Controller {
 			'tab' => $tab,
 			'model' => $model
 		);
-		$this->_render( '/views/settings/settings_page', $template_params );
+		$this->_render( 'settings/settings_page', $template_params );
+		
 	}
 }
 

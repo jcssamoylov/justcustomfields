@@ -15,7 +15,7 @@
 		<div class="taxonomy-terms-options">
 			<?php if(!empty($terms)) :?>
 				<?php 
-					$this->_render('/views/fieldsets/terms_list', array(
+					$this->_render('fieldsets/terms_list', array(
 						'terms' => $terms, 
 						'current_term' => $current_term
 					));

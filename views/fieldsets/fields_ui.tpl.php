@@ -50,7 +50,7 @@
 												<span class="edit"><a href="#" rel="<?php echo $field_id; ?>"><?php _e('Edit', \jcf\JustCustomFields::TEXTDOMAIN); ?></a></span> |
 												<span class="delete"><a href="#" rel="<?php echo $field_id; ?>"><?php _e('Delete', \jcf\JustCustomFields::TEXTDOMAIN); ?></a></span>
 											</div>
-											<?php if(isset($field_settings[$field_id]['custom_row'])) : ?>
+											<?php if ( isset($field_settings[$field_id]['custom_row']) ) : ?>
 												<ul>
 													<li><strong><?php _e('Type', \jcf\JustCustomFields::TEXTDOMAIN); ?></strong>: <?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></li>
 													<li><strong><?php _e('Slug', \jcf\JustCustomFields::TEXTDOMAIN); ?></strong>: <?php echo $field_settings[$field_id]['slug']; ?></li>
@@ -58,14 +58,14 @@
 												</ul>
 											<?php endif; ?>
 										</td>
-										<?php if(!isset($field_settings[$field_id]['custom_row'])) : ?>
+										<?php if ( !isset($field_settings[$field_id]['custom_row']) ) : ?>
 											<td><?php echo $field_settings[$field_id]['slug']; ?></td>
 											<td><?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></td>
-											<td><?php if($enabled) _e('Yes', \jcf\JustCustomFields::TEXTDOMAIN); else  _e('No', \jcf\JustCustomFields::TEXTDOMAIN);?></td>
+											<td><?php if ( $enabled ) _e('Yes', \jcf\JustCustomFields::TEXTDOMAIN); else  _e('No', \jcf\JustCustomFields::TEXTDOMAIN);?></td>
 										<?php else: ?>
 											<?php ?>
 											<td colspan="3" class="collection_list" data-collection_id="<?php echo $field_id; ?>">
-												<?php $this->_render( '/components/collection/views/fields_ui', array(
+												<?php $this->_render( 'fieldsets/collection_fields_ui', array(
 													'collection' => $collections[$field_id],
 													'collection_id' => $field_id,
 													'fieldset_id' => $fieldset['id'],

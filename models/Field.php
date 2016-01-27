@@ -7,6 +7,13 @@ use jcf\models;
 class Field extends core\Model {
 
 	protected $_layer;
+	
+	public $post_type;
+	public $field_id;
+	public $field_type;
+	public $fieldset_id;
+	public $collection_id;
+	public $fields_order;
 
 	public function __construct()
 	{
@@ -16,98 +23,55 @@ class Field extends core\Model {
 	}
 
 	/**
-	 * Init new object for new field with $this->_request params
-	 * @return object
+	 * Save new field
 	 */
-	public function initField()
+	public function save()
 	{
-		$post_type = $this->_request['post_type'];
-		$field_type =  !empty($this->_request['field_id']) ? $this->_request['field_id'] : $this->_request['field_type'];
-		$fieldset_id = $this->_request['fieldset_id'];
-		$collection_id = ( isset($this->_request['collection_id']) ? $this->_request['collection_id'] : '' );
+		$field_obj = models\JustFieldFactory::create($this);
+		$field_index = models\JustFieldFactory::createFieldIndex($field_obj->idBase);
 
-		$field_factory = new models\JustFieldFactory(!empty($collection_id));
-		$field_obj = $field_factory->initObject($post_type, $field_type, $fieldset_id, $collection_id);
-
-		return $field_obj;
-	}
-
-	/**
-	 * Save new field with $this->_request params
-	 */
-	public function saveField()
-	{
-		$post_type = $this->_request['post_type'];
-		$field_type =  $this->_request['field_id'];
-		$fieldset_id = $this->_request['fieldset_id'];
-		$collection_id = (isset($this->_request['collection_id']) ? $this->_request['collection_id'] : '');
-
-		$field_factory = new models\JustFieldFactory(!empty($collection_id));
-		
-		$field_obj = $field_factory->initObject($post_type, $field_type, $fieldset_id, $collection_id);
-		$field_index = $field_factory->getIndex($field_obj->idBase);
 		return $field_obj->doUpdate($field_index);
 	}
 
 	/**
 	 * Delete field with $this->_request params
 	 */
-	public function deleteField()
+	public function delete()
 	{
-		$field_factory = new models\JustFieldFactory();
-		$post_type = $this->_request['post_type'];
-		$field_id = $this->_request['field_id'];
-		$fieldset_id = $this->_request['fieldset_id'];
-		$collection_id = (isset($this->_request['collection_id']) ? $this->_request['collection_id']:'');
+		$field_obj = models\JustFieldFactory::create($this);
+		$field_obj->doDelete();
 
-		if ( $collection_id ) {
-			$field_obj = $field_factory->initObject($post_type, $collection_id, $fieldset_id);
-			$field_obj->deleteField($field_id);
-		} 
-		else {
-			$field_obj = $field_factory->initObject($post_type, $field_id, $fieldset_id);
-			$field_obj->doDelete();			
-		}
-
-		$resp = array('status' => '1');
-		jcf_ajax_response($resp, 'json');
+		return array('status' => '1');
 	}
 
 	/**
 	 * Sort fields with $this->_request params
 	 */
-	public function sortFields()
+	public function sort()
 	{
-		$post_type = $this->_request['post_type'];
-		$fieldset_id = $this->_request['fieldset_id'];
-		$order  = trim($this->_request['fields_order'], ',');
-		$fieldset = $this->_layer->getFieldsets($post_type, $fieldset_id);
+		$order  = trim($this->fields_order, ',');
+		$fieldset = $this->_layer->getFieldsets($this->post_type, $this->fieldset_id);
 		$new_fields = explode(',', $order);
-		
 		$fieldset['fields'] = array();
+
 		foreach ( $new_fields as $field_id ) {
 			$fieldset['fields'][$field_id] = $field_id;
 		}
-		
-		$this->_layer->updateFieldsets($post_type, $fieldset_id, $fieldset);
-		
-		$resp = array('status' => '1');
-		jcf_ajax_response($resp, 'json');
+
+		$this->_layer->updateFieldsets($this->post_type, $this->fieldset_id, $fieldset);
+
+		return array('status' => '1');
 	}
 
 	/**
 	 * Sort sollection fields with $this->_request params
 	 */
-	public function sortCollectionFields()
+	public function sortCollection()
 	{
-		$fieldset_id = $this->_request['fieldset_id'];
-		$collection_id = $this->_request['collection_id'];
-		$post_type = $this->_request['post_type'];
-
-		$field_factory = new models\JustFieldFactory();
-		$collection = $field_factory->initObject($post_type, $collection_id, $fieldset_id);
-		$order  = trim($this->_request['fields_order'], ',');
-
+		$this->field_id = $this->collection_id;
+		$this->collection_id = false;
+		$collection = models\JustFieldFactory::create($this);
+		$order  = trim($this->fields_order, ',');
 		$new_fields = explode(',', $order);
 		$new_order = array();		
 
@@ -120,10 +84,9 @@ class Field extends core\Model {
 		}
 
 		$collection->instance['fields'] = $new_order;
-		$this->_layer->updateFields($post_type, $collection_id, $collection->instance, $fieldset_id);
-		
-		$resp = array('status' => '1');
-		jcf_ajax_response($resp, 'json');
+		$this->_layer->updateFields($this->post_type, $this->field_id, $collection->instance, $this->fieldset_id);
+
+		return array('status' => '1');
 	}
 
 	/**

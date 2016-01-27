@@ -8,16 +8,17 @@ class JustFieldFactory {
 	public static function create( \jcf\models\Field $field )
 	{
 		// $field_mixed can be real field id or only id_base
-		$id_base = preg_replace('/\-([0-9]+)/', '', $field->id);
+		$field_mixed = !empty($field->field_id) ? $field->field_id : $field->field_type;
+		$id_base = preg_replace('/\-([0-9]+)/', '', $field_mixed);
 
-		$jcf = \jcf\JustCustomFields();
+		$jcf = new \jcf\JustCustomFields();
 		$field_info = $jcf->getFieldInfo($id_base);
 		
 		$model = new $field_info['class']();
 		$model->setPostType($field->post_type);
 		$model->setFieldset($field->fieldset_id);
 		$model->setCollection($field->collection_id);
-		$model->setId($field->id);
+		$model->setId($field_mixed);
 		
 		if ( !$model->is_new && $field->collection_id ) {
 			$collection = new \jcf\components\collection\Just_Field_Collection();
@@ -25,11 +26,11 @@ class JustFieldFactory {
 			$collection->setFieldset($field->fieldset_id);
 			$collection->setId($field->collection_id);
 			
-			$field_instance = $collection->instance['fields'][$field->id];
+			$field_instance = $collection->instance['fields'][$field_mixed];
 			$model->setSlug($field_instance['slug']);
 			$model->instance = $field_instance;
 		}
-		
+
 		return $model;
 	}
 	

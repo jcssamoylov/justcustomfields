@@ -6,76 +6,83 @@ use jcf\core;
 
 class FieldController extends core\Controller {
 
+	/**
+	 * Init all wp-actions
+	 */
 	public function __construct()
 	{
 		//Fields actions
-		add_action('wp_ajax_jcf_add_field', array($this, 'ajaxChangeField'));
-		add_action('wp_ajax_jcf_save_field', array($this, 'ajaxSaveField'));
-		add_action('wp_ajax_jcf_delete_field', array($this, 'ajaxDeleteField'));
-		add_action('wp_ajax_jcf_edit_field', array($this, 'ajaxChangeField'));
-		add_action('wp_ajax_jcf_fields_order', array($this, 'ajaxSortFields'));
-		add_action('wp_ajax_jcf_collection_order', array($this, 'ajaxCollectionSortFields' ));
+		add_action('wp_ajax_jcf_add_field', array($this, 'ajaxEdit'));
+		add_action('wp_ajax_jcf_save_field', array($this, 'ajaxSave'));
+		add_action('wp_ajax_jcf_delete_field', array($this, 'ajaxDelete'));
+		add_action('wp_ajax_jcf_edit_field', array($this, 'ajaxEdit'));
+		add_action('wp_ajax_jcf_fields_order', array($this, 'ajaxSort'));
+		add_action('wp_ajax_jcf_collection_order', array($this, 'ajaxCollectionSort' ));
 	}
 
 	/**
-	 *  add field form show callback
+	 *  Get field form show callback
 	 */
-	public function ajaxChangeField()
+	public function ajaxEdit()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $field = $model->initField();
+		$model->load($_POST) && $field = models\JustFieldFactory::create($model);
 
-		ob_start();
-		$this->_render('/views/fieldsets/field_form', array('field' => $field));
-		$html = ob_get_clean();
-		jcf_ajax_response($html, 'html');
+		$this->_renderAjax('fieldsets/field_form', 'html', array('field' => $field));
 	}
 
 	/**
 	 * save field from the form callback
 	 */
-	public function ajaxSaveField()
+	public function ajaxSave()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $resp = $model->saveField(); 
-		if ( isset($resp['id_base']) && $resp['id_base'] == 'collection') {
+		$model->load($_POST) && $result = $model->save(); 
+	
+		if ( isset($result['id_base']) && $result['id_base'] == 'collection') {
 			ob_start();
-			$template_params = array(
-				'collection' => $resp['instance'],
-				'collection_id' => $resp['id'],
-				'fieldset_id' => $resp['fieldset_id'],
-				'registered_fields' => $resp['registered_fields']
-			);
-			$this->_render( '/components/collection/views/fields_ui', $template_params);
-			$resp["collection_fields"] = ob_get_clean();
+			$collection = $result['instance'];
+			$collection_id = $result['id'];
+			$fieldset_id = $result['fieldset_id'];
+			$registered_fields = $result['registered_fields'];
+
+			include( JCF_ROOT . '/components/collection/views/fields_ui');
+			$result["collection_fields"] = ob_get_clean();
 		}
-		jcf_ajax_response($resp, 'json');
+
+		$this->_renderAjax($result, 'json');
 	}
 
 	/**
 	 * delete field processor callback
 	 */
-	public function ajaxDeleteField()
+	public function ajaxDelete()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $model->deleteField();
+		$model->load($_POST) && $result = $model->delete();
+
+		$this->_renderAjax($result, 'json');
 	}
 
 	/**
 	 * fields sort change callback
 	 */
-	public function ajaxSortFields()
+	public function ajaxSort()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $model->sortFields();
+		$model->load($_POST) && $result = $model->sort();
+		
+		$this->_renderAjax($result, 'json');
 	}
 
 	/**
 	 * sort collection fields callback
 	 */
-	public function ajaxCollectionSortFields()
+	public function ajaxCollectionSort()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $model->sortCollectionFields();
+		$model->load($_POST) && $result = $model->sortCollection();
+		
+		$this->_renderAjax($result, 'json');
 	}
 }

@@ -29,22 +29,22 @@ class JustCustomFields {
 	const TEXTDOMAIN = 'just-custom-fields';
 	const VERSION = '2.300';
 
-	protected $_pluginName = 'just_custom_fields';
-	protected $_pluginTitle;
+	protected static $_pluginName = 'just_custom_fields';
+	protected static $_pluginTitle;
+	protected static $_instance = NULL;
+
 	protected $_fields;
 
-	protected static $_instance = NULL;
-	
 	public function __construct()
 	{
+		self::$_pluginTitle = __('Just Custom Fields', self::TEXTDOMAIN);
+		$this->initControllers();
+		$this->initFields();
+
 		if ( self::$_instance !== NULL ) {
 			return self::$_instance;
 		}
 		static::$_instance = $this;
-
-		$this->_pluginTitle = __('Just Custom Fields', self::TEXTDOMAIN);
-		$this->initControllers();
-		$this->initFields();
 	}
 
 	/**
@@ -65,20 +65,20 @@ class JustCustomFields {
 	
 	public function initFields()
 	{
-		$this->registerField( '\\jcf\\components\\Just_Field_InputText', true );
-		$this->registerField( '\\jcf\\components\\Just_Field_Select', true );
-		$this->registerField( '\\jcf\\components\\Just_Field_SelectMultiple', true );
-		$this->registerField( '\\jcf\\components\\Just_Field_Checkbox', true );
-		$this->registerField( '\\jcf\\components\\Just_Field_Textarea', true );
-		$this->registerField( '\\jcf\\components\\Just_Field_DatePicker', true );
-		$this->registerField( '\\jcf\\components\\Just_Field_SimpleMedia', true );
-		$this->registerField( '\\jcf\\components\\Just_Field_Table', true );
-		$this->registerField( '\\jcf\\components\\Just_Field_Collection' );
-		$this->registerField( '\\jcf\\components\\Just_Field_RelatedContent' );
+		$this->registerField( '\\jcf\\components\\inputtext\\Just_Field_InputText', true );
+		$this->registerField( '\\jcf\\components\\select\\Just_Field_Select', true );
+		$this->registerField( '\\jcf\\components\\selectmultiple\\Just_Field_SelectMultiple', true );
+		$this->registerField( '\\jcf\\components\\checkbox\\Just_Field_Checkbox', true );
+		$this->registerField( '\\jcf\\components\\textarea\\Just_Field_Textarea', true );
+		$this->registerField( '\\jcf\\components\\datepicker\\Just_Field_DatePicker', true );
+		$this->registerField( '\\jcf\\components\\simplemedia\\Just_Field_SimpleMedia', true );
+		$this->registerField( '\\jcf\\components\\table\\Just_Field_Table', true );
+		$this->registerField( '\\jcf\\components\\collection\\Just_Field_Collection' );
+		$this->registerField( '\\jcf\\components\\relatedcontent\\Just_Field_RelatedContent' );
 		
 		// deprecated
-		$this->registerField( '\\jcf\\components\\Just_Field_UploadMedia' );
-		$this->registerField( '\\jcf\\components\\Just_Field_FieldsGroup' );
+		$this->registerField( '\\jcf\\components\\uploadmedia\\Just_Field_UploadMedia' );
+		$this->registerField( '\\jcf\\components\\fieldsgroup\\Just_Field_FieldsGroup' );
 		
 		/**
 		 *	to add more fields with your custom plugin:
@@ -141,18 +141,18 @@ class JustCustomFields {
 	 * Getting plugin's name
 	 * @return string
 	 */
-	public function getPluginName()
+	public static function getPluginName()
 	{
-		return $this->_pluginName;
+		return self::$_pluginName;
 	}
 
 	/**
 	 * Getting plugin's title
 	 * @return string
 	 */
-	public function getPluginTitle()
+	public static function getPluginTitle()
 	{
-		return $this->_pluginTitle;
+		return self::$_pluginTitle;
 	}
 
 	/**

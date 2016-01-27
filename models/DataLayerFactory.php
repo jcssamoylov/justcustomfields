@@ -9,7 +9,7 @@ class DataLayerFactory {
 	
 	public function __construct(){
 		$source = models\Settings::getDataSourceType();
-		$this->_id = $source == models\Settings::JCF_CONF_SOURCE_DB ? 'DB' : 'Files';
+		$this->_id = $source == models\Settings::CONF_SOURCE_DB ? 'DB' : 'Files';
 	}
 	
 	public function create($id = FALSE){

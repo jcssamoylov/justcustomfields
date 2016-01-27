@@ -20,7 +20,7 @@ class PostType extends core\Model {
 	 */
 	public function renderCustomFields( $post_type = '' )
 	{
-		$factory = new JustFieldFactory();
+		$field_model = new Field();
 		$fieldsets = $this->_layer->getFieldsets($post_type);
 		$field_settings = $this->_layer->getFields($post_type);
 
@@ -34,7 +34,13 @@ class PostType extends core\Model {
 						continue;
 					}
 
-					$field_obj = $factory->initObject($post_type, $field_id, $f_id);
+					$params = array(
+						'post_type' => $post_type,
+						'field_id' => $field_id,
+						'fieldset_id' => $f_id
+					);
+					
+					$field_model->load($params) && $field_obj = JustFieldFactory::create($field_model);
 					$field_obj->doAddJs();
 					$field_obj->doAddCss();
 				}
@@ -80,13 +86,19 @@ class PostType extends core\Model {
 	 */
 	public function getCustomFields( $post = NULL, $box = NULL )
 	{
-		$factory = new JustFieldFactory();
+		$field_model = new Field();
 		$fieldset = $box['args'][0];
 		include(JCF_ROOT . '/views/shortcodes/modal.tpl.php');
 
 		foreach ( $fieldset['fields'] as $field_id => $enabled ) {
 			if( !$enabled ) continue;
-			$field_obj = $factory->initObject($post->post_type, $field_id, $fieldset['id']);
+			$params = array(
+				'post_type' => $post->post_type,
+				'field_id' => $field_id,
+				'fieldset_id' => $fieldset['id']
+			);
+
+			$field_model->load($params) && $field_obj = JustFieldFactory::create($field_model);
 			$field_obj->setPostID( $post->ID );
 			$field_obj->field();
 		}
