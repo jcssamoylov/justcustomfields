@@ -42,12 +42,14 @@ class FieldController extends core\Controller {
 	
 		if ( isset($result['id_base']) && $result['id_base'] == 'collection') {
 			ob_start();
-			$collection = $result['instance'];
-			$collection_id = $result['id'];
-			$fieldset_id = $result['fieldset_id'];
-			$registered_fields = $result['registered_fields'];
+			$template_params = array(
+				'collection' => $result['instance'],
+				'collection_id' => $result['id'],
+				'fieldset_id' => $result['fieldset_id'],
+				'registered_fields' => $result['registered_fields']
+			);
 
-			include( JCF_ROOT . '/components/collection/views/fields_ui');
+			$this->_render( 'fieldsets/collection_fields_ui', $template_params);
 			$result["collection_fields"] = ob_get_clean();
 		}
 
