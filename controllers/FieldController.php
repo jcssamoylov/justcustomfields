@@ -11,6 +11,7 @@ class FieldController extends core\Controller {
 	 */
 	public function __construct()
 	{
+		parent::__construct();
 		//Fields actions
 		add_action('wp_ajax_jcf_add_field', array($this, 'ajaxEdit'));
 		add_action('wp_ajax_jcf_save_field', array($this, 'ajaxSave'));

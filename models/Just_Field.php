@@ -198,14 +198,20 @@ class Just_Field {
 		/**
 		 * if is field of collection and itst post edit page create collection field id
 		 */
-		$field_factory = new models\JustFieldFactory();
+		$params = array(
+			'post_type' => $this->postType,
+			'field_id' => $this->collectionId,
+			'fieldset_id' => $this->fieldsetId
+		);
+		$field_model = new models\Field();
+		$field_model->load($params);
 
 		if ( $this->isCollectionField() && $this->isPostEdit ) {
-			$collection = $field_factory->initObject($this->postType, $this->collectionId, $this->fieldsetId);
-			return str_replace('-', $delimeter, 'field'.$delimeter.$collection->idBase.$delimeter.$collection->number.$delimeter
-					.\jcf\components\collection\Just_Field_Collection::$currentCollectionFieldKey.$delimeter.$this->id.$delimeter.$str);
+			$collection = models\JustFieldFactory::create($field_model);
+			return str_replace('-', $delimeter, 'field' . $delimeter . $collection->idBase . $delimeter . $collection->number . $delimeter
+					.\jcf\components\collection\Just_Field_Collection::$currentCollectionFieldKey . $delimeter . $this->id . $delimeter . $str);
 		}
-		return 'field'.$delimeter.$this->idBase.$delimeter.$this->number.$delimeter.$str;
+		return 'field' . $delimeter . $this->idBase . $delimeter . $this->number . $delimeter . $str;
 	}
 
 	/**
@@ -217,13 +223,19 @@ class Just_Field {
 		/**
 		 * if is field of collection and itst post edit page create collection field name
 		 */
-		$field_factory = new models\JustFieldFactory();
+		$params = array(
+			'post_type' => $this->postType,
+			'field_id' => $this->collectionId,
+			'fieldset_id' => $this->fieldsetId
+		);
+		$field_model = new models\Field();
+		$field_model->load($params);
 
 		if ( $this->isCollectionField() && $this->isPostEdit ) {
-			$collection = $field_factory->initObject($this->postType, $this->collectionId, $this->fieldsetId);
-			return 'field-'.$collection->idBase.'['.$collection->number.']['. \jcf\components\collection\Just_Field_Collection::$currentCollectionFieldKey.']['.$this->id.']['.$str.']';
+			$collection = models\JustFieldFactory::create($field_model);
+			return 'field-' . $collection->idBase . '[' . $collection->number . '][' . \jcf\components\collection\Just_Field_Collection::$currentCollectionFieldKey . '][' . $this->id . '][' . $str . ']';
 		}
-		return 'field-'.$this->idBase.'['.$this->number.']['.$str.']';
+		return 'field-' . $this->idBase . '[' . $this->number . '][' . $str . ']';
 	}
 	
 	/**

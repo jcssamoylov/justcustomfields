@@ -39,7 +39,6 @@ class PostType extends core\Model {
 						'field_id' => $field_id,
 						'fieldset_id' => $f_id
 					);
-					
 					$field_model->load($params) && $field_obj = JustFieldFactory::create($field_model);
 					$field_obj->doAddJs();
 					$field_obj->doAddCss();
@@ -92,12 +91,12 @@ class PostType extends core\Model {
 
 		foreach ( $fieldset['fields'] as $field_id => $enabled ) {
 			if( !$enabled ) continue;
+
 			$params = array(
 				'post_type' => $post->post_type,
 				'field_id' => $field_id,
 				'fieldset_id' => $fieldset['id']
 			);
-
 			$field_model->load($params) && $field_obj = JustFieldFactory::create($field_model);
 			$field_obj->setPostID( $post->ID );
 			$field_obj->field();
@@ -118,6 +117,8 @@ class PostType extends core\Model {
 	 */
 	public function saveCustomFields( $post_ID = 0, $post = null )
 	{
+		$field_model = new Field();
+		$field_model->load($_POST);
 		// do not save anything on autosave
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
 			return;
@@ -128,18 +129,21 @@ class PostType extends core\Model {
 			return;
 		
 		// check permissions
-		$permission = ('page' == $_POST['post_type'])? 'edit_page' : 'edit_post';
+		$permission = ('page' == $field_model->post_type)? 'edit_page' : 'edit_post';
 		if ( !current_user_can( $permission, $post_ID ) ) return;
 		
 		// OK, we're authenticated: we need to find and save the data
 
 		// get fieldsets
-		$fieldsets = $this->_layer->getFieldsets($_POST['post_type']);
-		$factory = new JustFieldFactory();
+		$fieldsets = $this->_layer->getFieldsets($field_model->post_type);
+
 		// create field class objects and call save function
 		foreach ( $fieldsets as $f_id => $fieldset ) {
+			$field_model->fieldset_id = $fieldset['id'];
+
 			foreach( $fieldset['fields'] as $field_id => $tmp ) {
-				$field_obj = $factory->initObject($_POST['post_type'], $field_id, $fieldset['id']);
+				$field_model->field_id = $field_id;
+				$field_obj = JustFieldFactory::create($field_model);
 				$field_obj->setPostID( $post->ID );
 				$field_obj->doSave();
 			}

@@ -16,14 +16,6 @@ define('JCF_ROOT', dirname(__FILE__));
 require_once( JCF_ROOT.'/core/Autoloader.php' );
 require_once( JCF_ROOT.'/functions/helpers.php' );
 
-if( !function_exists('pa') ) {
-	function pa($mixed, $stop = false) {
-		$ar = debug_backtrace(); $key = pathinfo($ar[0]['file']); $key = $key['basename'].':'.$ar[0]['line'];
-		$print = array($key => $mixed); echo( '<pre>'.htmlentities(print_r($print,1)).'</pre>' );
-		if($stop == 1) exit();
-	}
-}
-
 class JustCustomFields {
 
 	const TEXTDOMAIN = 'just-custom-fields';

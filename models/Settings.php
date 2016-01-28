@@ -56,7 +56,7 @@ class Settings extends core\Model {
 		if ( MULTISITE ) {
 			$this->_updateNetworkMode();
 		}
-		$this->_updateDataSource();
+		return $this->_updateDataSource();
 	}
 
 	/**

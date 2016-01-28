@@ -31,7 +31,7 @@ class SettingsController extends core\Controller {
 	{
 		$tab = 'settings';
 		$model = new models\Settings();
-		$model->load($_POST) && $model->save();
+		$model->load($_POST) && $result = $model->save();
 
 		// load template
 		$template_params = array(

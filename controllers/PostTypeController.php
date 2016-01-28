@@ -11,7 +11,8 @@ class PostTypeController extends core\Controller {
 	 */
 	public function __construct()
 	{
-		if ( !isset($_GET['page']) ) {
+		parent::__construct();
+		if ( isset($_GET['post']) && isset($_GET['action']) && $_GET['action'] == 'edit' ) {
 			add_action('admin_print_scripts', array($this, 'addScripts'));
 		}
 		add_action('admin_print_styles', array($this, 'addStyles'));
@@ -70,7 +71,9 @@ class PostTypeController extends core\Controller {
 	public function ajaxRelatedContentAutocomplete()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $model->autocompleteRelatedContentField();
+		$model->load($_POST) && $result = $model->autocompleteRelatedContent();
+		
+		$this->_renderAjax($result, 'json');
 	}
 
 	/**

@@ -14,7 +14,7 @@ class AdminController extends core\Controller {
 		parent::__construct();
 		add_action('admin_menu', array($this, 'adminMenu') );
 
-		if ( isset($_GET['page']) ) {
+		if ( !( isset($_GET['post']) && isset($_GET['action']) ) ) {
 			add_action('admin_print_scripts', array($this, 'addScripts'));
 		}
 

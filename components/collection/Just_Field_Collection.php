@@ -34,6 +34,14 @@ class Just_Field_Collection extends models\Just_Field{
 	 */
 	public function field() 
 	{
+		$params = array(
+			'post_type' => $this->postType,
+			'fieldset_id' => $this->fieldsetId,
+			'collection_id' => $this->id,
+		);
+		$field_model = new models\Field();
+		$field_model->load($params);
+
 		self::$currentCollectionFieldKey = 0;
 
 		if ( empty($this->entry) ) $this->entry = array('0' => '');
@@ -74,23 +82,15 @@ class Just_Field_Collection extends models\Just_Field{
 								<?php foreach ( $this->instance['fields'] as $field_id => $field ) : ?>
 									<div class="collection_field_border jcf_collection_<?php echo (intval($field['field_width']) ? $field['field_width'] : '100'); ?>">
 										<?php 
-											$params = array(
-												'post_type' => $this->postType,
-												'field_id' => $field_id,
-												'fieldset_id' => $this->fieldsetId,
-												'collection_id' => $this->id,
-											);
-											$field_model = new models\Field();
-											
-											$field_model->load($params) && $field_obj = models\JustFieldFactory::create($field_model);
+											$field_model->field_id = $field_id;
+											$field_obj = models\JustFieldFactory::create($field_model);
 
 											if ( isset($fields[$field['slug']]) ) {
 												$field_obj->entry = $fields[$field['slug']];
 											}
-\jcf\pa($field_obj->field());
+
 											$field_obj->isPostEdit = true;
 											$field_obj->field();
-											
 										?>
 									</div>
 								<?php endforeach; ?>

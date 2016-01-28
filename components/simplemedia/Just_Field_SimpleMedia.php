@@ -28,7 +28,7 @@ class Just_Field_SimpleMedia extends models\Just_Field
 		$upload_type = $this->instance['type'];
 		$upload_text = ($upload_type == 'image') ? __('Select image', \jcf\JustCustomFields::TEXTDOMAIN) : __('Select file', \jcf\JustCustomFields::TEXTDOMAIN);
 		$value = $link = '#';
-		\jcf\pa($this->instance);
+
 		if ( empty($this->entry) ) 
 			$this->entry = 0;
 		?>

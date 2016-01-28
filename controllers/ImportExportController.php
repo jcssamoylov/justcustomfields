@@ -54,11 +54,9 @@ class ImportExportController extends core\Controller {
 		$model->load($_POST) && $data = $model->exportFields();
 
 		$filename = 'jcf_export' . date('Ymd-his') . '.json';
-		header('Content-Type: text/json; charset=' . get_bloginfo('charset'));
 		header("Content-Disposition: attachment;filename=" . $filename);
 		header("Content-Transfer-Encoding: binary ");
-		echo $data;
-		exit();
+		$this->_renderAjax($data, 'json');
 	}
 
 	/**
