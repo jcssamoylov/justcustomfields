@@ -7,7 +7,26 @@ namespace jcf\core;
  */
 abstract class DataLayer
 {
+	protected $_fields;
+	protected $_fieldsets;
+	
+	public function __construct()
+	{
+		$this->setFields();
+		$this->setFieldsets();
+	}
+	
+	public function getFields()
+	{
+		return $this->_fields;
+	}
 	// TODO: other general functions
+	
+	abstract public function setFields( $fields = null );
+	abstract public function saveFieldsData();
+	
+	abstract public function setFieldsets( $fieldset = null );
+	abstract public function saveFieldsetsData();
 	
 	/**
 	 * apply viibility settings for fieldsets
