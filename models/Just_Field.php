@@ -1,6 +1,7 @@
 <?php
 namespace jcf\models;
 use jcf\models;
+use jcf\core;
 
 class Just_Field {
 	
@@ -57,7 +58,7 @@ class Just_Field {
 	public $entry = null;
 
 	public $fieldErrors = array();
-	protected $_layer;
+	protected $_dL;
 
 	/** 
 	 *	Constructor
@@ -68,8 +69,7 @@ class Just_Field {
 		$this->title = $title;
 		$this->fieldOptions = array_merge($this->fieldOptions, $field_options);
 
-		$layer_factory = new DataLayerFactory();
-		$this->_layer = $layer_factory->create();
+		$this->_dL = core\DataLayerFactory::create();
 	}
 	
 	/**
@@ -139,7 +139,7 @@ class Just_Field {
 			$this->number = str_replace($this->idBase.'-', '', $this->id);
 
 			// load instance data
-			$this->instance =(array)$this->_layer->getFields( $this->postType, $this->id );
+			$this->instance =(array)$this->_dL->getFields( $this->postType, $this->id );
 
 			if( !empty($this->instance) ){
 				$this->slug = $this->instance['slug'];
@@ -329,16 +329,16 @@ class Just_Field {
 
 		if ( !$this->isCollectionField() ) {
 			// update fieldset
-			$fieldset = $this->_layer->getFieldsets( $this->postType, $this->fieldsetId );
+			$fieldset = $this->_dL->getFieldsets( $this->postType, $this->fieldsetId );
 			$fieldset['fields'][$this->id] = $instance['enabled']; 
-			$this->_layer->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
+			$this->_dL->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
 
 			// check slug field
 			if( empty($instance['slug']) ){
 				$instance['slug'] = '_field_' . $this->idBase . '__' . $this->number;
 			}
 			// save
-			$this->_layer->updateFields($this->postType, $this->id, $instance, $this->fieldsetId);
+			$this->_dL->updateFields($this->postType, $this->id, $instance, $this->fieldsetId);
 
 			// return status
 			$res = array(
@@ -371,7 +371,7 @@ class Just_Field {
 
 			$collection->instance['fields'][$this->id] = $instance;
 			// save
-			$this->_layer->updateFields($this->postType, $this->collectionId, $collection->instance, $this->fieldsetId);
+			$this->_dL->updateFields($this->postType, $this->collectionId, $collection->instance, $this->fieldsetId);
 			// return status
 			$res = array(
 				'status' => '1',
@@ -393,18 +393,18 @@ class Just_Field {
 	public function doDelete()
 	{
 		if ( !empty($this->collectionId) ) {
-			$this->_layer->updateFields($this->postType, $this->id, NULL, $this->fieldsetId, $this->collectionId);
+			$this->_dL->updateFields($this->postType, $this->id, NULL, $this->fieldsetId, $this->collectionId);
 		}
 		else {
 			// remove from fieldset:
-			$fieldset = $this->_layer->getFieldsets( $this->postType, $this->fieldsetId );
+			$fieldset = $this->_dL->getFieldsets( $this->postType, $this->fieldsetId );
 
 			if ( isset($fieldset['fields'][$this->id]) )
 				unset($fieldset['fields'][$this->id]);
 
-			$this->_layer->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
+			$this->_dL->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
 			// remove from fields array
-			$this->_layer->updateFields($this->postType, $this->id, NULL, $this->fieldsetId);
+			$this->_dL->updateFields($this->postType, $this->id, NULL, $this->fieldsetId);
 		}
 	}
 

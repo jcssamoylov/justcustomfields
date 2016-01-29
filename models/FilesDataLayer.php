@@ -1,33 +1,31 @@
 <?php
 
 namespace jcf\models;
-use jcf\interfaces;
+use jcf\core;
 
-class FilesDataLayer extends core\DataLayer implements interfaces\FieldSettings {
+class FilesDataLayer extends core\DataLayer {
 
 	/**
-	 * Get fields by post type and id if isset
-	 * @param string $post_type
-	 * @param string $id
-	 * @return array
+	 * Set $this->_fields property
+	 * @param array $fields
 	 */
-	public function getFields($post_type, $id = FALSE) 
+	public function setFields($fields = null) 
 	{
-		$all_fields = $this->getAllFields();
-		$fields = $all_fields['field_settings'][$post_type];
-
-		if ( !empty($id) ) {
-			return $fields[$id];
+		if ( !is_null($fields) ) {
+			$this->_fields = $fields;
+			return;
 		}
-		return $fields;
+
+		$data = $this->getDataFromFile();
+		$this->_fields = $data['field_settings'];
 	}
-	
+
 	/**
 	 *	Update fields
 	 */
-	public function updateFields($post_type, $key, $values = array(), $fieldset_id = '', $collection_id = '')
+	public function saveFieldsData(/*$post_type, $key, $values = array(), $fieldset_id = '', $collection_id = ''*/)
 	{
-		$all_fields = $this->getAllFields();
+		$all_fields = $this->getAll();
 		$fieldset = $all_fields['fieldsets'][$post_type][$fieldset_id];
 		$fields = array();
 
@@ -54,26 +52,22 @@ class FilesDataLayer extends core\DataLayer implements interfaces\FieldSettings 
 		$all_fields['field_settings'][$post_type] = $fields;
 		$this->_save($all_fields);
 	}
-	
+
 	/**
 	 * Get Fieldsets by post type and id if isset
 	 * @param string $post_type
 	 * @param string $id
 	 * @return array
 	 */
-	public function getFieldsets($post_type, $id = FALSE)
+	public function setFieldsets($fieldsets = null)
 	{
-		$all_fields = $this->getAllFields();
-		$fieldsets = array();
-
-		if ( isset($all_fields['fieldsets'][$post_type]) ) {
-			$fieldsets = $all_fields['fieldsets'][$post_type];
+		if ( !is_null($fieldsets) ) {
+			$this->_fieldsets = $fieldsets;
+			return;
 		}
 
-		if ( !empty($id) ) {
-			return @$fieldsets[$id];
-		}
-		return $fieldsets;
+		$data = $this->getDataFromFile();
+		$this->_fieldsets = $data['fieldsets'];
 	}
 
 	/**
@@ -81,9 +75,9 @@ class FilesDataLayer extends core\DataLayer implements interfaces\FieldSettings 
 	 * @param string $key	fieldset id
 	 * @param array $values		fieldset settings
 	 */
-	public function updateFieldsets($post_type, $key, $values = array() )
+	public function saveFieldsetsData($post_type, $key, $values = array())
 	{
-		$all_fields = $this->getAllFields();
+		$all_fields = $this->getAll();
 
 		if ( $values === NULL && isset($all_fields['fieldsets'][$post_type][$key]) ) {
 			unset($all_fields['fieldsets'][$post_type][$key]);
@@ -104,7 +98,7 @@ class FilesDataLayer extends core\DataLayer implements interfaces\FieldSettings 
 	{
 		$new_fieldsets = array();
 		
-		$all_fields = $this->getAllFields();
+		$all_fields = $this->getAll();
 
 		foreach($keys as $key){
 			$new_fieldsets[$key] = $all_fields['fieldsets'][$post_type][$key];
@@ -118,7 +112,7 @@ class FilesDataLayer extends core\DataLayer implements interfaces\FieldSettings 
 	 * Get all fieldsets and fields
 	 * @return array/boolean
 	 */
-	public function getAllFields()
+	public function getAll()
 	{
 		$source = \jcf\models\Settings::getDataSourceType();
 		$filename = $this->_getConfigFilePath($source);
@@ -137,6 +131,7 @@ class FilesDataLayer extends core\DataLayer implements interfaces\FieldSettings 
 	public function getDataFromFile($file = false)
 	{
 		$source = \jcf\models\Settings::getDataSourceType();
+
 		if ( !$file )
 			$file = $this->_getConfigFilePath($source);
 
@@ -145,6 +140,7 @@ class FilesDataLayer extends core\DataLayer implements interfaces\FieldSettings 
 			$data = json_decode($content, true);
 			return $data;
 		}
+
 		return false;
 	}
 

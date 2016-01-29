@@ -10,8 +10,6 @@ class Settings extends core\Model {
 	const CONF_SOURCE_DB = 'database';
 	const CONF_SOURCE_FS_THEME = 'fs_theme';
 	const CONF_SOURCE_FS_GLOBAL = 'fs_global';
-
-	protected $_layer;
 	
 	public $source;
 	public $network;
@@ -22,8 +20,6 @@ class Settings extends core\Model {
 	public function __construct()
 	{
 		parent::__construct();
-		$layer_factory = new DataLayerFactory();
-		$this->_layer = $layer_factory->create();
 	}
 
 	/**
@@ -32,7 +28,7 @@ class Settings extends core\Model {
 	 */
 	public static function getDataSourceType() 
 	{
-		return get_site_option('jcf_read_settings', self::CONF_SOURCE_DB);
+		return get_site_option('jcf_source_settings', self::CONF_SOURCE_DB);
 	}
 
 	/**
@@ -53,10 +49,8 @@ class Settings extends core\Model {
 	 */
 	public function save()
 	{
-		if ( MULTISITE ) {
-			$this->_updateNetworkMode();
-		}
-		return $this->_updateDataSource();
+		$this->_updateNetworkMode();
+		$this->_updateDataSource();
 	}
 
 	/**
@@ -65,23 +59,33 @@ class Settings extends core\Model {
 	 */
 	protected function _updateDataSource() 
 	{
-		$current_value = self::getDataSourceType();
-		$saved = FALSE;
+		if ( empty($this->source) ) {
+			$error = __('<strong>Settings storage update FAILED!</strong>. Choose an option for the data storage', \jcf\JustCustomFields::TEXTDOMAIN);
+			$this->addError($error);
+		}
+
+		if ( $this->source == self::CONF_SOURCE_FS_THEME && !is_writable(get_stylesheet_directory() . '/jcf-settings/') ) {
+			$error = __('<strong>Settings storage update FAILED!</strong>. Check writable permissions of directory ' . get_stylesheet_directory() . '/jcf-settings/', \jcf\JustCustomFields::TEXTDOMAIN);
+			$this->addError($error);
+		}
+
+		if ( $this->source == self::CONF_SOURCE_FS_GLOBAL && !is_writable(get_home_path() . 'wp-content/jcf-settings/') ) {
+			$error = __('<strong>Settings storage update FAILED!</strong>. Check writable permissions of directory ' . get_home_path() . 'wp-content/jcf-settings/', \jcf\JustCustomFields::TEXTDOMAIN);
+			$this->addError($error);
+		}
 
 		if ( MULTISITE && ($this->network != self::CONF_MS_NETWORK && $this->source == self::CONF_SOURCE_FS_GLOBAL) ) {
 			$error = __('<strong>Settings storage update FAILED!</strong>. Your MultiSite Settings do not allow to set global storage in FileSystem', \jcf\JustCustomFields::TEXTDOMAIN);
 			$this->addError($error);
 		}
-		else {
-			$saved = update_site_option('jcf_read_settings', $this->source);
 
-			if ( $saved ) {
-				$message = __('<strong>Settings storage</strong> configurations has been updated.', \jcf\JustCustomFields::TEXTDOMAIN);
-				$this->addMessage($message);
-			}
+		if ( !$this->hasErrors() && update_site_option('jcf_source_settings', $this->source) ) {
+			$message = __('<strong>Settings storage</strong> configurations has been updated.', \jcf\JustCustomFields::TEXTDOMAIN);
+			$this->addMessage($message);
+			return true;
 		}
 
-		return $saved;
+		return false;
 	}
 
 	/**
@@ -90,17 +94,19 @@ class Settings extends core\Model {
 	 */
 	protected function _updateNetworkMode() 
 	{
-		$current_value = self::getNetworkMode();
+		if ( !MULTISITE ) return false;
 
-		if ( $current_value ) {
-			$saved = update_site_option( 'jcf_multisite_setting', $this->network );
-
-			if ( $saved ) {
-				$message = __('<strong>MultiSite settings</strong> has been updated.', \jcf\JustCustomFields::TEXTDOMAIN);
-				$this->addMessage($message);
-			}
+		if ( empty($this->network) ) {
+			$error = __('<strong>MultiSite settings update FAILED!</strong> Choose an option for the multisite.', \jcf\JustCustomFields::TEXTDOMAIN);
+			$this->addError($error);
 		}
 
-		return $saved;
+		if ( !$this->hasErrors() && update_site_option( 'jcf_multisite_setting', $this->network ) ) {
+			$message = __('<strong>MultiSite settings</strong> has been updated.', \jcf\JustCustomFields::TEXTDOMAIN);
+			$this->addMessage($message);
+			return true;
+		}
+
+		return false;
 	}
 }

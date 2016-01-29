@@ -6,7 +6,7 @@ use jcf\models;
 
 class Field extends core\Model {
 
-	protected $_layer;
+	protected $_dL;
 	
 	public $post_type;
 	public $post_types;
@@ -21,8 +21,26 @@ class Field extends core\Model {
 	public function __construct()
 	{
 		parent::__construct();
-		$layer_factory = new DataLayerFactory();
-		$this->_layer = $layer_factory->create();
+		$this->_dL = core\DataLayerFactory::create();
+	}
+
+	public function findByPostType($post_type)
+	{
+		$fields = $this->_dL->getFields();
+		return $fields[$post_type];
+	}
+
+	public function findCollectionsByPostType($post_type)
+	{
+		$fields = $this->_dL->getFields();
+		$collections = array();
+
+		foreach ( $fields[$post_type] as $field_id => $field ) {
+			if ( !empty($field['fields']) )
+				$collections[$field_id] =  $field;
+		}
+
+		return $collections;
 	}
 
 	/**
@@ -53,7 +71,7 @@ class Field extends core\Model {
 	public function sort()
 	{
 		$order  = trim($this->fields_order, ',');
-		$fieldset = $this->_layer->getFieldsets($this->post_type, $this->fieldset_id);
+		$fieldset = $this->_dL->getFieldsets($this->post_type, $this->fieldset_id);
 		$new_fields = explode(',', $order);
 		$fieldset['fields'] = array();
 
@@ -61,7 +79,7 @@ class Field extends core\Model {
 			$fieldset['fields'][$field_id] = $field_id;
 		}
 
-		$this->_layer->updateFieldsets($this->post_type, $this->fieldset_id, $fieldset);
+		$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, $fieldset);
 
 		return array('status' => '1');
 	}
@@ -87,7 +105,7 @@ class Field extends core\Model {
 		}
 
 		$collection->instance['fields'] = $new_order;
-		$this->_layer->updateFields($this->post_type, $this->field_id, $collection->instance, $this->fieldset_id);
+		$this->_dL->updateFields($this->post_type, $this->field_id, $collection->instance, $this->fieldset_id);
 
 		return array('status' => '1');
 	}

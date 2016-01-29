@@ -9,7 +9,6 @@ class Model
 {
 	protected $_errors;
  	protected $_messages;
-	protected $_request;
  	
  	public function __construct(){}
  	
@@ -34,6 +33,19 @@ class Model
  		add_action('jcf_print_admin_notice', array($this, 'printMessages') );
  	}
 
+	public function getErrors()
+	{
+		return $this->_errors;
+	}
+
+	/**
+	 * Check errors
+	 */
+	public function hasErrors()
+	{
+		return !empty($this->_errors);
+	}
+
 	/**
 	 * Render notices 
 	 * @param array $args
@@ -55,16 +67,22 @@ class Model
 	public function load($params)
 	{
 		if ( !empty($params) ) {
-			$this->_setAttributes($params);
+			$this->setAttributes($params);
 			return true;
 		}
 		return false;
 	}
-	
-	protected function _setAttributes($params)
+
+	/**
+	 * Set attributes to model
+	 * @param type $params
+	 */
+	public function setAttributes($params)
 	{
-		foreach ( $params as $key => $value) {		
-			property_exists(get_class($this), $key) && $this->$key = strip_tags(trim($value));
+		$self = get_class($this);
+		foreach ( $params as $key => $value) {
+			if ( property_exists($self, $key) ) 
+				$this->$key = strip_tags(trim($value));
 		}
 	}
 }

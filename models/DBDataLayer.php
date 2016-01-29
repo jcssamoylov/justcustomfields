@@ -2,31 +2,32 @@
 
 namespace jcf\models;
 use jcf\core;
-use jcf\interfaces;
 
-class DBDataLayer extends core\DataLayer implements interfaces\FieldSettings {
-	
+class DBDataLayer extends core\DataLayer {
+
 	/**
-	 * Get fields by post type and id if isset
-	 * @param string $post_type
-	 * @param string $id
-	 * @return array
+	 * Set $this->_fields property
+	 * @param array $fields
 	 */
-	public function getFields($post_type, $id = FALSE)
+	public function setFields($fields = null)
 	{
-		$option_name = $this->_getFieldName($post_type);
-		$fields = $this->_getOptions($option_name);
-
-		if ( !empty($id) ) {
-			return $fields[$id];
+		if ( !is_null($fields) ) {
+			$this->_fields = $fields;
+			return;
 		}
-		return $fields;
+
+		$post_types = jcf_get_post_types();
+
+		foreach ( $post_types as $post_type) {
+			$option_name = $this->_getFieldName($post_type->name);
+			$this->_fields[$post_type->name] = $this->_getOptions($option_name);
+		}
 	}
 
 	/**
 	 *	Update fields in wp-options
 	 */
-	public function updateFields( $post_type, $key, $values = array(), $fieldset_id = '', $collection_id = '')
+	public function saveFieldsData( /*$post_type, $key, $values = array(), $fieldset_id = '', $collection_id = ''*/)
 	{
 		$option_name = $this->_getFieldName($post_type);
 		$fields = $this->_getOptions($option_name);
@@ -52,15 +53,19 @@ class DBDataLayer extends core\DataLayer implements interfaces\FieldSettings {
 	 * @param string $id
 	 * @return array
 	 */
-	public function getFieldsets($post_type, $id = FALSE)
+	public function setFieldsets($fieldsets = null)
 	{
-		$option_name = $this->_getFieldsetName($post_type);
-		$fieldsets = $this->_getOptions($option_name);
-
-		if ( !empty($id) ) {
-			return @$fieldsets[$id];
+		if ( !is_null($fieldsets) ) {
+			$this->_fieldsets = $fieldsets;
+			return;
 		}
-		return $fieldsets;
+		
+		$post_types = jcf_get_post_types( 'object' );
+
+		foreach ( $post_types as $post_type) {
+			$option_name = $this->_getFieldsetName($post_type->name);
+			$this->_fieldsets[$post_type->name] = $this->_getOptions($option_name);
+		}
 	}
 	
 	/**
@@ -69,20 +74,20 @@ class DBDataLayer extends core\DataLayer implements interfaces\FieldSettings {
 	 * @param string $key
 	 * @param array $values
 	 */
-	public function updateFieldsets($post_type, $key, $values = array())
+	public function saveFieldsetsData($post_type, $key, $values = array())
 	{
 		$option_name = $this->_getFieldsetName($post_type);
-		$fieldsets = $this->_getOptions($option_name);
 
-		if ( $values === NULL && isset($fieldsets[$key]) ) {
-			unset($fieldsets[$key]);
+		if ( $values === NULL && isset($this->_fieldsets[$post_type][$key]) ) {
+			unset($this->_fieldsets[$post_type][$key]);
 		}
 
-		if( !empty($values) ){
-			$fielset_values = $this->_applyVisibilitySettings($values, $fieldsets[$key]);
-			$fieldsets[$key] = $fielset_values;
+		if ( !empty($values) ) {
+			$fielset_values = $this->_applyVisibilitySettings($values, $this->_fieldsets[$post_type][$key]);
+			$this->_fieldsets[$post_type][$key] = $fielset_values;
 		}
-		$this->_updateOptions($option_name, $fieldsets);
+
+		$this->_updateOptions($option_name, $this->_fieldsets[$post_type]);
 	}
 	
 	/**
@@ -107,7 +112,7 @@ class DBDataLayer extends core\DataLayer implements interfaces\FieldSettings {
 	 * Get all fieldsets and fields
 	 * @return array/boolean
 	 */
-	public function getAllFields()
+	public function getAll()
 	{
 		$post_types = jcf_get_post_types();
 		$settings = array();

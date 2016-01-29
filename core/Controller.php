@@ -32,6 +32,7 @@ class Controller
 			$this->_render($data, $params);
 			$responce = ob_get_clean();
 		}
+
 		echo $responce;
 		exit();
 	}

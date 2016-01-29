@@ -20,14 +20,18 @@ abstract class DataLayer
 	{
 		return $this->_fields;
 	}
-	// TODO: other general functions
 	
+	public function getFieldsets()
+	{
+		return $this->_fieldsets;
+	}
+
 	abstract public function setFields( $fields = null );
 	abstract public function saveFieldsData();
 	
-	abstract public function setFieldsets( $fieldset = null );
-	abstract public function saveFieldsetsData();
-	
+	abstract public function setFieldsets( $fieldsets = null );
+	abstract public function saveFieldsetsData($post_type, $key, $values = array());
+
 	/**
 	 * apply viibility settings for fieldsets
 	 * @param array $values Visibility values
@@ -35,8 +39,6 @@ abstract class DataLayer
 	 */
 	protected function _applyVisibilitySettings($values, $fieldset)
 	{
-		$visibility_rules = array();
-
 		if ( !empty($values['rules']) ) {
 			if ( !empty($values['rules']['remove']) ) {
 				$key_rule = $values['rules']['remove'];
@@ -54,6 +56,7 @@ abstract class DataLayer
 		else {
 			return $values;
 		}
+
 		return $fieldset;
 	}	
 }

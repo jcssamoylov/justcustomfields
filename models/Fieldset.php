@@ -5,8 +5,7 @@ use jcf\core;
 use jcf\models;
 
 class Fieldset extends core\Model {
-	
-	protected $_layer;
+
 	protected $_dL;
 
 	public $export_fields;
@@ -29,52 +28,25 @@ class Fieldset extends core\Model {
 	public function __construct()
 	{
 		parent::__construct();
-		
 		$this->_dL = core\DataLayerFactory::create();
 	}
 
 	/**
-	 * return number of registered fields and fieldsets for specific post type
-	 * @param string $post_type
-	 * @return int
-	 */
-	public function getCountFields()
-	{
-		$all_settings = $this->_layer->getAllFields();
-		$fieldsets = array();
-
-		if ( isset($all_settings['fieldsets']) ) {
-			$fieldsets = $all_settings['fieldsets'];
-		}
-		
-		if ( !empty($fieldsets) ) {
-			foreach ( $fieldsets as $post_type => $values ) {
-				$count[$post_type]['fieldsets'] = count($values);
-				$count[$post_type]['fields'] = 0;
-				foreach ( $values as $fieldset ) {
-					if ( !empty($fieldset['fields']) ) {
-						$count[$post_type]['fields'] += count($fieldset['fields']);
-					}
-				}
-			}
-		}
-		else {
-			$post_types = jcf_get_post_types();
-			foreach ( $post_types as $key => $post_type ) {
-				$count[$post_type->name]['fieldsets'] = 0;
-				$count[$post_type->name]['fields'] = 0;
-			}
-		}
-		return $count;
-	}
-
-	/**
-	 * Get all fields and fieldsets
+	 * Return number of registered fields and fieldsets for specific post type
 	 * @return array
 	 */
-	public function findAll()
+	public function getFieldsCounter()
 	{
-		return $this->_layer->getAllFields();
+		$fields = $this->_dL->getFields();
+		$fieldsets = $this->_dL->getFieldsets();
+		$post_types = jcf_get_post_types();
+
+		foreach ( $post_types as $key => $post_type ) {
+			$count[$post_type->name]['fieldsets'] = count($fieldsets[$post_type->name]);
+			$count[$post_type->name]['fields'] = count($fields[$post_type->name]);
+		}
+
+		return $count;
 	}
 
 	/**
@@ -84,35 +56,26 @@ class Fieldset extends core\Model {
 	 */
 	public function findByPostType($post_type)
 	{
-		$jcf = new \jcf\JustCustomFields();
-		$registered_fields = $jcf->getFields();
-		$fieldsets = $this->_layer->getFieldsets($post_type);
-		$fields = $this->_layer->getFields($post_type);
-		$collections = array();
+		$fieldsets = $this->_dL->getFieldsets();
+		return $fieldsets[$post_type];
+	}
 
-		if ( !empty($fields) ) {
-			foreach ( $fields as $field_id => $field ) {
-				$collections['registered_fields'] = $jcf->getFields(true);
-				$collections[$field_id] = $this->_layer->getFields($post_type, $field_id);
-			}
-		}
-
-		$data = array(
-			'fieldsets' => $fieldsets,
-			'fields' => $fields,
-			'collections' => $collections,
-			'registered_fields' => $registered_fields
-		);
-
-		return $data;
+	/**
+	 * Get all fields and fieldsets
+	 * @return array
+	 */
+	public function findAll()
+	{
+		return $this->_dL->getFieldsets();
 	}
 
 	/**
 	 * Get fieldset by ID
 	 */
-	public function findById($post_type, $fieldset_id)
+	public function findById($fieldset_id)
 	{
-		return $this->_layer->getFieldsets($post_type, $fieldset_id);
+		$fieldsets = $this->_dL->getFieldsets();
+		return $fieldsets[$this->post_type][$fieldset_id];
 	}
 
 	/**
@@ -121,7 +84,8 @@ class Fieldset extends core\Model {
 	public function create()
 	{
 		if ( empty($this->title) ) {
-			return array('status' => "0", 'error'=>__('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN));
+			$this->addError(__('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN));
+			return false;
 		}
 		
 		$slug = preg_replace('/[^a-z0-9\-\_\s]/i', '', $this->title);
@@ -134,11 +98,12 @@ class Fieldset extends core\Model {
 			$slug = sanitize_title($this->title);
 		}
 
-		$fieldsets = $this->_layer->getFieldsets($this->post_type);
+		$fieldsets = $this->_dL->getFieldsets();
 
 		// check exists
-		if ( isset($fieldsets[$slug]) ) {
-			return array('status' => "0", 'error'=>__('Such fieldset already exists.', \jcf\JustCustomFields::TEXTDOMAIN));
+		if ( isset($fieldsets[$this->post_type][$slug]) ) {
+			$this->addError(__('Such fieldset already exists.', \jcf\JustCustomFields::TEXTDOMAIN));
+			return false;
 		}
 
 		// create fiedlset
@@ -148,9 +113,9 @@ class Fieldset extends core\Model {
 			'fields' => array(),
 		);
 
-		$this->_layer->updateFieldsets($this->post_type, $slug, $fieldset);
+		$this->_dL->saveFieldsetsData($this->post_type, $slug, $fieldset);
 
-		return array('status' => "1");
+		return true;
 	}
 
 	/**
@@ -162,7 +127,7 @@ class Fieldset extends core\Model {
 			return array('status' => "0", 'error'=>__('Wrong params passed.', \jcf\JustCustomFields::TEXTDOMAIN));
 		}
 
-		$this->_layer->updateFieldsets($this->post_type, $this->fieldset_id, NULL);
+		$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, NULL);
 
 		return array('status' => "1");
 	}
@@ -172,20 +137,22 @@ class Fieldset extends core\Model {
 	 */
 	public function update()
 	{
-		$fieldset = $this->_layer->getFieldsets($this->post_type, $this->fieldset_id);
+		$fieldsets = $this->_dL->getFieldsets();
 
-		if ( empty($fieldset) ) {
-			return array('status' => "0", 'error'=>__('Wrong data passed.', \jcf\JustCustomFields::TEXTDOMAIN));
+		if ( empty($fieldsets[$this->post_type][$this->fieldset_id]) ) {
+			$this->_addError(__('Wrong data passed.', \jcf\JustCustomFields::TEXTDOMAIN));
+			return false;
 		}
 
 		if ( empty($this->title) ) {
-			return array('status' => "0", 'error'=>__('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN));
+			$this->_addError(__('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN));
+			return false;
 		}
 
-		$fieldset['title'] = $this->title;
-		$this->_layer->updateFieldsets($this->post_type, $this->fieldset_id, $fieldset);
+		$fieldsets[$this->post_type][$this->fieldset_id]['title'] = $this->title;
+		$this->_dL->saveFieldsetsData($this->post_type, $this->fieldset_id, $fieldsets[$this->post_type][$this->fieldset_id]);
 
-		return  array('status' => "1", 'title' => $this->title);
+		return true;
 	}
 
 	/**
@@ -197,7 +164,7 @@ class Fieldset extends core\Model {
 		$order  = explode(',' ,trim($this->fieldsets_order, ','));
 
 		if ( !empty($this->fieldsets_order) ) {
-			$this->_layer->sortFieldsets($this->post_type, $order);
+			$this->_dL->sortFieldsets($this->post_type, $order);
 		}
 
 		return array('status' => '1');
@@ -217,7 +184,7 @@ class Fieldset extends core\Model {
 		$output['add_rule'] = $this->add_rule;
 
 		if ( !empty($this->edit_rule) ) {
-			$fieldset = $this->_layer->getFieldsets($this->post_type, $this->fieldset_id);
+			$fieldset = $this->_dL->getFieldsets($this->post_type, $this->fieldset_id);
 			$edit_rule = $this->_request['edit_rule']; 
 			$visibility_rule = $fieldset['visibility_rules'][$this->rule_id - 1];
 
@@ -266,13 +233,13 @@ class Fieldset extends core\Model {
 	public function saveVisibilityRules()
 	{
 		if ( !empty($this->rule_id) ) {
-			$this->_layer->updateFieldsets($this->post_type, $this->fieldset_id, array('rules' => array('update' => $this->rule_id, 'data' => $this->visibility_rules)));
+			$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, array('rules' => array('update' => $this->rule_id, 'data' => $this->visibility_rules)));
 		}
 		else {
-			$this->_layer->updateFieldsets($this->post_type, $this->fieldset_id, array('rules' => $this->visibility_rules));
+			$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, array('rules' => $this->visibility_rules));
 		}
 
-		$fieldset = $this->_layer->getFieldsets($this->post_type, $this->fieldset_id);
+		$fieldset = $this->_dL->getFieldsets($this->post_type, $this->fieldset_id);
 
 		return $fieldset['visibility_rules'];
 	}
@@ -283,8 +250,8 @@ class Fieldset extends core\Model {
 	 */
 	public function deleteVisibilityRules()
 	{
-		$this->_layer->updateFieldsets($this->post_type, $this->fieldset_id, array('rules' => array('remove' => $this->rule_id)));
-		$fieldset = $this->_layer->getFieldsets($this->post_type, $this->fieldset_id);
+		$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, array('rules' => array('remove' => $this->rule_id)));
+		$fieldset = $this->_dL->getFieldsets($this->post_type, $this->fieldset_id);
 
 		return $fieldset['visibility_rules'];
 	}
@@ -383,7 +350,7 @@ class Fieldset extends core\Model {
 						$fieldset_id = $status_fieldset;
 
 						if ( !empty($fieldset['fields']) ) {
-							$old_fields = $this->_layer->getFields($post_type_name);
+							$old_fields = $this->_dL->getFields($post_type_name);
 
 							if ( !empty($old_fields) ) {
 								foreach ( $old_fields as $old_field_id => $old_field ) {
@@ -403,7 +370,7 @@ class Fieldset extends core\Model {
 								}
 								
 								if ( $id_base == 'collection' ) {
-									$old_collection_fields = $this->_layer->getFields($post_type_name, $field_id);
+									$old_collection_fields = $this->_dL->getFields($post_type_name, $field_id);
 
 									if ( !empty($old_collection_fields['fields']) ) {
 										foreach ( $old_collection_fields['fields'] as $old_collection_field_id => $old_collection_field ) {
@@ -462,7 +429,7 @@ class Fieldset extends core\Model {
 			$slug = 'jcf-fieldset-'.rand(0,10000);
 		}
 
-		$fieldsets = $this->_layer->getFieldsets($post_type);
+		$fieldsets = $this->_dL->getFieldsets($post_type);
 
 		if ( isset($fieldsets[$slug]) ) {
 			return $slug;
@@ -474,7 +441,7 @@ class Fieldset extends core\Model {
 			'title' => $title,
 			'fields' => array(),
 		);
-		$this->_layer->updateFieldsets($post_type, $slug, $fieldset);
+		$this->_dL->updateFieldsets($post_type, $slug, $fieldset);
 
 		return $slug;
 	}

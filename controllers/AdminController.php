@@ -40,13 +40,12 @@ class AdminController extends core\Controller {
 	public function actionIndex()
 	{
 		$post_types = jcf_get_post_types( 'object' );
-		$tab = 'fields';
 		$model = new models\Fieldset();
-		$count_fields = $model->getCountFields();
+		$count_fields = $model->getFieldsCounter();
 
 		// load template
 		$this->_render( 'admin/admin_page', array(
-			'tab' => $tab,
+			'tab' => 'fields',
 			'post_types' => $post_types,
 			'count_fields' => $count_fields
 		));

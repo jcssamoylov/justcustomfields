@@ -44,21 +44,26 @@ class FieldsetController extends core\Controller {
 	 */
 	public function actionIndex()
 	{
-		$tab = 'fields';
-		$model = new models\Fieldset();
-
-		$name_post_type = $_GET['pt'];
-		$data = $model->findByPostType($name_post_type);
+		$post_type = $_GET['pt'];
 		$post_types = jcf_get_post_types( 'object' );
+		$jcf = new \jcf\JustCustomFields();
+		$fieldset_model = new models\Fieldset();
+		$field_model = new models\Field();
+
+		$fieldsets = $fieldset_model->findByPostType($post_type);
+		$fields = $field_model->findByPostType($post_type);
+		$collections = $field_model->findCollectionsByPostType($post_type);
+		$collections['registered_fields'] = $jcf->getFields(true);
+		$registered_fields = $jcf->getFields();
 
 		// load template
 		$template_params = array(
-			'tab' => $tab,
-			'post_type' => $post_types[$name_post_type],
-			'fieldsets' => $data['fieldsets'],
-			'field_settings' => $data['fields'],
-			'collections' => $data['collections'],
-			'registered_fields' => $data['registered_fields']
+			'tab' => 'fields',
+			'post_type' => $post_types[$post_type],
+			'fieldsets' => $fieldsets,
+			'field_settings' => $fields,
+			'collections' => $collections,
+			'registered_fields' => $registered_fields
 		);
 		$this->_render( 'fieldsets/fields_ui', $template_params );
 	}
@@ -69,9 +74,9 @@ class FieldsetController extends core\Controller {
 	public function ajaxCreate()
 	{
 		$model = new models\Fieldset();
-		$model->load($_POST) && $result = $model->create();
+		$model->load($_POST) && $success = $model->create();
 
-		$this->_renderAjax($result, 'json');
+		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
 	}
 	
 	/**
@@ -91,7 +96,7 @@ class FieldsetController extends core\Controller {
 	public function ajaxGetForm()
 	{
 		$model = new models\Fieldset();
-		$model->load($_POST) && $fieldset = $model->findById($model->post_type, $model->fieldset_id);
+		$model->load($_POST) && $fieldset = $model->findById($model->fieldset_id);
 		$visibility_form_data = $model->getVisibilityRulesForm();
 
 		$this->_renderAjax('fieldsets/change_fieldset', 'html', array('fieldset' => $fieldset, 'visibility_form_data' => $visibility_form_data));
@@ -103,9 +108,9 @@ class FieldsetController extends core\Controller {
 	public function ajaxUpdate()
 	{
 		$model = new models\Fieldset();
-		$model->load($_POST) && $result = $model->update();
-		
-		$this->_renderAjax($result, 'json');
+		$model->load($_POST) && $success = $model->update();
+
+		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
 	}
 	
 	/**
