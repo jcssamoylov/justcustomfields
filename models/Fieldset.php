@@ -7,6 +7,7 @@ use jcf\models;
 class Fieldset extends core\Model {
 	
 	protected $_layer;
+	protected $_dL;
 
 	public $export_fields;
 	public $export_data;
@@ -28,8 +29,8 @@ class Fieldset extends core\Model {
 	public function __construct()
 	{
 		parent::__construct();
-		$layer_factory = new DataLayerFactory();
-		$this->_layer = $layer_factory->create();
+		
+		$this->_dL = core\DataLayerFactory::create();
 	}
 
 	/**

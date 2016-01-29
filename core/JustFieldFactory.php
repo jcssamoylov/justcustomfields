@@ -1,10 +1,15 @@
 <?php
 
-namespace jcf\models;
-use jcf\core;
+namespace jcf\core;
 
 class JustFieldFactory {
 	
+	/**
+	 * Create Just_Field object of the required type
+	 * 
+	 * @param \jcf\models\Field $field
+	 * @return \jcf\models\Just_Field
+	 */
 	public static function create( \jcf\models\Field $field )
 	{
 		// $field_mixed can be real field id or only id_base
@@ -32,34 +37,6 @@ class JustFieldFactory {
 		}
 
 		return $model;
-	}
-	
-	/**
-	 *	init field object
-	 /
-	public function initObject($post_type, $field_mixed, $fieldset_id = '', $collection_id = '')
-	{
-		// $field_mixed can be real field id or only id_base
-		$id_base = preg_replace('/\-([0-9]+)/', '', $field_mixed);
-		$field = $this->getRegisteredFields( $id_base );
-
-		$field_obj = new $field['class_name']();
-		$field_obj->setPostType($post_type);
-		$field_obj->setFieldset( $fieldset_id );
-		$field_obj->setCollection( $collection_id );
-		$field_obj->setId( $field_mixed );
-
-		//if is not new field and include to cillection
-		if ( !$field_obj->is_new && $collection_id ) {
-			$collection_obj = new \jcf\components\collection\Just_Field_Collection();
-			$collection_obj->setPostType($post_type);
-			$collection_obj->setFieldset($fieldset_id);
-			$collection_obj->setId($collection_id);
-			$field = $collection_obj->instance['fields'][$field_mixed];
-			$field_obj->setSlug($field['slug']);
-			$field_obj->instance = $field;
-		}
-		return $field_obj;
 	}
 	
 	/**
