@@ -40,7 +40,6 @@ class ImportExportController extends core\Controller {
 	{
 		$model = new models\Fieldset();
 		$model->load($_POST) && $all_fields = $model->getImportFields();
-		
 		// load template
 		$this->_renderAjax('import_export/import', 'html', $all_fields);
 	}
@@ -64,12 +63,19 @@ class ImportExportController extends core\Controller {
 	 */
 	public function ajaxExportForm()
 	{
-		$model = new models\Fieldset();
-		$all_fields = $model->findAll();
-		$all_fields['post_types'] = !empty($all_fields['post_types']) ? $all_fields['post_types'] : jcf_get_post_types();
+		$fieldsets_model = new models\Fieldset();
+		$fields_model = new models\Field();
+		$fieldsets = $fieldsets_model->findAll();
+		$fields = $fields_model->findAll();
+
+		$data = array(
+			'field_settings' => $fields,
+			'fieldsets' => $fieldsets
+		);
+		$data['post_types'] = !empty($fieldsets['post_types']) ? $fieldsets['post_types'] : jcf_get_post_types();
 
 		// load template
-		$this->_renderAjax('import_export/export', 'html', $all_fields);
+		$this->_renderAjax('import_export/export', 'html', $data);
 	}
 }
 

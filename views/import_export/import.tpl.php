@@ -102,30 +102,32 @@
 																				<th><?php _e('Slug', JCF_TEXTDOMAIN); ?></th>
 																				<th><?php _e('Enabled', JCF_TEXTDOMAIN); ?></th>
 																			</tr>
-																		<?php foreach($field['fields'] as $collection_field_id => $collection_field_value):  ?>
-																			<tr>
-																				<td>
-																					<input type="checkbox" class="choose_collection_field" name="choose_collection_field[]"
-																					data-fieldset_id="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>"
-																					value="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>" 
-																					id="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>" 
-																				 />
-																				<?php foreach($collection_field_value as $c_key => $c_value): ?>
-																					<input type="hidden" disabled='disabled'
-																						   data-collection="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>"
-																						   data-fieldset="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
-																						   data-field='import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>'  
-																						   name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][<?php echo $key_setting; ?>][<?php echo $collection_field_id;?>][<?php echo $c_key;?>]" 
-																						   value="<?php echo $c_value ; ?>"
-																						/>
-																				<?php endforeach; ?>
-																				</td>
-																				<td><?php echo $collection_field_value['title']; ?></td>
-																				<td><?php echo preg_replace('/\-[0-9]+$/', '', $collection_field_id); ?></td>
-																				<td><?php echo $collection_field_value['slug']; ?></td>
-																				<td><?php if($collection_field_value['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
-																			</tr>
-																		<?php endforeach; ?>
+																		<?php if( !empty($field['fields']) && is_array($field['fields']) ): ?>
+																			<?php foreach($field['fields'] as $collection_field_id => $collection_field_value):  ?>
+																				<tr>
+																					<td>
+																						<input type="checkbox" class="choose_collection_field" name="choose_collection_field[]"
+																						data-fieldset_id="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>"
+																						value="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>" 
+																						id="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>" 
+																					 />
+																					<?php foreach($collection_field_value as $c_key => $c_value): ?>
+																						<input type="hidden" disabled='disabled'
+																							   data-collection="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>"
+																							   data-fieldset="import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
+																							   data-field='import_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>'  
+																							   name="import_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][<?php echo $key_setting; ?>][<?php echo $collection_field_id;?>][<?php echo $c_key;?>]" 
+																							   value="<?php echo $c_value ; ?>"
+																							/>
+																					<?php endforeach; ?>
+																					</td>
+																					<td><?php echo $collection_field_value['title']; ?></td>
+																					<td><?php echo preg_replace('/\-[0-9]+$/', '', $collection_field_id); ?></td>
+																					<td><?php echo $collection_field_value['slug']; ?></td>
+																					<td><?php if($collection_field_value['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
+																				</tr>
+																			<?php endforeach; ?>
+																		<?php endif; ?>	
 																		</table>
 																	</td>
 																<?php endif;?>																

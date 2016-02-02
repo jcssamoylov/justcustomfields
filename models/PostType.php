@@ -5,13 +5,12 @@ use jcf\core;
 
 class PostType extends core\Model {
 
-	protected $_layer;
+	protected $_dL;
 	
 	public function __construct()
 	{
 		parent::__construct();
-		$layer_factory = new DataLayerFactory();
-		$this->_layer = $layer_factory->create();
+		$this->_dL = core\DataLayerFactory::create();
 	}
 
 	/**
@@ -21,12 +20,12 @@ class PostType extends core\Model {
 	public function renderCustomFields( $post_type = '' )
 	{
 		$field_model = new Field();
-		$fieldsets = $this->_layer->getFieldsets($post_type);
-		$field_settings = $this->_layer->getFields($post_type);
+		$fieldsets = $this->_dL->getFieldsets();
+		$field_settings = $this->_dL->getFields();
 
-		if ( !empty($fieldsets) ) {
+		if ( !empty($fieldsets[$post_type]) ) {
 			// remove fieldsets without fields
-			foreach ( $fieldsets as $f_id => $fieldset ) {
+			foreach ( $fieldsets[$post_type] as $f_id => $fieldset ) {
 				// check $enabled; add custom js/css for components
 				foreach ( $fieldset['fields'] as $field_id => $enabled ) {
 					if ( !$enabled ) {
@@ -39,7 +38,7 @@ class PostType extends core\Model {
 						'field_id' => $field_id,
 						'fieldset_id' => $f_id
 					);
-					$field_model->load($params) && $field_obj = JustFieldFactory::create($field_model);
+					$field_model->load($params) && $field_obj = core\JustFieldFactory::create($field_model);
 					$field_obj->doAddJs();
 					$field_obj->doAddCss();
 				}
@@ -50,11 +49,11 @@ class PostType extends core\Model {
 			}
 			if (!empty($field_obj) ) unset($field_obj);
 
-			if ( empty($fieldsets) ) return false;
+			if ( empty($fieldsets[$post_type]) ) return false;
 
 			$visibility_rules = array();
 
-			foreach ( $fieldsets as $f_id => $fieldset ) {
+			foreach ( $fieldsets[$post_type] as $f_id => $fieldset ) {
 				if ( !empty($fieldset['visibility_rules']) ) {
 					$visibility_rules[$f_id] = $fieldset['visibility_rules'];
 
@@ -97,7 +96,7 @@ class PostType extends core\Model {
 				'field_id' => $field_id,
 				'fieldset_id' => $fieldset['id']
 			);
-			$field_model->load($params) && $field_obj = JustFieldFactory::create($field_model);
+			$field_model->load($params) && $field_obj = core\JustFieldFactory::create($field_model);
 			$field_obj->setPostID( $post->ID );
 			$field_obj->field();
 		}
@@ -135,15 +134,15 @@ class PostType extends core\Model {
 		// OK, we're authenticated: we need to find and save the data
 
 		// get fieldsets
-		$fieldsets = $this->_layer->getFieldsets($field_model->post_type);
+		$fieldsets = $this->_dL->getFieldsets();
 
 		// create field class objects and call save function
-		foreach ( $fieldsets as $f_id => $fieldset ) {
+		foreach ( $fieldsets[$field_model->post_type] as $f_id => $fieldset ) {
 			$field_model->fieldset_id = $fieldset['id'];
 
 			foreach( $fieldset['fields'] as $field_id => $tmp ) {
 				$field_model->field_id = $field_id;
-				$field_obj = JustFieldFactory::create($field_model);
+				$field_obj = core\JustFieldFactory::create($field_model);
 				$field_obj->setPostID( $post->ID );
 				$field_obj->doSave();
 			}

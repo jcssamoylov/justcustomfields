@@ -27,7 +27,7 @@ class FieldController extends core\Controller {
 	public function ajaxEdit()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $field = models\JustFieldFactory::create($model);
+		$model->load($_POST) && $field = core\JustFieldFactory::create($model);
 
 		$this->_renderAjax('fieldsets/field_form', 'html', array('field' => $field));
 	}
@@ -38,22 +38,26 @@ class FieldController extends core\Controller {
 	public function ajaxSave()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $result = $model->save(); 
-	
-		if ( isset($result['id_base']) && $result['id_base'] == 'collection') {
+		$model->load($_POST) && $success = $model->save(); 
+		
+
+		if ( isset($success['id_base']) && $success['id_base'] == 'collection') {
+			$jcf = new \jcf\JustCustomFields();
+			$registered_fields = $jcf->getFields(true);
+
 			ob_start();
 			$template_params = array(
-				'collection' => $result['instance'],
-				'collection_id' => $result['id'],
-				'fieldset_id' => $result['fieldset_id'],
-				'registered_fields' => $result['registered_fields']
+				'collection' => $success['instance'],
+				'collection_id' => $success['id'],
+				'fieldset_id' => $success['fieldset_id'],
+				'registered_fields' => $registered_fields
 			);
 
 			$this->_render( 'fieldsets/collection_fields_ui', $template_params);
-			$result["collection_fields"] = ob_get_clean();
+			$success["collection_fields"] = ob_get_clean();
 		}
 
-		$this->_renderAjax($result, 'json');
+		$this->_renderAjax($success, 'json');
 	}
 
 	/**
@@ -62,9 +66,9 @@ class FieldController extends core\Controller {
 	public function ajaxDelete()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $result = $model->delete();
+		$model->load($_POST) && $success = $model->delete();
 
-		$this->_renderAjax($result, 'json');
+		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
 	}
 
 	/**
@@ -73,9 +77,9 @@ class FieldController extends core\Controller {
 	public function ajaxSort()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $result = $model->sort();
+		$model->load($_POST) && $success = $model->sort();
 		
-		$this->_renderAjax($result, 'json');
+		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
 	}
 
 	/**
@@ -84,8 +88,8 @@ class FieldController extends core\Controller {
 	public function ajaxCollectionSort()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $result = $model->sortCollection();
+		$model->load($_POST) && $success = $model->sortCollection();
 		
-		$this->_renderAjax($result, 'json');
+		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
 	}
 }

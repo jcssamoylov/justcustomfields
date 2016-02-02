@@ -16,9 +16,9 @@
 							</h4>
 							<div id="visibility" class="<?php echo !empty($fieldset['visibility_rules']) ? '' : 'hidden' ?>">
 								<?php if( !empty($fieldset['visibility_rules']) ): ?>
-									<?php $this->_render('fieldsets/visibility_rules', array('visibility_rules' => $fieldset['visibility_rules'])); ?>
+									<?php $this->_render('fieldsets/visibility/rules', array('visibility_rules' => $fieldset['visibility_rules'])); ?>
 								<?php else: ?>
-									<?php $this->_render('fieldsets/visibility_form', $visibility_form_data); ?>
+									<?php $this->ajaxGetVisibilityForm(); ?>
 								<?php endif; ?>
 							</div>
 							<br class="clear"/>

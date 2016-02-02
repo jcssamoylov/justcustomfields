@@ -1,6 +1,7 @@
 <?php
 namespace jcf\components\collection;
 use jcf\models;
+use jcf\core;
 
 /**
  * Class for Collection type
@@ -83,7 +84,7 @@ class Just_Field_Collection extends models\Just_Field{
 									<div class="collection_field_border jcf_collection_<?php echo (intval($field['field_width']) ? $field['field_width'] : '100'); ?>">
 										<?php 
 											$field_model->field_id = $field_id;
-											$field_obj = models\JustFieldFactory::create($field_model);
+											$field_obj = core\JustFieldFactory::create($field_model);
 
 											if ( isset($fields[$field['slug']]) ) {
 												$field_obj->entry = $fields[$field['slug']];
@@ -147,7 +148,7 @@ class Just_Field_Collection extends models\Just_Field{
 					'collection_id' => $this->id,
 				);
 				$field_model = new models\Field();
-				$field_model->load($params) && $field_obj = models\JustFieldFactory::create($field_model);
+				$field_model->load($params) && $field_obj = core\JustFieldFactory::create($field_model);
 
 				if ( isset($_value[$field_id]) ) {
 					$item[$field['slug']] = $field_obj->save($_value[$field_id]);
@@ -194,7 +195,7 @@ class Just_Field_Collection extends models\Just_Field{
 				'collection_id' => $this->id,
 			);
 			$field_model = new models\Field();
-			$field_model->load($params) && $field_obj = models\JustFieldFactory::create($field_model);
+			$field_model->load($params) && $field_obj = core\JustFieldFactory::create($field_model);
 
 			if(  method_exists($field_obj, 'addJs')) $field_obj->addJs();
 			if(  method_exists($field_obj, 'addCss')) $field_obj->addCss();
@@ -243,7 +244,7 @@ class Just_Field_Collection extends models\Just_Field{
 					'collection_id' => $this->id,
 				);
 				$field_model = new models\Field();
-				$field_model->load($params) && $field_obj = models\JustFieldFactory::create($field_model);
+				$field_model->load($params) && $field_obj = core\JustFieldFactory::create($field_model);
 
 				$field_obj->setPostID( $this->postID, $key );
 				$shortcode_value .= $field_obj->doShortcode($args); 

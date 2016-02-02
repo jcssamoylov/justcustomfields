@@ -16,14 +16,8 @@ class Fieldset extends core\Model {
 	public $title;
 	public $post_type;
 	public $fieldset_id;
-	public $add_rule = false;
-	public $edit_rule = false;
-	public $rule_id;
 	public $fieldsets_order;
-	public $rule;
-	public $visibility_rules;
-	public $taxonomy;
-	public $term;
+
 
 	public function __construct()
 	{
@@ -61,7 +55,7 @@ class Fieldset extends core\Model {
 	}
 
 	/**
-	 * Get all fields and fieldsets
+	 * Get all fieldsets
 	 * @return array
 	 */
 	public function findAll()
@@ -83,7 +77,7 @@ class Fieldset extends core\Model {
 	 */
 	public function create()
 	{
-		if ( empty($this->title) ) {
+		if ( empty($this->title) && empty($this->import_data) ) {
 			$this->addError(__('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN));
 			return false;
 		}
@@ -98,22 +92,23 @@ class Fieldset extends core\Model {
 			$slug = sanitize_title($this->title);
 		}
 
+		//If do import, just return new slug without save
+		if ( !empty($this->import_data) ) return $slug;
+
 		$fieldsets = $this->_dL->getFieldsets();
 
 		// check exists
 		if ( isset($fieldsets[$this->post_type][$slug]) ) {
-			$this->addError(__('Such fieldset already exists.', \jcf\JustCustomFields::TEXTDOMAIN));
-			return false;
+				$this->addError(__('Such fieldset already exists.', \jcf\JustCustomFields::TEXTDOMAIN));
+				return false;
 		}
 
-		// create fiedlset
-		$fieldset = array(
+		$fieldsets[$this->post_type][$slug] = array(
 			'id' => $slug,
 			'title' => $this->title,
-			'fields' => array(),
+			'fields' => array()
 		);
-
-		$this->_dL->saveFieldsetsData($this->post_type, $slug, $fieldset);
+		$this->_save($fieldsets);
 
 		return true;
 	}
@@ -124,12 +119,15 @@ class Fieldset extends core\Model {
 	public function delete()
 	{
 		if ( empty($this->fieldset_id) ) {
-			return array('status' => "0", 'error'=>__('Wrong params passed.', \jcf\JustCustomFields::TEXTDOMAIN));
+			$this->addError(__('Wrong params passed.', \jcf\JustCustomFields::TEXTDOMAIN));
+			return false;
 		}
 
-		$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, NULL);
+		$fieldsets = $this->_dL->getFieldsets();
+		unset($fieldsets[$this->post_type][$this->fieldset_id]);
+		$this->_save($fieldsets);
 
-		return array('status' => "1");
+		return true;
 	}
 
 	/**
@@ -140,17 +138,17 @@ class Fieldset extends core\Model {
 		$fieldsets = $this->_dL->getFieldsets();
 
 		if ( empty($fieldsets[$this->post_type][$this->fieldset_id]) ) {
-			$this->_addError(__('Wrong data passed.', \jcf\JustCustomFields::TEXTDOMAIN));
+			$this->addError(__('Wrong data passed.', \jcf\JustCustomFields::TEXTDOMAIN));
 			return false;
 		}
 
 		if ( empty($this->title) ) {
-			$this->_addError(__('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN));
+			$this->addError(__('Title field is required.', \jcf\JustCustomFields::TEXTDOMAIN));
 			return false;
 		}
 
 		$fieldsets[$this->post_type][$this->fieldset_id]['title'] = $this->title;
-		$this->_dL->saveFieldsetsData($this->post_type, $this->fieldset_id, $fieldsets[$this->post_type][$this->fieldset_id]);
+		$this->_save($fieldsets);
 
 		return true;
 	}
@@ -160,125 +158,16 @@ class Fieldset extends core\Model {
 	 */
 	public function sort()
 	{
-		$post_type = strip_tags(trim($this->post_type));
-		$order  = explode(',' ,trim($this->fieldsets_order, ','));
+		$sort  = explode(',', trim($this->fieldsets_order, ','));
+		$fieldsets = $this->_dL->getFieldsets();
 
-		if ( !empty($this->fieldsets_order) ) {
-			$this->_dL->sortFieldsets($this->post_type, $order);
+		foreach ($sort as $key) {
+			$new_fieldsets[$this->post_type][$key] = $fieldsets[$this->post_type][$key];
+			unset($fieldsets[$key]);
 		}
+		$this->_save($fieldsets);
 
-		return array('status' => '1');
-	}
-
-	/**
-	 * Get form data for visibility rules form
-	 * @return array
-	 */
-	public function getVisibilityRulesForm()
-	{
-		$output = array();
-		$taxonomies = get_object_taxonomies( $this->post_type, 'objects' );
-
-		$output['post_type'] = $this->post_type;
-		$output['taxonomies'] = $taxonomies;
-		$output['add_rule'] = $this->add_rule;
-
-		if ( !empty($this->edit_rule) ) {
-			$fieldset = $this->_dL->getFieldsets($this->post_type, $this->fieldset_id);
-			$edit_rule = $this->_request['edit_rule']; 
-			$visibility_rule = $fieldset['visibility_rules'][$this->rule_id - 1];
-
-			if ( $visibility_rule['based_on'] == 'taxonomy' ) {
-				$terms = get_terms($visibility_rule['rule_taxonomy'], array('hide_empty' => false));
-				$output['terms'] = $terms;
-			}
-			else {
-				$templates = get_page_templates();
-				$output['templates'] = $templates;
-			}
-
-			$output['rule_id'] = $this->rule_id - 1;
-			$output['fieldset_id'] = $this->fieldset_id;
-			$output['fieldset'] = $fieldset;
-			$output['visibility_rule'] = $visibility_rule;
-			$output['edit_rule'] = $this->edit_rule;
-		}
-
-		return $output;
-	}
-
-	/**
-	 * Get visibility rules for fieldset with $this->_request
-	 */
-	public function getVisibilityRules()
-	{
-		if ( $rule == 'page_template' ) {
-			$type = 'page_template';
-			$templates = get_page_templates();
-			$output = $templates;
-		}
-		else {
-			$type = 'taxonomies';
-			$taxonomies = get_object_taxonomies( $this->post_type, 'objects' );
-			$output = $taxonomies;
-		}
-
-		return array('type' => $type, 'data' => $output);
-	}
-
-	/**
-	 * Save visibility rule
-	 * @return array
-	 */
-	public function saveVisibilityRules()
-	{
-		if ( !empty($this->rule_id) ) {
-			$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, array('rules' => array('update' => $this->rule_id, 'data' => $this->visibility_rules)));
-		}
-		else {
-			$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, array('rules' => $this->visibility_rules));
-		}
-
-		$fieldset = $this->_dL->getFieldsets($this->post_type, $this->fieldset_id);
-
-		return $fieldset['visibility_rules'];
-	}
-
-	/**
-	 * Delete visibility rule
-	 * @return array
-	 */
-	public function deleteVisibilityRules()
-	{
-		$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, array('rules' => array('remove' => $this->rule_id)));
-		$fieldset = $this->_dL->getFieldsets($this->post_type, $this->fieldset_id);
-
-		return $fieldset['visibility_rules'];
-	}
-
-	/**
-	 * 
-	 */
-	public function getVisibilityAutocompleteData()
-	{
-		global $wpdb;
-
-		$query = "SELECT t.term_id, t.name
-			FROM wp_terms AS t
-			LEFT JOIN wp_term_taxonomy AS tt ON t.term_id = tt.term_id
-			WHERE t.name LIKE '%$this->term%' AND tt.taxonomy = '$this->taxonomy'";
-		$terms = $wpdb->get_results($query);
-		$response = array();
-
-		foreach ( $terms as $p ) {
-			$response[] = array(
-				'id' => $p->term_id,
-				'label' => $p->name,
-				'value' => $p->name,
-			);
-		}
-
-		return $response;
+		return true;
 	}
 
 	/**
@@ -301,20 +190,17 @@ class Fieldset extends core\Model {
 				$path_info = pathinfo($_FILES['import_data']['name']);
 
 				if ( $path_info['extension'] == 'json') {
-					$uploaddir = get_home_path() . "wp-content/uploads/";
-					$uploadfile = $uploaddir . basename($_FILES['import_data']['name']);
-
 					if ( is_readable($_FILES['import_data']['tmp_name']) ) {
-						$layer_factory = new models\DataLayerFactory();
-						$file_Layer = $layer_factory->create('Files');
-						$all_fields['post_types'] = $file_Layer->getDataFromFile($_FILES['import_data']['tmp_name']);
+						$file_Layer = core\DataLayerFactory::create('file');
+						$data['post_types'] = json_decode($file_Layer->getDataFromFile($_FILES['import_data']['tmp_name']), true);
 						unlink($_FILES['import_data']['tmp_name']);
-						if ( empty($all_fields) ) {
+
+						if ( empty($data) ) {
 							$error = __('<strong>Import FAILED!</strong> File do not contain fields settings data..', \jcf\JustCustomFields::TEXTDOMAIN);
 							$this->addError($error);
 						}
 
-						return $all_fields;
+						return $data;
 					}
 					else {
 						$error = __('<strong>Import FAILED!</strong> Can\'t read uploaded file.', \jcf\JustCustomFields::TEXTDOMAIN);
@@ -336,56 +222,51 @@ class Fieldset extends core\Model {
 	public function importFields()
 	{
 		$data = $this->import_data;
+		$old_fields = $this->_dL->getFields();
+		$old_fieldsets = $this->_dL->getFieldsets();
 
-		foreach ( $data as $post_type_name => $post_type ) {
+		foreach ( $data as $pt_name => $post_type ) {
 			if ( is_array($post_type) && !empty($post_type['fieldsets']) ) {
 				foreach ( $post_type['fieldsets'] as $fieldset_id => $fieldset ) {
-					$status_fieldset = $this->_addImporFieldset($post_type_name, $fieldset['title'], $fieldset_id);
+					$this->title = $fieldset['title'];
+					$fieldset_id = !empty($old_fieldsets[$pt_name][$fieldset_id]) ? $fieldset_id : $this->create();
+					$old_fieldsets[$pt_name][$fieldset_id]['id'] = $fieldset_id;
+					$old_fieldsets[$pt_name][$fieldset_id]['title'] = $fieldset['title'];
 
-					if ( empty($status_fieldset) ) {
+					if ( empty($fieldset_id) ) {
 						$this->addError(__('Error! Please check <strong>import file</strong>', \jcf\JustCustomFields::TEXTDOMAIN));
 						break;
 					}
 					else {
-						$fieldset_id = $status_fieldset;
-
 						if ( !empty($fieldset['fields']) ) {
-							$old_fields = $this->_dL->getFields($post_type_name);
 
-							if ( !empty($old_fields) ) {
-								foreach ( $old_fields as $old_field_id => $old_field ) {
+							if ( !empty($old_fields[$pt_name]) ) {
+								foreach ( $old_fields[$pt_name] as $old_field_id => $old_field ) {
 									$old_slugs[] = $old_field['slug'];
 									$old_field_ids[$old_field['slug']] = $old_field_id;
 								}
 							}
+
 							foreach ( $fieldset['fields'] as $field_id => $field ) {
 								$id_base = preg_replace('/\-([0-9]+)/', '', $field_id);
 								$slug_checking = !empty($old_slugs) ? in_array($field['slug'], $old_slugs) : false;
-
-								if ( $slug_checking ) {
-									$status_field = $this->_addImportField($post_type_name, $old_field_ids[$field['slug']], $fieldset_id, $field);
-								}
-								else {
-									$status_field = $this->_addImportField($post_type_name, $field_id, $fieldset_id, $field);
-								}
+								$new_field_id = !$slug_checking ? $field_id : $old_field_ids[$field['slug']];
+								$old_fields[$pt_name][$new_field_id] = $field;
+								$old_fieldsets[$pt_name][$fieldset_id]['fields'][$new_field_id] = $field['enabled'];
 								
 								if ( $id_base == 'collection' ) {
-									$old_collection_fields = $this->_dL->getFields($post_type_name, $field_id);
-
-									if ( !empty($old_collection_fields['fields']) ) {
-										foreach ( $old_collection_fields['fields'] as $old_collection_field_id => $old_collection_field ) {
+									if ( !empty($old_fields[$pt_name][$new_field_id]['fields']) ) {
+										foreach ( $old_fields[$pt_name][$new_field_id]['fields'] as $old_collection_field_id => $old_collection_field ) {
 											$old_collection_slugs[] = $old_collection_field['slug'];
 											$old_collection_field_ids[$old_collection_field['slug']] = $old_collection_field_id;
 										}
 									}
-									foreach ( $field['fields'] as $field_key => $field_values ) {
-										$collection_field_slug_checking = !empty($old_collection_slugs) ? in_array($field_values['slug'], $old_collection_slugs) : false;
 
-										if ( $collection_field_slug_checking ) {
-											$status_collection_field = $this->_addImportField($post_type_name, $old_collection_field_ids[$field_values['slug']], $fieldset_id, $field_values, $field_id);
-										}
-										else {
-											$status_collection_field = $this->_addImportField($post_type_name, $field_key, $fieldset_id, $field_values, $field_id);
+									if ( !empty($field['fields']) && is_array($field['fields']) ) {
+										foreach ( $field['fields'] as $field_key => $field_values ) {
+											$collection_field_slug_checking = !empty($old_collection_slugs) ? in_array($field_values['slug'], $old_collection_slugs) : false;
+											$new_collection_field_id = !$collection_field_slug_checking ? $field_key : $old_collection_field_ids[$field_values['slug']];
+											$old_fields[$pt_name][$new_field_id]['fields'][$new_collection_field_id] = $field_values;
 										}
 									}
 								}
@@ -393,83 +274,31 @@ class Fieldset extends core\Model {
 						}
 					}
 				}
-
-				if ( !empty($status_fieldset) ) {
-					if ( $this->file_name ) {
-						unlink($this->file_name);
-					}
-				}
 			}
 		}
 
-		if ( $status_fieldset ) {
+		$this->_dL->setFields($old_fields);
+		$this->_dL->setFieldsets($old_fieldsets);
+		$import_status = $this->_dL->saveFieldsData() && $this->_dL->saveFieldsetsData();
+
+		if ( $import_status ) {
 			$this->addMessage(__('<strong>Import</strong> has been completed successfully!', \jcf\JustCustomFields::TEXTDOMAIN));
 		}
 		else {
 			$this->addError( __('<strong>Import failed!</strong> Please check that your import file has right format.', \jcf\JustCustomFields::TEXTDOMAIN));
 		}
 
-		return $saved;
+		return $import_status;
 	}
 
 	/**
-	 *	Add fieldset form import
-	 *	@param string $title_fieldset Feildset name
-	 *	@param string $slug Fieldset slug
-	 *	@return string|boolean Return slug if fieldset has saved and false if not
+	 * Save fieldsets
+	 * @param array $fieldsets
 	 */
-	protected function _addImporFieldset($post_type, $title_fieldset='', $slug = '')
+	protected function _save($fieldsets)
 	{
-		$title = !empty($title_fieldset) ? $title_fieldset : $this->title;
-
-		if ( empty($title) ) return false;
-
-		if ( empty($slug) ) {
-			$slug = preg_replace('/[^a-z0-9\-\_\s]/i', '', $title);
-			$slug = 'jcf-fieldset-'.rand(0,10000);
-		}
-
-		$fieldsets = $this->_dL->getFieldsets($post_type);
-
-		if ( isset($fieldsets[$slug]) ) {
-			return $slug;
-		}
-
-		// create fiedlset
-		$fieldset = array(
-			'id' => $slug,
-			'title' => $title,
-			'fields' => array(),
-		);
-		$this->_dL->updateFieldsets($post_type, $slug, $fieldset);
-
-		return $slug;
+		$this->_dL->setFieldsets($fieldsets);
+		$this->_dL->saveFieldsetsData();
 	}
-
-	/**
-	 *	Add field from import
-	 *	@param string $field_id Field id
-	 *	@param string $fieldset_id Fieldset id
-	 *	@param array $params Attributes of field
-	 *	@return array Attributes of field
-	 */
-	protected function _addImportField($post_type, $field_id, $fieldset_id, $params, $collection_id = '')
-	{
-		$model = new models\JustFieldFactory();
-		$field_obj = $model->initObject($post_type, $field_id, $fieldset_id, $collection_id);
-		$id_base = preg_replace('/\-([0-9]+)/', '', $field_id);
-		$field_index = $model->getIndex($id_base);
-
-		if ( $field_obj->slug == $params['slug'] ) {
-			$resp = $field_obj->doUpdate($field_index, $params);
-		}
-		else {
-			$field_obj = $model->initObject($post_type, $field_id, $fieldset_id, $collection_id);
-			$resp = $field_obj->doUpdate($field_index, $params);
-		}
-
-		return $resp;
-	}
-
 }
 

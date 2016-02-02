@@ -11,7 +11,7 @@
 					
 					<ul class="dotted-list jcf-bold jcf_width66p">
 					<?php foreach( $post_types as $key => $post_type ): ?>
-						<?php if(!empty($fieldsets[$key])) :?>
+						<?php if( !empty($fieldsets[$key]) ) :?>
 						<li class="jcf_export-content-type">
 							<h3>
 								<span class="jcf_checkbox_block"><input type="checkbox" name="select_content_type" value="" class="jcf-select_content_type"  /></span>
@@ -99,31 +99,33 @@
 																			<th><?php _e('Slug', JCF_TEXTDOMAIN); ?></th>
 																			<th><?php _e('Enabled', JCF_TEXTDOMAIN); ?></th>
 																		</tr>
-																	<?php foreach($field_setting as $collection_field_id => $collection_field_value): ?>
-																		<tr>
-																			<td>
-																				<input type="checkbox" class="choose_collection_field" name="choose_collection_field[]"
-																					data-fieldset_id="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>"
-																					value="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>" 
-																					id="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>" 
-																				 />
-																				<?php foreach($collection_field_value as $c_key => $c_value): ?>
-																					<input type="hidden" disabled='disabled'
-																						   data-collection="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>"
-																						   data-fieldset="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
-																						   data-field='export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>'  
-																						   name="export_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][<?php echo $key_setting; ?>][<?php echo $collection_field_id;?>][<?php echo $c_key;?>]" 
-																						   value="<?php echo $c_value ; ?>"
-																						/>
-																				<?php endforeach; ?>
-																			</td>
-																			<td><?php echo $collection_field_value['title']; ?></td>
-																			<td><?php echo preg_replace('/\-[0-9]+$/', '', $collection_field_id); ?></td>
-																			<td><?php echo $collection_field_value['slug']; ?></td>
-																			<td><?php if($collection_field_value['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
-																			
-																		</tr>
-																	<?php endforeach; ?>
+																	<?php if ( !empty($field_setting) && is_array($field_setting) ): ?>
+																		<?php foreach($field_setting as $collection_field_id => $collection_field_value): ?>
+																			<tr>
+																				<td>
+																					<input type="checkbox" class="choose_collection_field" name="choose_collection_field[]"
+																						data-fieldset_id="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>"
+																						value="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>" 
+																						id="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>" 
+																					 />
+																					<?php foreach($collection_field_value as $c_key => $c_value): ?>
+																						<input type="hidden" disabled='disabled'
+																							   data-collection="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>"
+																							   data-fieldset="export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>" 
+																							   data-field='export_data_<?php echo $key; ?>_fieldsets_<?php echo $fieldset_id; ?>_fields_<?php echo $field_id; ?>_<?php echo $key_setting; ?>_<?php echo $collection_field_id;?>'  
+																							   name="export_data[<?php echo $key; ?>][fieldsets][<?php echo $fieldset_id; ?>][fields][<?php echo $field_id; ?>][<?php echo $key_setting; ?>][<?php echo $collection_field_id;?>][<?php echo $c_key;?>]" 
+																							   value="<?php echo $c_value ; ?>"
+																							/>
+																					<?php endforeach; ?>
+																				</td>
+																				<td><?php echo $collection_field_value['title']; ?></td>
+																				<td><?php echo preg_replace('/\-[0-9]+$/', '', $collection_field_id); ?></td>
+																				<td><?php echo $collection_field_value['slug']; ?></td>
+																				<td><?php if($collection_field_value['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
+
+																			</tr>
+																		<?php endforeach; ?>
+																	<?php endif; ?>
 																	</table>
 																</td>
 															<?php endif;?>

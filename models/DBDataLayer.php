@@ -16,42 +16,21 @@ class DBDataLayer extends core\DataLayer {
 			return;
 		}
 
-		$post_types = jcf_get_post_types();
-
-		foreach ( $post_types as $post_type) {
-			$option_name = $this->_getFieldName($post_type->name);
-			$this->_fields[$post_type->name] = $this->_getOptions($option_name);
-		}
+		$option_name = 'jsf-fields';
+		$this->_fields = $this->_getOptions($option_name);
 	}
 
 	/**
 	 *	Update fields in wp-options
 	 */
-	public function saveFieldsData( /*$post_type, $key, $values = array(), $fieldset_id = '', $collection_id = ''*/)
+	public function saveFieldsData()
 	{
-		$option_name = $this->_getFieldName($post_type);
-		$fields = $this->_getOptions($option_name);
-
-		if ( $values === NULL && ( isset($fields[$key]) || isset($fields[$collection_id]['fields'][$key]) ) ) {
-			if ( !empty($collection_id) ) {
-				unset($fields[$collection_id]['fields'][$key]);
-			}
-			else {
-				unset($fields[$key]);
-			}
-		}
-
-		if ( !empty($values) ) {
-			$fields[$key] = $values;
-		}
-		$this->_updateOptions($option_name, $fields);
+		return $this->_updateOptions('jsf-fields', $this->_fields);
 	}
 	
 	/**
-	 * Get Fieldsets by post type and id if isset
-	 * @param string $post_type
-	 * @param string $id
-	 * @return array
+	 * Get Fieldsets
+	 * @param array $fieldsets
 	 */
 	public function setFieldsets($fieldsets = null)
 	{
@@ -59,102 +38,24 @@ class DBDataLayer extends core\DataLayer {
 			$this->_fieldsets = $fieldsets;
 			return;
 		}
-		
-		$post_types = jcf_get_post_types( 'object' );
 
-		foreach ( $post_types as $post_type) {
-			$option_name = $this->_getFieldsetName($post_type->name);
-			$this->_fieldsets[$post_type->name] = $this->_getOptions($option_name);
-		}
+		$option_name = 'jcf-fieldsets';
+		$this->_fieldsets = $this->_getOptions($option_name);
 	}
 	
 	/**
-	 * Update fiekdsets
-	 * @param string $post_type
+	 * Save fieldsets
+	 */
+	public function saveFieldsetsData()
+	{
+		return $this->_updateOptions('jcf-fieldsets', $this->_fieldsets);
+	}
+
+	/**
+	 * Get options with wp-options
 	 * @param string $key
-	 * @param array $values
+	 * @return array
 	 */
-	public function saveFieldsetsData($post_type, $key, $values = array())
-	{
-		$option_name = $this->_getFieldsetName($post_type);
-
-		if ( $values === NULL && isset($this->_fieldsets[$post_type][$key]) ) {
-			unset($this->_fieldsets[$post_type][$key]);
-		}
-
-		if ( !empty($values) ) {
-			$fielset_values = $this->_applyVisibilitySettings($values, $this->_fieldsets[$post_type][$key]);
-			$this->_fieldsets[$post_type][$key] = $fielset_values;
-		}
-
-		$this->_updateOptions($option_name, $this->_fieldsets[$post_type]);
-	}
-	
-	/**
-	 * Sort fieldsets
-	 * @param string $post_type
-	 * @param array $keys Fieldsets keys
-	 */
-	public function sortFieldsets($post_type, $keys = array())
-	{
-		$option_name = $this->_getFieldsetName($post_type);
-		$new_fieldsets = array();
-		$fieldsets = $this->_getOptions($option_name);
-
-		foreach ( $keys as $key ) {
-			$new_fieldsets[$key] = $fieldsets[$key];
-			unset($fieldsets[$key]);
-		}
-		$this->_updateOptions($option_name, $new_fieldsets);
-	}
-
-	/**
-	 * Get all fieldsets and fields
-	 * @return array/boolean
-	 */
-	public function getAll()
-	{
-		$post_types = jcf_get_post_types();
-		$settings = array();
-		$fieldsets = array();
-		$field_settings = array();
-		$field_options = array();
-		
-		foreach ( $post_types as $key => $value ) {
-			$fieldsets[$key] = $this->getFieldsets($key);
-			$field_settings[$key] = $this->getFields($key);
-		}
-
-		$settings = array(
-			'post_types' => $post_types,
-			'fieldsets' => $fieldsets,
-			'field_settings' => $field_settings,
-		);
-		return $settings;
-	}
-
-	/**
-	 * Option name in wp-options table
-	 * @param string $post_type
-	 * @return string 
-	 */
-	protected function _getFieldName($post_type)
-	{
-		return 'jcf_fields-' . $post_type;
-	}
-
-	/**
-	 * return db fieldset name
-	 * @param string $post_type
-	 * @return string
-	 */
-	protected function _getFieldsetName($post_type)
-	{
-		return 'jcf_fieldsets-' . $post_type;
-	}
-	
-	
-	
 	protected function _getOptions($key)
 	{
 		$multisite_settings = \jcf\models\Settings::getNetworkMode();

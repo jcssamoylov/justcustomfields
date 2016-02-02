@@ -101,7 +101,7 @@ function initFieldsetsEdit(){
 		
 		var loader = jQuery(this).find('img.ajax-feedback');
 
-		jcf_ajax(data, 'html', loader, function(response){
+		jcf_ajax(data, 'json', loader, function(response){
 			// update title
 			jQuery('#jcf_fieldset_' + f_id + ' h3 span').text( response.title );
 			
@@ -599,8 +599,13 @@ function jcf_ajax( data, respType, loader, callback ){
 		if(_loader && _loader.size) _loader.css('visibility', 'hidden');
 		
 		// if json - check for errors
-		if( _respType == 'json' && response.status != '1' ){
-			alert( response.error );
+		if( _respType == 'json' && (response.status != '1' || response.status != true) ){
+			if ( jQuery.isArray(response.error) ) {
+				alert( response.error[0] );
+			}
+			else {
+				alert( response.error );
+			}
 			return;
 		}
 		

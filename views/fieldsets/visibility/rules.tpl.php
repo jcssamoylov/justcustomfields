@@ -9,7 +9,7 @@
 			</tr>
 		</thead>
 		<tbody>
-		<?php	foreach( $visibility_rules as $key => $rule ): ?>
+		<?php foreach( $visibility_rules as $key => $rule ): ?>
 			<?php	
 				$rule_text = '';
 				$rule_text .= ucfirst($rule['visibility_option']);

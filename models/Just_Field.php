@@ -135,13 +135,14 @@ class Just_Field {
 			$this->isNew = true;
 		}
 		// parse number
-		else{
+		else {
 			$this->number = str_replace($this->idBase.'-', '', $this->id);
 
 			// load instance data
-			$this->instance =(array)$this->_dL->getFields( $this->postType, $this->id );
+			$fields = $this->_dL->getFields();
+			$this->instance =(array)$fields[$this->postType][$this->id];
 
-			if( !empty($this->instance) ){
+			if ( !empty($this->instance) ) {
 				$this->slug = $this->instance['slug'];
 			}
 		}
@@ -207,7 +208,7 @@ class Just_Field {
 		$field_model->load($params);
 
 		if ( $this->isCollectionField() && $this->isPostEdit ) {
-			$collection = models\JustFieldFactory::create($field_model);
+			$collection = core\JustFieldFactory::create($field_model);
 			return str_replace('-', $delimeter, 'field' . $delimeter . $collection->idBase . $delimeter . $collection->number . $delimeter
 					.\jcf\components\collection\Just_Field_Collection::$currentCollectionFieldKey . $delimeter . $this->id . $delimeter . $str);
 		}
@@ -232,7 +233,7 @@ class Just_Field {
 		$field_model->load($params);
 
 		if ( $this->isCollectionField() && $this->isPostEdit ) {
-			$collection = models\JustFieldFactory::create($field_model);
+			$collection = core\JustFieldFactory::create($field_model);
 			return 'field-' . $collection->idBase . '[' . $collection->number . '][' . \jcf\components\collection\Just_Field_Collection::$currentCollectionFieldKey . '][' . $this->id . '][' . $str . ']';
 		}
 		return 'field-' . $this->idBase . '[' . $this->number . '][' . $str . ']';
@@ -279,9 +280,9 @@ class Just_Field {
 	 *	call $this->update inside
 	 *	@param array $params for update field
 	 */
-	public function doUpdate($field_index, $params = array())
+	public function doUpdate($field_index, $params = null)
 	{
-		$input = !empty($params) ? $params : $_POST['field-'.$this->idBase][$this->number];
+		$input = !is_null($params) ? $params : $_POST['field-'.$this->idBase][$this->number];
 		// remove all slashed from values
 		foreach ( $input as $var => $value ) {
 			if ( is_string($value) ) {
@@ -298,6 +299,7 @@ class Just_Field {
 		$instance['title'] = strip_tags($instance['title']);
 		$instance['slug'] = strip_tags($input['slug']);
 		$instance['enabled'] = (int)@$input['enabled'];
+
 		if ( $this->idBase == 'inputtext' )
 			$instance['group_title'] = (int)@$input['group_title'];
 
@@ -325,65 +327,43 @@ class Just_Field {
 			$this->id = $this->idBase . '-' . $this->number;
 		}
 
-		$jcf = new \jcf\JustCustomFields();
+		// check slug field
+		if ( empty($instance['slug']) ) {
+			$instance['slug'] = '_field_' . $this->idBase . '__' . $this->number;
+		}
+
+		$fields = $this->_dL->getFields();
 
 		if ( !$this->isCollectionField() ) {
 			// update fieldset
-			$fieldset = $this->_dL->getFieldsets( $this->postType, $this->fieldsetId );
-			$fieldset['fields'][$this->id] = $instance['enabled']; 
-			$this->_dL->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
+			$fieldsets = $this->_dL->getFieldsets();
+			$fieldsets[$this->postType][$this->fieldsetId]['fields'][$this->id] = $instance['enabled'];
+			$this->_dL->setFieldsets($fieldsets);
+			$this->_dL->saveFieldsetsData();
 
-			// check slug field
-			if( empty($instance['slug']) ){
-				$instance['slug'] = '_field_' . $this->idBase . '__' . $this->number;
-			}
-			// save
-			$this->_dL->updateFields($this->postType, $this->id, $instance, $this->fieldsetId);
-
-			// return status
-			$res = array(
-				'status' => '1',
-				'id' => $this->id,
-				'id_base' => $this->idBase,
-				'fieldset_id' => $this->fieldsetId,
-				'is_new' => $this->isNew,
-				'instance' => $instance,
-				'registered_fields' => $jcf->getFields()
-			);			
+			$fields[$this->postType][$this->id] = $instance;
 		} 
 		else {
-			$params = array(
-				'post_type' => $this->postType,
-				'field_id' => $this->collectionId,
-				'fieldset_id' => $this->fieldsetId
-			);
-			$field_model = new models\Field();
-			$field_model->load($params) && $collection = models\JustFieldFactory::create($field_model);
-
-			// check slug field
-			if ( empty($instance['slug']) ) {
-				$instance['slug'] = '_field_' . $this->idBase . '__' . $this->number;
-			}
-
 			$instance['field_width'] = $input['field_width'];
 
 			if ( isset($input['group_title']) ) $instance['group_title'] = true;
 
-			$collection->instance['fields'][$this->id] = $instance;
-			// save
-			$this->_dL->updateFields($this->postType, $this->collectionId, $collection->instance, $this->fieldsetId);
-			// return status
-			$res = array(
-				'status' => '1',
-				'id' => $this->id,
-				'id_base' => $this->idBase,
-				'fieldset_id' => $this->fieldsetId,
-				'collection_id' => $this->collectionId,
-				'is_new' => $this->isNew,
-				'instance' => $instance,
-				'registered_fields' => $jcf->getFields(true)
-			);
+			$fields[$this->postType][$this->collectionId]['fields'][$this->id] = $instance;
 		}
+
+		$this->_dL->setFields($fields);
+		$this->_dL->saveFieldsData();
+
+		// return status
+		$res = array(
+			'status' => '1',
+			'id' => $this->id,
+			'id_base' => $this->idBase,
+			'fieldset_id' => $this->fieldsetId,
+			'collection_id' => $this->collectionId,
+			'is_new' => $this->isNew,
+			'instance' => $instance
+		);
 		return $res;
 	}
 
@@ -392,20 +372,22 @@ class Just_Field {
 	 */
 	public function doDelete()
 	{
+		$fields = $this->_dL->getFields();
+
 		if ( !empty($this->collectionId) ) {
-			$this->_dL->updateFields($this->postType, $this->id, NULL, $this->fieldsetId, $this->collectionId);
+			unset($fields[$this->postType][$this->collectionId]['fields'][$this->id]);
 		}
 		else {
-			// remove from fieldset:
-			$fieldset = $this->_dL->getFieldsets( $this->postType, $this->fieldsetId );
+			$fieldsets = $this->_dL->getFieldsets();
+			unset($fieldsets[$this->postType][$this->fieldsetId]['fields'][$this->id]);
+			unset($fields[$this->postType][$this->id]);
 
-			if ( isset($fieldset['fields'][$this->id]) )
-				unset($fieldset['fields'][$this->id]);
-
-			$this->_dL->updateFieldsets( $this->postType, $this->fieldsetId, $fieldset );
-			// remove from fields array
-			$this->_dL->updateFields($this->postType, $this->id, NULL, $this->fieldsetId);
+			$this->_dL->setFieldsets($fieldsets);
+			$this->_dL->saveFieldsetsData();
 		}
+
+		$this->_dL->setFields($fields);
+		$this->_dL->saveFieldsData();
 	}
 
 	/**

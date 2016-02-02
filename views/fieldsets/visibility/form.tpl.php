@@ -27,7 +27,7 @@
 		<p><?php _e('Based on', \jcf\JustCustomFields::TEXTDOMAIN); ?> <strong><?php _e('Taxonomy terms', \jcf\JustCustomFields::TEXTDOMAIN); ?></strong></p>
 		<input type="hidden" name="based_on" value="taxonomy" />
 		<?php 
-			$this->_render('fieldsets/taxonomies_list', array(
+			$this->_render('fieldsets/visibility/taxonomies_list', array(
 				'taxonomies' => $taxonomies, 
 				'current_tax' => $visibility_rule['rule_taxonomy'], 
 				'terms' => $terms, 
@@ -49,7 +49,7 @@
 		<div class="rules-options">
 			<?php if ( $visibility_rule['based_on'] == 'taxonomy' ) : //Taxonomy options for post type page based on taxonomy ?>
 				<?php 
-					$this->_render('fieldsets/terms_list', array(
+					$this->_render('fieldsets/visibility/terms_list', array(
 						'taxonomies' => $taxonomies, 
 						'current_tax' => $visibility_rule['rule_taxonomy'], 
 						'terms' => $terms, 
@@ -58,7 +58,7 @@
 				?>
 			<?php elseif ( $visibility_rule['based_on'] == 'page_template' ) : //Page template options ?>
 				<?php 
-					$this->_render('fieldsets/templates_list', array(
+					$this->_render('fieldsets/visibility/templates_list', array(
 						'templates' => $templates, 
 						'curent' => $visibility_rule['rule_templates']
 					)); 

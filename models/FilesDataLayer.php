@@ -23,41 +23,16 @@ class FilesDataLayer extends core\DataLayer {
 	/**
 	 *	Update fields
 	 */
-	public function saveFieldsData(/*$post_type, $key, $values = array(), $fieldset_id = '', $collection_id = ''*/)
+	public function saveFieldsData()
 	{
-		$all_fields = $this->getAll();
-		$fieldset = $all_fields['fieldsets'][$post_type][$fieldset_id];
-		$fields = array();
-
-		if ( isset($all_fields['field_settings']) && isset($all_fields['field_settings'][$post_type]) ) {
-			$fields = $all_fields['field_settings'][$post_type];				
-		}
-
-		if ( $values === NULL && (isset($fields[$key]) || isset($fields[$collection_id]['fields'][$key])) ) {
-			if ( !empty($collection_id) ) {
-				unset($fields[$collection_id]['fields'][$key]);
-			}
-			else {
-				unset($fields[$key]);
-			}
-			unset($fieldset['fields'][$key]);
-		}
-
-		if ( !empty($values) ) {
-			$fieldset['fields'][$key] = $values['enabled'];
-			$fields[$key] = $values;
-		}
-
-		$all_fields['fieldsets'][$post_type][$fieldset_id] = $fieldset;
-		$all_fields['field_settings'][$post_type] = $fields;
-		$this->_save($all_fields);
+		$data = $this->getDataFromFile();
+		$data['field_settings'] = $this->_fields;
+		return $this->_save($data);
 	}
 
 	/**
-	 * Get Fieldsets by post type and id if isset
-	 * @param string $post_type
-	 * @param string $id
-	 * @return array
+	 * Get Fieldsets
+	 * @param array $fieldsets
 	 */
 	public function setFieldsets($fieldsets = null)
 	{
@@ -71,56 +46,13 @@ class FilesDataLayer extends core\DataLayer {
 	}
 
 	/**
-	 * update one fieldset settings
-	 * @param string $key	fieldset id
-	 * @param array $values		fieldset settings
+	 * Save fieldsets
 	 */
-	public function saveFieldsetsData($post_type, $key, $values = array())
+	public function saveFieldsetsData()
 	{
-		$all_fields = $this->getAll();
-
-		if ( $values === NULL && isset($all_fields['fieldsets'][$post_type][$key]) ) {
-			unset($all_fields['fieldsets'][$post_type][$key]);
-		}
-		if ( !empty($values) ) {
-			$fieldset_values = $this->_applyVisibilitySettings($values, $all_fields['fieldsets'][$post_type][$key]);
-			$all_fields['fieldsets'][$post_type][$key] = $fieldset_values;
-		}
-		$this->_save($all_fields);
-	}
-
-	/**
-	 * Sort fieldsets
-	 * @param string $post_type
-	 * @param array $keys Fieldsets keys
-	 */
-	public function sortFieldsets($post_type, $keys = array())
-	{
-		$new_fieldsets = array();
-		
-		$all_fields = $this->getAll();
-
-		foreach($keys as $key){
-			$new_fieldsets[$key] = $all_fields['fieldsets'][$post_type][$key];
-			unset($all_fields['fieldsets'][$post_type][$key]);
-		}
-		$all_fields['fieldsets'][$post_type] = $new_fieldsets;
-		$this->_save($all_fields);
-	}
-
-	/**
-	 * Get all fieldsets and fields
-	 * @return array/boolean
-	 */
-	public function getAll()
-	{
-		$source = \jcf\models\Settings::getDataSourceType();
-		$filename = $this->_getConfigFilePath($source);
-
-		if ( file_exists($filename) ) {
-			return $this->getDataFromFile($filename);
-		}
-		return false;
+		$data = $this->getDataFromFile();
+		$data['fieldsets'] = $this->_fieldsets;
+		return $this->_save($data);
 	}
 
 	/**
@@ -166,10 +98,11 @@ class FilesDataLayer extends core\DataLayer {
 	protected function _save($data, $file = false)
 	{
 		$source = \jcf\models\Settings::getDataSourceType();
+
 		if ( !$file ) {
 			$file = $this->_getConfigFilePath($source);
 		}
-		
+
 		$data = jcf_format_json(json_encode($data));
 		$dir = dirname($file);
 
@@ -180,7 +113,7 @@ class FilesDataLayer extends core\DataLayer {
 
 		if ( !empty($dir) ) {
 			$content = $data . "\r\n";
-			if( $fp = fopen($file, 'w') ){
+			if ( $fp = fopen($file, 'w') ) {
 				fwrite($fp, $content);
 				fclose($fp);
 				jcf_set_chmod($file);

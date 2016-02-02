@@ -2,7 +2,6 @@
 
 namespace jcf\models;
 use jcf\core;
-use jcf\models;
 
 class Field extends core\Model {
 
@@ -24,20 +23,41 @@ class Field extends core\Model {
 		$this->_dL = core\DataLayerFactory::create();
 	}
 
+	/**
+	 * Get all fields
+	 * @return array
+	 */
+	public function findAll()
+	{
+		return $this->_dL->getFields();
+	}
+
+	/**
+	 * Find fields by post_type
+	 * @param string $post_type
+	 * @return array
+	 */
 	public function findByPostType($post_type)
 	{
 		$fields = $this->_dL->getFields();
 		return $fields[$post_type];
 	}
 
+	/**
+	 * Find collection by post_type
+	 * @param string $post_type
+	 * @return array
+	 */
 	public function findCollectionsByPostType($post_type)
 	{
 		$fields = $this->_dL->getFields();
 		$collections = array();
 
-		foreach ( $fields[$post_type] as $field_id => $field ) {
-			if ( !empty($field['fields']) )
-				$collections[$field_id] =  $field;
+		if ( !empty($fields) ) {
+			foreach ( $fields[$post_type] as $field_id => $field ) {
+				if ( !empty($field['fields']) )
+					$collections[$field_id] =  $field;
+			}
 		}
 
 		return $collections;
@@ -46,12 +66,12 @@ class Field extends core\Model {
 	/**
 	 * Save new field
 	 */
-	public function save()
+	public function save($import = null)
 	{
-		$field_obj = models\JustFieldFactory::create($this);
-		$field_index = models\JustFieldFactory::createFieldIndex($field_obj->idBase);
+		$field_obj = core\JustFieldFactory::create($this);
+		$field_index = core\JustFieldFactory::createFieldIndex($field_obj->idBase);
 
-		return $field_obj->doUpdate($field_index);
+		return $field_obj->doUpdate($field_index, $import);
 	}
 
 	/**
@@ -59,10 +79,10 @@ class Field extends core\Model {
 	 */
 	public function delete()
 	{
-		$field_obj = models\JustFieldFactory::create($this);
+		$field_obj = core\JustFieldFactory::create($this);
 		$field_obj->doDelete();
 
-		return array('status' => '1');
+		return true;
 	}
 
 	/**
@@ -71,17 +91,17 @@ class Field extends core\Model {
 	public function sort()
 	{
 		$order  = trim($this->fields_order, ',');
-		$fieldset = $this->_dL->getFieldsets($this->post_type, $this->fieldset_id);
+		$fieldsets = $this->_dL->getFieldsets();
 		$new_fields = explode(',', $order);
-		$fieldset['fields'] = array();
+		$fieldsets[$this->post_type][$this->fieldset_id]['fields'] = array();
 
 		foreach ( $new_fields as $field_id ) {
-			$fieldset['fields'][$field_id] = $field_id;
+			$fieldsets[$this->post_type][$this->fieldset_id]['fields'][$field_id] = $field_id;
 		}
 
-		$this->_dL->updateFieldsets($this->post_type, $this->fieldset_id, $fieldset);
-
-		return array('status' => '1');
+		$this->_dL->setFieldsets($fieldsets);
+		$this->_dL->saveFieldsetsData();
+		return true;
 	}
 
 	/**
@@ -89,25 +109,24 @@ class Field extends core\Model {
 	 */
 	public function sortCollection()
 	{
-		$this->field_id = $this->collection_id;
-		$this->collection_id = false;
-		$collection = models\JustFieldFactory::create($this);
+		$fields = $this->_dL->getFields();
 		$order  = trim($this->fields_order, ',');
-		$new_fields = explode(',', $order);
-		$new_order = array();		
+		$new_sort = explode(',', $order);
+		$new_fields = array();
 
-		if (! empty($new_fields) ) {
-			foreach ( $new_fields as $field_id ) {
-				if ( isset($collection->instance['fields'][$field_id]) ) {
-					$new_order[$field_id] = $collection->instance['fields'][$field_id];					
+		if ( !empty($new_sort) ) {
+			foreach ( $new_sort as $field_id ) {
+				if ( isset($fields[$this->post_type][$this->collection_id]['fields'][$field_id]) ) {
+					$new_fields[$field_id] = $fields[$this->post_type][$this->collection_id]['fields'][$field_id];					
 				}
 			}
 		}
 
-		$collection->instance['fields'] = $new_order;
-		$this->_dL->updateFields($this->post_type, $this->field_id, $collection->instance, $this->fieldset_id);
+		$fields[$this->post_type][$this->collection_id]['fields'] = $new_fields;
 
-		return array('status' => '1');
+		$this->_dL->setFields($fields);
+		$this->_dL->saveFieldsData();
+		return true;
 	}
 
 	/**
@@ -117,14 +136,14 @@ class Field extends core\Model {
 	{
 		$this->field_id = $this->collection_id;
 		$this->collection_id = false;
-		$collection = models\JustFieldFactory::create($this);
+		$collection = core\JustFieldFactory::create($this);
 		\jcf\components\collection\Just_Field_Collection::$currentCollectionFieldKey = $this->group_id;
 
 		foreach ( $collection->instance['fields'] as $field_id => $field ) {
 			$this->field_id = $field_id;
 			$this->collection_id = $collection->id;
 			$this->fieldset_id = $collection->fieldsetId;
-			$field_obj = models\JustFieldFactory::create($this);
+			$field_obj = core\JustFieldFactory::create($this);
 			$field_obj->setSlug($field['slug']);
 			$field_obj->instance = $field;
 			$field_obj->isPostEdit = true;
@@ -163,7 +182,7 @@ class Field extends core\Model {
 			WHERE $post_type_where AND (post_status = 'publish' OR post_status = 'draft') AND post_title LIKE '%$this->term%'
 			ORDER BY post_title";
 		$posts = $wpdb->get_results($query);
-		
+
 		$response = array();
 		foreach ( $posts as $p ) {
 			$draft = ( $p->post_status == 'draft' ) ? ' (DRAFT)' : '';

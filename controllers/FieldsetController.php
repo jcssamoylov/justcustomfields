@@ -22,11 +22,11 @@ class FieldsetController extends core\Controller {
 		add_action('wp_ajax_jcf_order_fieldsets', array($this, 'ajaxSort'));
 
 		//Visibility options
-		add_action('wp_ajax_jcf_get_rule_options', array($this, 'ajaxGetRuleOptions'));
+		add_action('wp_ajax_jcf_get_rule_options', array($this, 'ajaxGetVisibilityOptions'));
 		add_action('wp_ajax_jcf_get_taxonomy_terms', array($this, 'ajaGetTaxonomyTerms'));
-		add_action('wp_ajax_jcf_save_visibility_rules', array($this, 'ajaxSaveVisibilityRules'));
-		add_action('wp_ajax_jcf_add_visibility_rules_form', array($this, 'ajaxGetVisibilityRulesForm'));
-		add_action('wp_ajax_jcf_delete_visibility_rule', array($this, 'ajaxDeleteVisibilityRule'));
+		add_action('wp_ajax_jcf_save_visibility_rules', array($this, 'ajaxSaveVisibility'));
+		add_action('wp_ajax_jcf_add_visibility_rules_form', array($this, 'ajaxGetVisibilityForm'));
+		add_action('wp_ajax_jcf_delete_visibility_rule', array($this, 'ajaxDeleteVisibility'));
 		add_action('wp_ajax_jcf_visibility_autocomplete', array($this, 'ajaxVisibilityAutocomplete'));
 	}
 
@@ -46,6 +46,7 @@ class FieldsetController extends core\Controller {
 	{
 		$post_type = $_GET['pt'];
 		$post_types = jcf_get_post_types( 'object' );
+
 		$jcf = new \jcf\JustCustomFields();
 		$fieldset_model = new models\Fieldset();
 		$field_model = new models\Field();
@@ -85,9 +86,9 @@ class FieldsetController extends core\Controller {
 	public function ajaxDelete()
 	{
 		$model = new models\Fieldset();
-		$model->load($_POST) && $result = $model->delete();
+		$model->load($_POST) && $success = $model->delete();
 
-		$this->_renderAjax($result, 'json');
+		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
 	}
 	
 	/**
@@ -97,9 +98,8 @@ class FieldsetController extends core\Controller {
 	{
 		$model = new models\Fieldset();
 		$model->load($_POST) && $fieldset = $model->findById($model->fieldset_id);
-		$visibility_form_data = $model->getVisibilityRulesForm();
 
-		$this->_renderAjax('fieldsets/change_fieldset', 'html', array('fieldset' => $fieldset, 'visibility_form_data' => $visibility_form_data));
+		$this->_renderAjax('fieldsets/change_fieldset', 'html', array('fieldset' => $fieldset));
 	}
 	
 	/**
@@ -110,7 +110,12 @@ class FieldsetController extends core\Controller {
 		$model = new models\Fieldset();
 		$model->load($_POST) && $success = $model->update();
 
-		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
+		$params = array(
+			'status' => $success,
+			'title' => $model->title,
+			'error' => $model->getErrors()
+		);
+		$this->_renderAjax($params, 'json');
 	}
 	
 	/**
@@ -127,30 +132,31 @@ class FieldsetController extends core\Controller {
 	/**
 	 * add form for new rule functions callback
 	 */
-	public function ajaxGetVisibilityRulesForm()
+	public function ajaxGetVisibilityForm()
 	{
-		$model = new models\Fieldset();
-		$model->load($_POST) && $form_data = $model->getVisibilityRulesForm();
+		$model = new models\FieldsetVisibility();
+		$model->load($_POST) && $form_data = $model->getForm();
 
 		if ( !empty($model->add_rule) || !empty($model->edit_rule) ) {
-			$this->_renderAjax('fieldsets/visibility_form', 'html', $form_data);
+			$this->_renderAjax('fieldsets/visibility/form', 'html', $form_data);
 		}
 		else {
-			$this->_render('fieldsets/visibility_form', $form_data);
+			$this->_render('fieldsets/visibility/form', $form_data);
 		}
 	}
 
 	/**
 	 * get base options for visibility rules functions callback
 	 */
-	public function ajaxGetRuleOptions()
+	public function ajaxGetVisibilityOptions()
 	{
-		$model = new models\Fieldset();
-		$model->load($_POST) && $rules = $model->getVisibilityRules();
-		$template = ( $rules['type'] == 'page_template' ) ? 'templates_list' : 'taxonomies_list';
-		$data = ( $rules['type'] == 'page_template' ) ? array('templates' => $rules['data']) : array('taxonomies' => $rules['data']);
+		$model = new models\FieldsetVisibility();
+		$model->load($_POST) && $success = $model->getOptions();
 
-		$this->_renderAjax('fieldsets/' . $template, 'html', $data);
+		$template = ( $model->rule == 'page_template' ) ? 'templates_list' : 'taxonomies_list';
+		$options = ( $model->rule == 'page_template' ) ? array('templates' => $success) : array('taxonomies' => $success);
+
+		$this->_renderAjax('fieldsets/visibility/' . $template, 'html', $options);
 	}
 
 	
@@ -160,36 +166,35 @@ class FieldsetController extends core\Controller {
 	public function ajaGetTaxonomyTerms() 
 	{
 		$taxonomy = $_POST['taxonomy'];
-		$current_term = array();
 		$terms = get_terms($taxonomy, array('hide_empty' => false));
 
-		$this->_renderAjax('fieldsets/terms_list', 'html', array(
+		$this->_renderAjax('fieldsets/visibility/terms_list', 'html', array(
 			'terms' => $terms, 
 			'taxonomy' => $taxonomy, 
-			'current_term' => $current_term
+			'current_term' => array()
 		));
 	}
 	
 	/**
 	 * Save rules for visibility functions callback
 	 */
-	public function ajaxSaveVisibilityRules()
+	public function ajaxSaveVisibility()
 	{
-		$model = new models\Fieldset();
-		$model->load($_POST) && $visibility_rules = $model->saveVisibilityRules();
+		$model = new models\FieldsetVisibility();
+		$model->load($_POST) && $rules = $model->update();
 
-		$this->_renderAjax('fieldsets/visibility_rules', 'html', array('visibility_rules' => $visibility_rules));
+		$this->_renderAjax('fieldsets/visibility/rules', 'html', array('visibility_rules' => $rules));
 	}
 
 	/**
 	 * Delete rule for visibility functions callback
 	 */
-	public function ajaxDeleteVisibilityRule()
+	public function ajaxDeleteVisibility()
 	{
-		$model = new models\Fieldset();
-		$model->load($_POST) && $visibility_rules = $model->deleteVisibilityRules();
+		$model = new models\FieldsetVisibility();
+		$model->load($_POST) && $rules = $model->delete();
 
-		$this->_renderAjax('fieldsets/visibility_rules', 'html', array('visibility_rules' => $visibility_rules));
+		$this->_renderAjax('fieldsets/visibility/rules', 'html', array('visibility_rules' => $rules));
 	}
 
 	/**
@@ -197,8 +202,8 @@ class FieldsetController extends core\Controller {
 	 */
 	public function ajaxVisibilityAutocomplete()
 	{
-		$model = new models\Fieldset();
-		$model->load($_POST) && $result = $model->getVisibilityAutocompleteData();
+		$model = new models\FieldsetVisibility();
+		$model->load($_POST) && $result = $model->autocomplete();
 
 		$this->_renderAjax($result, 'json');
 	}

@@ -5,13 +5,12 @@ use jcf\core;
 
 class Shortcodes extends core\Model {
 	
-	protected $_layer;
+	protected $_dL;
 	
 	public function __construct()
 	{
 		parent::__construct();
-		$layer_factory = new DataLayerFactory();
-		$this->_layer = $layer_factory->create();
+		$this->_dL = core\DataLayerFactory::create();
 	}
 
 	/**
@@ -31,9 +30,9 @@ class Shortcodes extends core\Model {
 		//get post type
 		$post_type = get_post_type($post_id);
 		//get field settings
-		$field_settings = $this->_layer->getFields($post_type);
+		$field_settings = $this->_dL->getFields();
 		//get field id
-		foreach ( $field_settings as $key_field => $field ) {
+		foreach ( $field_settings[$post_type] as $key_field => $field ) {
 			if ( strcmp($args['field'], $field['slug']) === 0 ) {
 				$field_id = $key_field;
 				break;
@@ -44,7 +43,7 @@ class Shortcodes extends core\Model {
 			$field_model = new Field();
 			$field_model->post_type = $post_type;
 			$field_model->field_id = $field_id;
-			$field_obj = JustFieldFactory::create($field_model);
+			$field_obj = core\JustFieldFactory::create($field_model);
 			$field_obj->setPostID( $post_id );
 			
 			unset($args['field']);

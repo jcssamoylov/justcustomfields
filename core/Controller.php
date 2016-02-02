@@ -28,11 +28,10 @@ class Controller
 		}
 		else {
 			header( "Content-Type: text/html; charset=" . get_bloginfo('charset') );
-			ob_start(); 
+			ob_start();
 			$this->_render($data, $params);
 			$responce = ob_get_clean();
 		}
-
 		echo $responce;
 		exit();
 	}

@@ -82,7 +82,7 @@ class Model
 		$self = get_class($this);
 		foreach ( $params as $key => $value) {
 			if ( property_exists($self, $key) ) 
-				$this->$key = strip_tags(trim($value));
+				$this->$key = is_array($value) ? $value : strip_tags(trim($value));
 		}
 	}
 }

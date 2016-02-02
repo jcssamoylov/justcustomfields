@@ -5,9 +5,9 @@
 			<ul class="visibility-list-items">
 			<?php $i=1; foreach( $templates as $name => $slug ): ?>
 				<li>
-					<input type="checkbox" name="rule_templates" value="<?php echo $slug; ?>" id="rule_taxonomy_term_<?php echo $i; ?>"
+					<input type="checkbox" name="rule_templates" value="<?php echo $slug; ?>" id="rule_template_<?php echo $i; ?>"
 						<?php checked(in_array($slug, $current), true ); ?>/>
-					<label for="rule_taxonomy_term_<?php echo $i; ?>"><?php echo $name; ?></label>
+					<label for="rule_template_<?php echo $i; ?>"><?php echo $name; ?></label>
 				</li>
 			<?php $i++; endforeach; ?>
 			</ul>
