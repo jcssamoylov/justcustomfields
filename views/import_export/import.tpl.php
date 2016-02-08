@@ -1,6 +1,6 @@
 <div class="wrap">
 	<div class="icon32 icon32-posts-page" id="icon-edit"><br></div>
-	<h2><?php _e('Just Custom Fields Import', JCF_TEXTDOMAIN); ?></h2>
+	<h2><?php _e('Just Custom Fields Import', \jcf\JustCustomFields::TEXTDOMAIN); ?></h2>
 	
 	<?php do_action('jcf_print_admin_notice'); ?>
 	
@@ -8,13 +8,13 @@
 		<?php if( $post_types ): ?>
 			<form action="<?php get_permalink(); ?>" method="post" id="jcf_save_import_fields">
 				<div id="jcf_save_import_fields_content">
-					<p><?php _e('You should choose Fields to import:', JCF_TEXTDOMAIN); ?></p>
+					<p><?php _e('You should choose Fields to import:', \jcf\JustCustomFields::TEXTDOMAIN); ?></p>
 					<ul class="dotted-list jcf-bold jcf_width66p">
 					<?php foreach( $post_types as $key => $post_type ): ?>
 						<li class="jcf_export-content-type">
 							<h3>
 								<span class="jcf_checkbox_block"><input type="checkbox" name="select_content_type" value="" class="jcf-select_content_type"  /></span>
-								<?php _e('Content type: ', JCF_TEXTDOMAIN); ?><?php echo $key; ?>
+								<?php _e('Content type: ', \jcf\JustCustomFields::TEXTDOMAIN); ?><?php echo $key; ?>
 							</h3>
 							<input type="hidden" name="import_data[<?php echo $key; ?>]" value="<?php echo $key; ?>" />
 							
@@ -33,16 +33,16 @@
 													   class="jcf-choose_fieldset" 
 													/>
 											</span>
-											<?php _e('Fieldset:', JCF_TEXTDOMAIN); ?> <span><?php echo $fieldset['title'];  ?></span>
+											<?php _e('Fieldset:', \jcf\JustCustomFields::TEXTDOMAIN); ?> <span><?php echo $fieldset['title'];  ?></span>
 										</h3>
 										<div class="jcf_inner_content">
 											<table class="wp-list-table widefat fixed" cellspacing="0">
 												<thead><tr>
 													<th class="check-column">&nbsp;</th>
-													<th><?php _e('Field', JCF_TEXTDOMAIN); ?></th>
-													<th><?php _e('Type', JCF_TEXTDOMAIN); ?></th>
-													<th><?php _e('Slug', JCF_TEXTDOMAIN); ?></th>
-													<th><?php _e('Enabled', JCF_TEXTDOMAIN); ?></th>
+													<th><?php _e('Field', \jcf\JustCustomFields::TEXTDOMAIN); ?></th>
+													<th><?php _e('Type', \jcf\JustCustomFields::TEXTDOMAIN); ?></th>
+													<th><?php _e('Slug', \jcf\JustCustomFields::TEXTDOMAIN); ?></th>
+													<th><?php _e('Enabled', \jcf\JustCustomFields::TEXTDOMAIN); ?></th>
 												</tr></thead>
 												<tbody id="the-list-<?php echo $fieldset_id; ?>">
 													<?php if( !empty($fieldset['fields'])) : ?>
@@ -83,24 +83,24 @@
 																	<td><strong><?php echo $field['title']; ?></strong></td>
 																	<td><?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></td>
 																	<td><?php echo $field['slug']; ?></td>
-																	<td><?php if($field['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
+																	<td><?php if($field['enabled']) _e('Yes', \jcf\JustCustomFields::TEXTDOMAIN); else  _e('No', \jcf\JustCustomFields::TEXTDOMAIN);?></td>
 																<?php else: ?>
 																	<td>
 																		<ul>
 																			<li><?php echo $field['title']; ?></li>
-																			<li><strong><?php _e('Type', JCF_TEXTDOMAIN); ?></strong>: <em><?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></em></li>
-																			<li><strong><?php _e('Slug', JCF_TEXTDOMAIN); ?></strong>: <em><?php echo $field['slug']; ?></em></li>
-																			<li><strong><?php _e('Enabled', JCF_TEXTDOMAIN); ?></strong>: <em><?php if($field['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></em></li>
+																			<li><strong><?php _e('Type', \jcf\JustCustomFields::TEXTDOMAIN); ?></strong>: <em><?php echo preg_replace('/\-[0-9]+$/', '', $field_id); ?></em></li>
+																			<li><strong><?php _e('Slug', \jcf\JustCustomFields::TEXTDOMAIN); ?></strong>: <em><?php echo $field['slug']; ?></em></li>
+																			<li><strong><?php _e('Enabled', \jcf\JustCustomFields::TEXTDOMAIN); ?></strong>: <em><?php if($field['enabled']) _e('Yes', \jcf\JustCustomFields::TEXTDOMAIN); else  _e('No', \jcf\JustCustomFields::TEXTDOMAIN);?></em></li>
 																		</ul>
 																	</td>
 																	<td colspan="3" >
 																		<table class="wp-list-table widefat fixed fieldset-fields-table" cellspacing="0">
 																			<tr>
 																				<th class="check-column">&nbsp;</th>
-																				<th><?php _e('Field', JCF_TEXTDOMAIN); ?></th>
-																				<th><?php _e('Type', JCF_TEXTDOMAIN); ?></th>
-																				<th><?php _e('Slug', JCF_TEXTDOMAIN); ?></th>
-																				<th><?php _e('Enabled', JCF_TEXTDOMAIN); ?></th>
+																				<th><?php _e('Field', \jcf\JustCustomFields::TEXTDOMAIN); ?></th>
+																				<th><?php _e('Type', \jcf\JustCustomFields::TEXTDOMAIN); ?></th>
+																				<th><?php _e('Slug', \jcf\JustCustomFields::TEXTDOMAIN); ?></th>
+																				<th><?php _e('Enabled', \jcf\JustCustomFields::TEXTDOMAIN); ?></th>
 																			</tr>
 																		<?php if( !empty($field['fields']) && is_array($field['fields']) ): ?>
 																			<?php foreach($field['fields'] as $collection_field_id => $collection_field_value):  ?>
@@ -124,7 +124,7 @@
 																					<td><?php echo $collection_field_value['title']; ?></td>
 																					<td><?php echo preg_replace('/\-[0-9]+$/', '', $collection_field_id); ?></td>
 																					<td><?php echo $collection_field_value['slug']; ?></td>
-																					<td><?php if($collection_field_value['enabled']) _e('Yes', JCF_TEXTDOMAIN); else  _e('No', JCF_TEXTDOMAIN);?></td>
+																					<td><?php if($collection_field_value['enabled']) _e('Yes', \jcf\JustCustomFields::TEXTDOMAIN); else  _e('No', \jcf\JustCustomFields::TEXTDOMAIN);?></td>
 																				</tr>
 																			<?php endforeach; ?>
 																		<?php endif; ?>	
@@ -134,7 +134,7 @@
 															</tr>
 														<?php endforeach; ?>
 													<?php else : ?>
-														<tr><td colspan="4" align="center"><?php _e('Please check import file ', JCF_TEXTDOMAIN); ?></td></tr>
+														<tr><td colspan="4" align="center"><?php _e('Please check import file ', \jcf\JustCustomFields::TEXTDOMAIN); ?></td></tr>
 													<?php endif; ?>
 												</tbody>
 											</table>
@@ -147,7 +147,7 @@
 					</ul>
 				</div>
 				<div class="jcf-modal-button">
-					<input type="submit" class="button-primary" name="save_import" value="<?php _e('Save Fields ', JCF_TEXTDOMAIN); ?>" />
+					<input type="submit" class="button-primary" name="save_import" value="<?php _e('Save Fields ', \jcf\JustCustomFields::TEXTDOMAIN); ?>" />
 				</div>
 			</form>
 		<?php endif; ?>

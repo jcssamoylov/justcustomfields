@@ -1,32 +1,25 @@
 <?php
 
 namespace jcf\models;
+
 use jcf\core;
 
-class Settings extends core\Model {
-	
+class Settings extends core\Model
+{
 	const CONF_MS_NETWORK = 'network';
 	const CONF_MS_SITE = 'site';
 	const CONF_SOURCE_DB = 'database';
 	const CONF_SOURCE_FS_THEME = 'fs_theme';
 	const CONF_SOURCE_FS_GLOBAL = 'fs_global';
-	
+
 	public $source;
 	public $network;
-	
-	/**
-	 * Init constructor 
-	 */
-	public function __construct()
-	{
-		parent::__construct();
-	}
 
 	/**
 	 * Get source settings
 	 * @return string
 	 */
-	public static function getDataSourceType() 
+	public static function getDataSourceType()
 	{
 		return get_site_option('jcf_source_settings', self::CONF_SOURCE_DB);
 	}
@@ -35,9 +28,9 @@ class Settings extends core\Model {
 	 * Get network settings
 	 * @return string
 	 */
-	public static function getNetworkMode() 
+	public static function getNetworkMode()
 	{
-		if( MULTISITE && $network = get_site_option('jcf_multisite_setting') ) {
+		if ( MULTISITE && $network = get_site_option('jcf_multisite_setting') ) {
 			return $network;
 		}
 		return self::CONF_MS_SITE;
@@ -57,7 +50,7 @@ class Settings extends core\Model {
 	 * Update source data
 	 * @return boolean
 	 */
-	protected function _updateDataSource() 
+	protected function _updateDataSource()
 	{
 		if ( empty($this->source) ) {
 			$error = __('<strong>Settings storage update FAILED!</strong>. Choose an option for the data storage', \jcf\JustCustomFields::TEXTDOMAIN);
@@ -92,16 +85,17 @@ class Settings extends core\Model {
 	 * Update network data
 	 * @return boolean
 	 */
-	protected function _updateNetworkMode() 
+	protected function _updateNetworkMode()
 	{
-		if ( !MULTISITE ) return false;
+		if ( !MULTISITE )
+			return false;
 
 		if ( empty($this->network) ) {
 			$error = __('<strong>MultiSite settings update FAILED!</strong> Choose an option for the multisite.', \jcf\JustCustomFields::TEXTDOMAIN);
 			$this->addError($error);
 		}
 
-		if ( !$this->hasErrors() && update_site_option( 'jcf_multisite_setting', $this->network ) ) {
+		if ( !$this->hasErrors() && update_site_option('jcf_multisite_setting', $this->network) ) {
 			$message = __('<strong>MultiSite settings</strong> has been updated.', \jcf\JustCustomFields::TEXTDOMAIN);
 			$this->addMessage($message);
 			return true;
@@ -109,4 +103,5 @@ class Settings extends core\Model {
 
 		return false;
 	}
+
 }

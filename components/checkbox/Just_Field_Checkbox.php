@@ -1,5 +1,7 @@
 <?php
+
 namespace jcf\components\checkbox;
+
 use jcf\models;
 
 /**
@@ -8,56 +10,55 @@ use jcf\models;
  * @package default
  * @author Alexander Prokopenko
  */
-class Just_Field_Checkbox extends models\Just_Field{
-	
-	public function __construct() {
-		$field_ops = array('classname' => 'field_checkbox' );
+class Just_Field_Checkbox extends models\Just_Field
+{
+
+	public function __construct()
+	{
+		$field_ops = array( 'classname' => 'field_checkbox' );
 		parent::__construct('checkbox', __('Checkbox', \jcf\JustCustomFields::TEXTDOMAIN), $field_ops);
 	}
-	
+
 	/**
-	 *	draw field on post edit form
-	 *	you can use $this->instance, $this->entry
+	 * 	draw field on post edit form
+	 * 	you can use $this->instance, $this->entry
 	 */
-	public function field() 
-	{		
+	public function field()
+	{
 		// prepare options array
 		$values = $this->parsedSelectOptions($this->instance);
-		
+
 		if ( empty($values) ) {
-			echo '<p>'.__('Please check settings. Values are empty', \jcf\JustCustomFields::TEXTDOMAIN).'</p>';
+			echo '<p>' . __('Please check settings. Values are empty', \jcf\JustCustomFields::TEXTDOMAIN) . '</p>';
 			return false;
 		}
 
 		$single_checkbox = (count($values) == 1) ? true : false;
-
 		?>
 		<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
-			<div class="form-field">
-				<label><?php echo $this->instance['title']; ?>:</label>
-				<div class="jcf-get-shortcode" rel="<?php echo $this->slug; ?>">
-					<span class="dashicons dashicons-editor-help wp-ui-text-highlight"></span>
-				</div>
+			<?php echo $this->fieldOptions['before_widget']; ?>
+				<?php echo $this->fieldOptions['before_title'] . $this->instance['title'] . $this->fieldOptions['after_title']; ?>
+				
 				<div class="checkboxes-set">
-				<div class="checkbox-row">
-					<?php foreach( (array)$values as $key => $val ) : ?>
-						<?php 
+					<div class="checkbox-row">
+						<?php foreach ( (array) $values as $key => $val ) : ?>
+							<?php
 							if ( $single_checkbox ) {
 								$checked = ($val == $this->entry) ? true : false;
 							}
 							else {
-								$checked = in_array($val, (array)$this->entry);
+								$checked = in_array($val, (array) $this->entry);
 							}
-						?>
-						<label><input type="checkbox" name="<?php echo $this->getFieldName('val') . ($single_checkbox ? '' : '[]'); ?>" id="<?php echo $this->getFieldId('val'); ?>" value="<?php echo esc_attr($val); ?>" <?php echo checked(true, $checked, false); ?>/> <?php echo $key; ?></label>
-					<?php endforeach; ?>
-				</div>
+							?>
+							<label><input type="checkbox" name="<?php echo $this->getFieldName('val') . ($single_checkbox ? '' : '[]'); ?>" id="<?php echo $this->getFieldId('val'); ?>" value="<?php echo esc_attr($val); ?>" <?php echo checked(true, $checked, false); ?>/> <?php echo $key; ?></label>
+						<?php endforeach; ?>
+					</div>
 				</div>
 
-				<?php if( !empty($this->instance['description']) ) : ?>
+				<?php if ( !empty($this->instance['description']) ) : ?>
 					<p class="description"><?php echo $this->instance['description']; ?></p>
 				<?php endif; ?>
-			</div>
+			<?php echo $this->fieldOptions['after_widget']; ?>
 		</div>
 		<?php
 	}
@@ -68,46 +69,46 @@ class Just_Field_Checkbox extends models\Just_Field{
 	public function form()
 	{
 		// Defaults
-		$instance = wp_parse_args( (array) $this->instance, array( 'title' => '', 'settings' => '', 'description' => '' ) );
+		$instance = wp_parse_args((array) $this->instance, array( 'title' => '', 'settings' => '', 'description' => '' ));
 
-		$title = esc_attr( $instance['title'] );
-		$settings = esc_attr( $instance['settings'] );
+		$title = esc_attr($instance['title']);
+		$settings = esc_attr($instance['settings']);
 		$description = esc_html($instance['description']);
 		?>
-			<p>
-				<label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', JCF_TEXTDOMAIN); ?></label>
-				<input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" />
-			</p>
-			<p>
-				<label for="<?php echo $this->getFieldId('settings'); ?>"><?php _e('Settings:', JCF_TEXTDOMAIN); ?></label> 
-				<textarea class="widefat" id="<?php echo $this->getFieldId('settings'); ?>" name="<?php echo $this->getFieldName('settings'); ?>" ><?php echo $settings; ?></textarea>
-				<br/><small><?php _e('Parameters like (you can use just "label" if "id" is the same):<br>label1|id1<br>label2|id2<br>label3', JCF_TEXTDOMAIN); ?></small>
-			</p>
-			<p>
-				<label for="<?php echo $this->getFieldId('description'); ?>"><?php _e('Description:', JCF_TEXTDOMAIN); ?></label>
-				<textarea name="<?php echo $this->getFieldName('description'); ?>" id="<?php echo $this->getFieldId('description'); ?>" cols="20" rows="4" class="widefat"><?php echo $description; ?></textarea>
-			</p>
+		<p>
+			<label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label>
+			<input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" />
+		</p>
+		<p>
+			<label for="<?php echo $this->getFieldId('settings'); ?>"><?php _e('Settings:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> 
+			<textarea class="widefat" id="<?php echo $this->getFieldId('settings'); ?>" name="<?php echo $this->getFieldName('settings'); ?>" ><?php echo $settings; ?></textarea>
+			<br/><small><?php _e('Parameters like (you can use just "label" if "id" is the same):<br>label1|id1<br>label2|id2<br>label3', \jcf\JustCustomFields::TEXTDOMAIN); ?></small>
+		</p>
+		<p>
+			<label for="<?php echo $this->getFieldId('description'); ?>"><?php _e('Description:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label>
+			<textarea name="<?php echo $this->getFieldName('description'); ?>" id="<?php echo $this->getFieldId('description'); ?>" cols="20" rows="4" class="widefat"><?php echo $description; ?></textarea>
+		</p>
 		<?php
 	}
 
 	/**
-	 *	save field on post edit form
+	 * 	save field on post edit form
 	 */
-	public function save( $values ) 
+	public function save( $values )
 	{
-		$values = isset($values['val']) ? $values['val'] : '' ;
+		$values = isset($values['val']) ? $values['val'] : '';
 		return $values;
 	}
-	
+
 	/**
-	 *	update instance (settings) for current field
+	 * 	update instance (settings) for current field
 	 */
-	public function update( $new_instance, $old_instance ) 
+	public function update( $new_instance, $old_instance )
 	{
 		$instance = $old_instance;
-		$instance['title'] 			= strip_tags($new_instance['title']);
-		$instance['settings'] 		= strip_tags($new_instance['settings']);
-		$instance['description'] 	= strip_tags($new_instance['description']);
+		$instance['title'] = strip_tags($new_instance['title']);
+		$instance['settings'] = strip_tags($new_instance['settings']);
+		$instance['description'] = strip_tags($new_instance['description']);
 		return $instance;
 	}
 
@@ -116,7 +117,7 @@ class Just_Field_Checkbox extends models\Just_Field{
 	 * 
 	 * @param array $instance	current instance
 	 */
-	protected function parsedSelectOptions($instance)
+	protected function parsedSelectOptions( $instance )
 	{
 		$values = array();
 		$v = explode("\n", $instance['settings']);
@@ -134,16 +135,17 @@ class Just_Field_Checkbox extends models\Just_Field{
 		}
 		return $values;
 	}
-	
+
 	/**
-	 *	print fields values from shortcode
+	 * 	print fields values from shortcode
 	 */
-	public function shortcodeValue($args)
+	public function shortcodeValue( $args )
 	{
 		$options = $this->parsedSelectOptions($this->instance);
 		$options = array_flip($options);
 
-		if ( empty($this->entry) ) return '';
+		if ( empty($this->entry) )
+			return '';
 
 		$html = '<ul class="jcf-list">';
 		foreach ( $this->entry as $value ) {
@@ -156,7 +158,7 @@ class Just_Field_Checkbox extends models\Just_Field{
 		}
 		$html .= '</ul>';
 
-		return  $args['before_value'] . $html . $args['after_value'];
+		return $args['before_value'] . $html . $args['after_value'];
 	}
 
 }

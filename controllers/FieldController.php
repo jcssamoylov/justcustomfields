@@ -1,10 +1,12 @@
 <?php
 
 namespace jcf\controllers;
+
 use jcf\models;
 use jcf\core;
 
-class FieldController extends core\Controller {
+class FieldController extends core\Controller
+{
 
 	/**
 	 * Init all wp-actions
@@ -13,12 +15,12 @@ class FieldController extends core\Controller {
 	{
 		parent::__construct();
 		//Fields actions
-		add_action('wp_ajax_jcf_add_field', array($this, 'ajaxEdit'));
-		add_action('wp_ajax_jcf_save_field', array($this, 'ajaxSave'));
-		add_action('wp_ajax_jcf_delete_field', array($this, 'ajaxDelete'));
-		add_action('wp_ajax_jcf_edit_field', array($this, 'ajaxEdit'));
-		add_action('wp_ajax_jcf_fields_order', array($this, 'ajaxSort'));
-		add_action('wp_ajax_jcf_collection_order', array($this, 'ajaxCollectionSort' ));
+		add_action('wp_ajax_jcf_add_field', array( $this, 'ajaxEdit' ));
+		add_action('wp_ajax_jcf_save_field', array( $this, 'ajaxSave' ));
+		add_action('wp_ajax_jcf_delete_field', array( $this, 'ajaxDelete' ));
+		add_action('wp_ajax_jcf_edit_field', array( $this, 'ajaxEdit' ));
+		add_action('wp_ajax_jcf_fields_order', array( $this, 'ajaxSort' ));
+		add_action('wp_ajax_jcf_collection_order', array( $this, 'ajaxCollectionSort' ));
 	}
 
 	/**
@@ -27,9 +29,12 @@ class FieldController extends core\Controller {
 	public function ajaxEdit()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $field = core\JustFieldFactory::create($model);
 
-		$this->_renderAjax('fieldsets/field_form', 'html', array('field' => $field));
+		if ( !($model->load($_POST) && $field = core\JustFieldFactory::create($model)) ) {
+			$this->_renderAjax(null, 'json', array( 'status' => !empty($field), 'error' => $model->getErrors() ));
+		}
+
+		$this->_renderAjax('fields/form', 'html', array( 'field' => $field ));
 	}
 
 	/**
@@ -38,10 +43,12 @@ class FieldController extends core\Controller {
 	public function ajaxSave()
 	{
 		$model = new models\Field();
-		$model->load($_POST) && $success = $model->save(); 
-		
 
-		if ( isset($success['id_base']) && $success['id_base'] == 'collection') {
+		if ( !($model->load($_POST) && $success = $model->save()) ) {
+			$this->_renderAjax(null, 'json', array( 'status' => !empty($field), 'error' => $model->getErrors() ));
+		}
+
+		if ( isset($success['id_base']) && $success['id_base'] == 'collection' ) {
 			$jcf = new \jcf\JustCustomFields();
 			$registered_fields = $jcf->getFields(true);
 
@@ -53,11 +60,11 @@ class FieldController extends core\Controller {
 				'registered_fields' => $registered_fields
 			);
 
-			$this->_render( 'fieldsets/collection_fields_ui', $template_params);
+			$this->_render('fields/collection', $template_params);
 			$success["collection_fields"] = ob_get_clean();
 		}
 
-		$this->_renderAjax($success, 'json');
+		$this->_renderAjax(null, 'json', $success);
 	}
 
 	/**
@@ -68,7 +75,7 @@ class FieldController extends core\Controller {
 		$model = new models\Field();
 		$model->load($_POST) && $success = $model->delete();
 
-		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
+		$this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -78,8 +85,8 @@ class FieldController extends core\Controller {
 	{
 		$model = new models\Field();
 		$model->load($_POST) && $success = $model->sort();
-		
-		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
+
+		$this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -89,7 +96,8 @@ class FieldController extends core\Controller {
 	{
 		$model = new models\Field();
 		$model->load($_POST) && $success = $model->sortCollection();
-		
-		$this->_renderAjax(array('status' => $success, 'error' => $model->getErrors()), 'json');
+
+		$this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
 	}
+
 }

@@ -1,14 +1,18 @@
 <?php
+
 namespace jcf\components\select;
+
 use jcf\models;
+
 /**
  * Class for select list type
  *
  * @package default
  * @author Alexander Prokopenko
  */
-class Just_Field_Select extends models\Just_Field{
-	
+class Just_Field_Select extends models\Just_Field
+{
+
 	public function __construct()
 	{
 		$field_ops = array( 'classname' => 'field_select' );
@@ -16,32 +20,29 @@ class Just_Field_Select extends models\Just_Field{
 	}
 
 	/**
-	 *	draw field on post edit form
-	 *	you can use $this->instance, $this->entry
+	 * 	draw field on post edit form
+	 * 	you can use $this->instance, $this->entry
 	 */
 	public function field()
 	{
 		$values = $this->parsedSelectOptions($this->instance);
 		?>
-			<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
-				<div class="form-field">
-					<label><?php echo $this->instance['title']; ?>:</label>
-					<div class="jcf-get-shortcode" rel="<?php echo $this->slug; ?>">
-						<span class="dashicons dashicons-editor-help wp-ui-text-highlight"></span>
-					</div>
-					<div class="select-field">
+		<div id="jcf_field-<?php echo $this->id; ?>" class="jcf_edit_field <?php echo $this->fieldOptions['classname']; ?>">
+			<?php echo $this->fieldOptions['before_widget']; ?>
+				<?php echo $this->fieldOptions['before_title'] . $this->instance['title'] . $this->fieldOptions['after_title']; ?>
+				<div class="select-field">
 					<select name="<?php echo $this->getFieldName('val'); ?>" id="<?php echo $this->getFieldId('val'); ?>" style="width: 47%;">
 						<option value="<?php echo esc_attr($this->instance['empty_option']); ?>" <?php echo selected($this->instance['empty_option'], $this->entry, false); ?>><?php echo esc_attr($this->instance['empty_option']); ?></option>
-						<?php  foreach( (array)$values as $key => $val ) : ?>
+						<?php foreach ( (array) $values as $key => $val ) : ?>
 							<option value="<?php echo esc_attr($val); ?>" <?php echo selected($val, $this->entry, false); ?>><?php echo esc_html(ucfirst($key)); ?></option>
 						<?php endforeach; ?>
 					</select>
-					</div>
-					<?php if( !empty($this->instance['description']) ) : ?>
-						<p class="description"><?php echo $this->instance['description']; ?></p>
-					<?php endif; ?>
 				</div>
-			</div>
+			<?php if ( !empty($this->instance['description']) ) : ?>
+				<p class="description"><?php echo $this->instance['description']; ?></p>
+			<?php endif; ?>
+			<?php echo $this->fieldOptions['after_widget']; ?>
+		</div>
 		<?php
 	}
 
@@ -51,35 +52,34 @@ class Just_Field_Select extends models\Just_Field{
 	public function form()
 	{
 		//Defaults
-		$instance = wp_parse_args( (array) $this->instance, array( 'title' => '', 'description' => '', 'options' => '', 'empty_option' => '' ) );
-		$title = esc_attr( $instance['title'] );
-		$options = esc_attr( $this->getInstanceSelectOptions($instance) );
+		$instance = wp_parse_args((array) $this->instance, array( 'title' => '', 'description' => '', 'options' => '', 'empty_option' => '' ));
+		$title = esc_attr($instance['title']);
+		$options = esc_attr($this->getInstanceSelectOptions($instance));
 		$description = esc_html($instance['description']);
-		$empty_option = esc_attr( $instance['empty_option']);
-
+		$empty_option = esc_attr($instance['empty_option']);
 		?>
 		<p><label for="<?php echo $this->getFieldId('title'); ?>"><?php _e('Title:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> <input class="widefat" id="<?php echo $this->getFieldId('title'); ?>" name="<?php echo $this->getFieldName('title'); ?>" type="text" value="<?php echo $title; ?>" /></p>
 		<p><label for="<?php echo $this->getFieldId('options'); ?>"><?php _e('Options:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> 
-		<textarea class="widefat" id="<?php echo $this->getFieldId('options'); ?>" name="<?php echo $this->getFieldName('options'); ?>" ><?php echo $options; ?></textarea>
-		<br/><small><?php _e('Parameters like (you can use just "label" if "id" is the same):<br>label1|id1<br>label2|id2<br>label3', \jcf\JustCustomFields::TEXTDOMAIN); ?></small></p>
+			<textarea class="widefat" id="<?php echo $this->getFieldId('options'); ?>" name="<?php echo $this->getFieldName('options'); ?>" ><?php echo $options; ?></textarea>
+			<br/><small><?php _e('Parameters like (you can use just "label" if "id" is the same):<br>label1|id1<br>label2|id2<br>label3', \jcf\JustCustomFields::TEXTDOMAIN); ?></small></p>
 		<p><label for="<?php echo $this->getFieldId('empty_option'); ?>"><?php _e('Empty option:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label><input class="widefat" id="<?php echo $this->getFieldId('empty_option'); ?>" name="<?php echo $this->getFieldName('empty_option'); ?>" placeholder="ex. Choose item from the list"" type="text" value="<?php echo $empty_option; ?>" />
-		<br/><small><?php _e('Leave blank to disable empty option', \jcf\JustCustomFields::TEXTDOMAIN); ?></small></p>
+			<br/><small><?php _e('Leave blank to disable empty option', \jcf\JustCustomFields::TEXTDOMAIN); ?></small></p>
 		<p><label for="<?php echo $this->getFieldId('description'); ?>"><?php _e('Description:', \jcf\JustCustomFields::TEXTDOMAIN); ?></label> <textarea name="<?php echo $this->getFieldName('description'); ?>" id="<?php echo $this->getFieldId('description'); ?>" cols="20" rows="4" class="widefat"><?php echo $description; ?></textarea></p>
 		<?php
 	}
 
 	/**
-	 *	save field on post edit form
+	 * 	save field on post edit form
 	 */
 	public function save( $values )
 	{
 		$values = $values['val'];
-		
+
 		return $values;
 	}
-	
+
 	/**
-	 *	update instance (settings) for current field
+	 * 	update instance (settings) for current field
 	 */
 	public function update( $new_instance, $old_instance )
 	{
@@ -90,7 +90,7 @@ class Just_Field_Select extends models\Just_Field{
 		$instance['empty_option'] = strip_tags($new_instance['empty_option']);
 		return $instance;
 	}
-	
+
 	/**
 	 * get current options settings based on plugin version
 	 * 
@@ -106,17 +106,17 @@ class Just_Field_Select extends models\Just_Field{
 			return $instance['options'];
 		}
 	}
-	
+
 	/**
 	 * prepare list of options
 	 * 
 	 * @param array $instance	current instance
 	 */
-	public function parsedSelectOptions($instance)
+	public function parsedSelectOptions( $instance )
 	{
 		$values = array();
 		$settings = $this->getInstanceSelectOptions($instance);
-		
+
 		$v = explode("\n", $settings);
 		foreach ( $v as $val ) {
 			$val = trim($val);
@@ -146,6 +146,7 @@ class Just_Field_Select extends models\Just_Field{
 		if ( isset($options[$this->entry]) ) {
 			$value = $options[$this->entry];
 		}
-		return  $args['before_value'] . $value . $args['after_value'];
+		return $args['before_value'] . $value . $args['after_value'];
 	}
+
 }

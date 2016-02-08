@@ -1,19 +1,21 @@
-<?php if( !empty($templates) ): ?>
+<?php if ( !empty($templates) ): ?>
 	<div class="templates-options">
 		<p>
-			<p><?php _e('Choose templates:', JCF_TEXTDOMAIN); ?></p>
-			<ul class="visibility-list-items">
-			<?php $i=1; foreach( $templates as $name => $slug ): ?>
+		<p><?php _e('Choose templates:', \jcf\JustCustomFields::TEXTDOMAIN); ?></p>
+		<ul class="visibility-list-items">
+			<?php $i = 1;
+			foreach ( $templates as $name => $slug ): ?>
 				<li>
 					<input type="checkbox" name="rule_templates" value="<?php echo $slug; ?>" id="rule_template_<?php echo $i; ?>"
-						<?php checked(in_array($slug, $current), true ); ?>/>
+		<?php checked(in_array($slug, $current), true); ?>/>
 					<label for="rule_template_<?php echo $i; ?>"><?php echo $name; ?></label>
 				</li>
-			<?php $i++; endforeach; ?>
-			</ul>
-			<br class="clear">
+		<?php $i++;
+	endforeach; ?>
+		</ul>
+		<br class="clear">
 		</p>
 	</div>
-<?php else:?>
-	<p><?php _e('No available templates', JCF_TEXTDOMAIN); ?></p>
+<?php else: ?>
+	<p><?php _e('No available templates', \jcf\JustCustomFields::TEXTDOMAIN); ?></p>
 <?php endif; ?>

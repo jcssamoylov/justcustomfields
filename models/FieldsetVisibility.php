@@ -1,13 +1,12 @@
 <?php
 
 namespace jcf\models;
+
 use jcf\core;
 use jcf\models;
 
-class FieldsetVisibility extends core\Model {
-
-	protected $_dL;
-	
+class FieldsetVisibility extends core\Model
+{
 	public $add_rule = false;
 	public $edit_rule = false;
 	public $rule_id;
@@ -18,10 +17,35 @@ class FieldsetVisibility extends core\Model {
 	public $fieldset_id;
 	public $post_type;
 
-	public function __construct()
+	/**
+	 * Get visibility rules by post type
+	 * @param string $post_type
+	 */
+	public function findByPostType($post_type) 
 	{
-		parent::__construct();
-		$this->_dL = core\DataLayerFactory::create();
+		$fieldsets = $this->_dL->getFieldsets();
+
+		if ( !empty($fieldsets[$post_type]) ) {
+			foreach ($fieldsets[$post_type] as $f_id => $fieldset) {
+				if ( !empty($fieldset['visibility_rules']) ) {
+					$visibility_rules[$f_id] = $fieldset['visibility_rules'];
+
+					foreach ( $visibility_rules[$f_id] as $key => $rule ) {
+						if ( $rule['based_on'] == 'taxonomy' ) {
+							$taxonomy_terms = array();
+
+							foreach ( $rule['rule_taxonomy_terms'] as $term_id ) {
+								$taxonomy_terms[] = get_term_by('id', $term_id, $rule['rule_taxonomy']);
+							}
+
+							$visibility_rules[$f_id][$key]['rule_taxonomy_terms'] = $taxonomy_terms;
+						}
+					}
+				}
+			}
+		}
+
+		return $visibility_rules;
 	}
 
 	/**
@@ -31,7 +55,7 @@ class FieldsetVisibility extends core\Model {
 	public function getForm()
 	{
 		$output = array();
-		$taxonomies = get_object_taxonomies( $this->post_type, 'objects' );
+		$taxonomies = get_object_taxonomies($this->post_type, 'objects');
 
 		$output['post_type'] = $this->post_type;
 		$output['taxonomies'] = $taxonomies;
@@ -39,11 +63,15 @@ class FieldsetVisibility extends core\Model {
 
 		if ( !empty($this->edit_rule) ) {
 			$fieldsets = $this->_dL->getFieldsets();
-			$edit_rule = $this->_request['edit_rule']; 
 			$visibility_rule = $fieldsets[$this->post_type][$this->fieldset_id]['visibility_rules'][$this->rule_id - 1];
 
+			if ( empty($visibility_rule) ) {
+				$this->addError(__('Visibility rule not found.', \jcf\JustCustomFields::TEXTDOMAIN));
+				return false;
+			}
+
 			if ( $visibility_rule['based_on'] == 'taxonomy' ) {
-				$terms = get_terms($visibility_rule['rule_taxonomy'], array('hide_empty' => false));
+				$terms = get_terms($visibility_rule['rule_taxonomy'], array( 'hide_empty' => false ));
 				$output['terms'] = $terms;
 			}
 			else {
@@ -69,7 +97,7 @@ class FieldsetVisibility extends core\Model {
 			$options = get_page_templates();
 		}
 		else {
-			$options = get_object_taxonomies( $this->post_type, 'objects' );
+			$options = get_object_taxonomies($this->post_type, 'objects');
 		}
 
 		return $options;
@@ -85,14 +113,18 @@ class FieldsetVisibility extends core\Model {
 		$visibility_rules = $fieldsets[$this->post_type][$this->fieldset_id]['visibility_rules'];
 
 		if ( !empty($this->rule_id) ) {
-			$visibility_rules[$this->rule_id - 1 ] = $this->visibility_rules;
+			$visibility_rules[$this->rule_id - 1] = $this->visibility_rules;
 		}
 		else {
 			$visibility_rules[] = $this->visibility_rules;
 		}
-		
+
 		$fieldsets[$this->post_type][$this->fieldset_id]['visibility_rules'] = $visibility_rules;
-		$this->_save($fieldsets);
+
+		if ( !$this->_save($fieldsets) ) {
+			$this->addError(__('Visibility rule not updated.', \jcf\JustCustomFields::TEXTDOMAIN));
+			return false;
+		}
 
 		return $visibility_rules;
 	}
@@ -105,9 +137,15 @@ class FieldsetVisibility extends core\Model {
 	{
 		$fieldsets = $this->_dL->getFieldsets();
 		unset($fieldsets[$this->post_type][$this->fieldset_id]['visibility_rules'][$this->rule_id - 1]);
-		$this->_save($fieldsets);
+		sort($fieldsets[$this->post_type][$this->fieldset_id]['visibility_rules']);
 
-		return $fieldsets[$this->post_type][$this->fieldset_id]['visibility_rules'];
+		if ( !$this->_save($fieldsets) ) {
+			$this->addError(__('Visibility rule not deleted.', \jcf\JustCustomFields::TEXTDOMAIN));
+			return false;
+		}
+
+		$rules = $fieldsets[$this->post_type][$this->fieldset_id]['visibility_rules'];
+		return !empty($rules) ? $rules : true;
 	}
 
 	/**
@@ -140,10 +178,11 @@ class FieldsetVisibility extends core\Model {
 	 * Save visibility settings
 	 * @param array $fieldsets
 	 */
-	protected function _save($fieldsets)
+	protected function _save( $fieldsets )
 	{
 		$this->_dL->setFieldsets($fieldsets);
-		$this->_dL->saveFieldsetsData();
+		$save = $this->_dL->saveFieldsetsData();
+		return !empty($save);
 	}
-}
 
+}

@@ -26,7 +26,7 @@
 	<?php if ( $post_type != 'page' ) : // Form for post types wich are not page ?>
 		<p><?php _e('Based on', \jcf\JustCustomFields::TEXTDOMAIN); ?> <strong><?php _e('Taxonomy terms', \jcf\JustCustomFields::TEXTDOMAIN); ?></strong></p>
 		<input type="hidden" name="based_on" value="taxonomy" />
-		<?php 
+		<?php
 			$this->_render('fieldsets/visibility/taxonomies_list', array(
 				'taxonomies' => $taxonomies, 
 				'current_tax' => $visibility_rule['rule_taxonomy'], 
@@ -48,7 +48,7 @@
 
 		<div class="rules-options">
 			<?php if ( $visibility_rule['based_on'] == 'taxonomy' ) : //Taxonomy options for post type page based on taxonomy ?>
-				<?php 
+				<?php
 					$this->_render('fieldsets/visibility/terms_list', array(
 						'taxonomies' => $taxonomies, 
 						'current_tax' => $visibility_rule['rule_taxonomy'], 

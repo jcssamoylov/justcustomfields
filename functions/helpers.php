@@ -1,15 +1,17 @@
 <?php
-if( !function_exists('pa') ) {
-	function pa($mixed, $stop = false) {
-		$ar = debug_backtrace(); $key = pathinfo($ar[0]['file']); $key = $key['basename'].':'.$ar[0]['line'];
-		$print = array($key => $mixed); echo( '<pre>'.htmlentities(print_r($print,1)).'</pre>' );
-		if($stop == 1) exit();
-	}
-}
 
-function jcf_get_current_screen() {
-	$screen = get_current_screen();
-	return $screen;
+if ( !function_exists('pa') ) {
+
+	function pa( $mixed, $stop = false ) {
+		$ar = debug_backtrace();
+		$key = pathinfo($ar[0]['file']);
+		$key = $key['basename'] . ':' . $ar[0]['line'];
+		$print = array( $key => $mixed );
+		echo( '<pre>' . htmlentities(print_r($print, 1)) . '</pre>' );
+		if ( $stop == 1 )
+			exit();
+	}
+
 }
 
 /**
@@ -18,24 +20,25 @@ function jcf_get_current_screen() {
  * @return string 
  */
 function jcf_get_post_types( $format = 'single' ) {
-	
-	$all_post_types = get_post_types(array('show_ui' => true ), 'object');
-	
+
+	$all_post_types = get_post_types(array( 'show_ui' => true ), 'object');
+
 	$post_types = array();
-	
-	foreach($all_post_types as $key=>$val){
-		
+
+	foreach ( $all_post_types as $key => $val ) {
+
 		//we should exclude 'revision' and 'nav menu items'
-		if($val == 'revision' || $val == 'nav_menu_item') continue;
-		
+		if ( $val == 'revision' || $val == 'nav_menu_item' )
+			continue;
+
 		$post_types[$key] = $val;
 	}
-	
+
 	return $post_types;
 }
 
 /**
- *	javascript localization
+ * 	javascript localization
  */
 function jcf_get_language_strings() {
 	global $wp_version;
@@ -55,7 +58,6 @@ function jcf_get_language_strings() {
 		'slug' => __('Slug', \jcf\JustCustomFields::TEXTDOMAIN),
 		'type' => __('Type', \jcf\JustCustomFields::TEXTDOMAIN),
 		'enabled' => __('Enabled', \jcf\JustCustomFields::TEXTDOMAIN),
-
 		'wp_version' => $wp_version,
 	);
 	$strings = apply_filters('jcf_localize_script_strings', $strings);
@@ -63,26 +65,11 @@ function jcf_get_language_strings() {
 }
 
 /**
- * print response (encode to json if needed) callback
+ * 	Json formater
+ * 	@param string $json Data of settings for fields
+ * 	@return string Return formated json string with settings for fields
  */
-//function jcf_ajax_response( $resp, $format = 'json' ){
-//	if ( $format == 'json' ) {
-//		$resp = json_encode($resp);
-//		header( "Content-Type: application/json; charset=" . get_bloginfo('charset') );
-//	}
-//	else {
-//		header( "Content-Type: text/html; charset=" . get_bloginfo('charset') );
-//	}
-//	echo $resp;
-//	exit();
-//}
-
-/**
- *	Json formater
- *	@param string $json Data of settings for fields
- *	@return string Return formated json string with settings for fields
- */
-function jcf_format_json($json) {
+function jcf_format_json( $json ) {
 	$tabcount = 0;
 	$result = '';
 	$inquote = false;
@@ -97,7 +84,8 @@ function jcf_format_json($json) {
 			$ignorenext = false;
 		}
 		else {
-			switch( $char ) {
+			switch ( $char )
+			{
 				case '{':
 					$tabcount++;
 					$result .= $char . $newline . str_repeat($tab, $tabcount);
@@ -116,7 +104,8 @@ function jcf_format_json($json) {
 					$result .= $char;
 					break;
 				case '\\':
-					if ($inquote) $ignorenext = true;
+					if ( $inquote )
+						$ignorenext = true;
 					$result .= $char;
 					break;
 				default:
@@ -128,13 +117,13 @@ function jcf_format_json($json) {
 }
 
 /**
- *	Set permisiions for file
- *	@param string $dir Parent directory path
- *	@param string $filename File path
+ * 	Set permisiions for file
+ * 	@param string $dir Parent directory path
+ * 	@param string $filename File path
  */
-function jcf_set_chmod($filename){
+function jcf_set_chmod( $filename ) {
 	$dir_perms = fileperms(dirname($filename));
-	if ( @chmod( $filename, $dir_perms ) ) {
+	if ( @chmod($filename, $dir_perms) ) {
 		return true;
 	}
 	else {

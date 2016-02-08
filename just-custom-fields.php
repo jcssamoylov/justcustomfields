@@ -26,12 +26,14 @@ class JustCustomFields {
 	protected static $_instance = NULL;
 
 	protected $_fields;
+	protected $_dL;
 
 	public function __construct()
 	{
 		self::$_pluginTitle = __('Just Custom Fields', self::TEXTDOMAIN);
 		$this->initControllers();
 		$this->initFields();
+		$this->_dL = \jcf\core\DataLayerFactory::create();
 
 		if ( self::$_instance !== NULL ) {
 			return self::$_instance;

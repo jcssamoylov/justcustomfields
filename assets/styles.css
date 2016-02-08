@@ -278,16 +278,16 @@ form.jcform_add_field .ajax-feedback{
 	float: left;
 }
 .jcf_tile .jcf_tile_icon:before{
-  content: "\f109";
+	content: "\f109";
 }
 .jcf_tile.post .jcf_tile_icon:before{
-  content: "\f109";
+	content: "\f109";
 }
 .jcf_tile.page .jcf_tile_icon:before{
-  content: "\f105";
+	content: "\f105";
 }
 .jcf_tile.attachment .jcf_tile_icon:before{
-  content: "\f104";
+	content: "\f104";
 }
 .jcf_tile .jcf_tile_icon:before{
 	display: inline-block;

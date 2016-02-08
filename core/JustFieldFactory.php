@@ -2,8 +2,9 @@
 
 namespace jcf\core;
 
-class JustFieldFactory {
-	
+class JustFieldFactory
+{
+
 	/**
 	 * Create Just_Field object of the required type
 	 * 
@@ -18,19 +19,19 @@ class JustFieldFactory {
 
 		$jcf = new \jcf\JustCustomFields();
 		$field_info = $jcf->getFieldInfo($id_base);
-		
+
 		$model = new $field_info['class']();
 		$model->setPostType($field->post_type);
 		$model->setFieldset($field->fieldset_id);
 		$model->setCollection($field->collection_id);
 		$model->setId($field_mixed);
-		
+
 		if ( !$model->is_new && $field->collection_id ) {
 			$collection = new \jcf\components\collection\Just_Field_Collection();
 			$collection->setPostType($field->post_type);
 			$collection->setFieldset($field->fieldset_id);
 			$collection->setId($field->collection_id);
-			
+
 			$field_instance = $collection->instance['fields'][$field_mixed];
 			$model->setSlug($field_instance['slug']);
 			$model->instance = $field_instance;
@@ -38,7 +39,7 @@ class JustFieldFactory {
 
 		return $model;
 	}
-	
+
 	/**
 	 * get next index for save new instance
 	 * because of ability to import fields now, we can't use DB to save AI. 
@@ -48,5 +49,5 @@ class JustFieldFactory {
 	{
 		return time();
 	}
-}
 
+}

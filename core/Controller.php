@@ -3,36 +3,42 @@
 namespace jcf\core;
 
 /**
- *	Main controller
+ * 	Main controller
  */
-class Controller 
+class Controller
 {
-	public function __construct(){}
-	/*
-	 *	Function for render views
-	 */
-	protected function _render($template, $params = array())
+
+	public function __construct()
 	{
-		extract($params);
-  		include( JCF_ROOT . '/views/' . $template . '.tpl.php' );
+		
 	}
 
-	/*
-	 *	Function for render views by AJAX
+	/**
+	 * 	Function for render views
 	 */
-	protected function _renderAjax($data, $format, $params = array())
+	protected function _render( $template, $params = array() )
+	{
+		extract($params);
+		include( JCF_ROOT . '/views/' . $template . '.tpl.php' );
+	}
+
+	/**
+	 * 	Function for render views by AJAX
+	 */
+	protected function _renderAjax( $template = null, $format, $params = array() )
 	{
 		if ( $format == 'json' ) {
-			$responce = json_encode($data);
-			header( "Content-Type: application/json; charset=" . get_bloginfo('charset') );
+			$responce = json_encode($params);
+			header("Content-Type: application/json; charset=" . get_bloginfo('charset'));
 		}
 		else {
-			header( "Content-Type: text/html; charset=" . get_bloginfo('charset') );
+			header("Content-Type: text/html; charset=" . get_bloginfo('charset'));
 			ob_start();
-			$this->_render($data, $params);
+			$this->_render($template, $params);
 			$responce = ob_get_clean();
 		}
 		echo $responce;
 		exit();
 	}
+
 }

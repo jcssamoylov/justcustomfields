@@ -2,17 +2,19 @@
 
 namespace jcf\core;
 
-class Autoloader {
+class Autoloader
+{
+
 	public function __construct()
 	{
-		spl_autoload_register(array($this, 'autoload'));
+		spl_autoload_register(array( $this, 'autoload' ));
 	}
 
 	/**
 	 * Autoload files by classes
 	 * @param string $file
 	 */
-	public function autoload($file)
+	public function autoload( $file )
 	{
 		$file = str_replace('\\', '/', $file);
 
@@ -21,7 +23,7 @@ class Autoloader {
 
 		$len = strlen($prefix);
 		// get the relative class name
-		if ( substr($file, 0, 3).'\\' == $prefix ) {
+		if ( substr($file, 0, 3) . '\\' == $prefix ) {
 			$relative_class = substr($file, $len);
 		}
 		else {
@@ -29,12 +31,12 @@ class Autoloader {
 		}
 
 		$path = JCF_ROOT;
-		$filepath = JCF_ROOT .'/'.  str_replace('\\', '/', $relative_class) . '.php';
+		$filepath = JCF_ROOT . '/' . str_replace('\\', '/', $relative_class) . '.php';
 
 		if ( file_exists($filepath) ) {
 			require_once($filepath);
 		}
-		else { 
+		else {
 			$flag = true;
 			$this->recursiveAutoload($relative_class, $path, &$flag);
 		}
@@ -46,12 +48,12 @@ class Autoloader {
 	 * @param string $path
 	 * @param boolean $flag
 	 */
-	public function recursiveAutoload($file, $path, $flag)
+	public function recursiveAutoload( $file, $path, $flag )
 	{
 		if ( FALSE !== ($handle = opendir($path)) && $flag ) {
 			while ( FAlSE !== ($dir = readdir($handle)) && $flag ) {
 				if ( strpos($dir, '.') === FALSE ) {
-					$path2 = $path .'/' . $dir;
+					$path2 = $path . '/' . $dir;
 					$filepath = $path2 . '/' . $file . '.php';
 
 					if ( file_exists($filepath) ) {
@@ -59,12 +61,13 @@ class Autoloader {
 						require_once($filepath);
 						break;
 					}
-					$this->recursiveAutoload($file, $path2, &$flag); 
+					$this->recursiveAutoload($file, $path2, &$flag);
 				}
 			}
 			closedir($handle);
 		}
 	}
+
 }
 
 new Autoloader();

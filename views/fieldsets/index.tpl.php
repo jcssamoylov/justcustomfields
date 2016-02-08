@@ -1,4 +1,4 @@
-<?php include(JCF_ROOT . '/views/_head_wrapper.tpl.php'); ?>
+<?php include(JCF_ROOT . '/views/_header.tpl.php'); ?>
 
 	<h3><?php _e('Custom Post Type:', \jcf\JustCustomFields::TEXTDOMAIN); ?> <?php echo $post_type->label; ?>
 		<small><a href="?page=just_custom_fields" class="jcf_change_pt"><?php _e('change', \jcf\JustCustomFields::TEXTDOMAIN); ?></a></small></h3>
@@ -65,7 +65,7 @@
 										<?php else: ?>
 											<?php ?>
 											<td colspan="3" class="collection_list" data-collection_id="<?php echo $field_id; ?>">
-												<?php $this->_render( 'fieldsets/collection_fields_ui', array(
+												<?php $this->_render( 'fields/collection', array(
 													'collection' => $collections[$field_id],
 													'collection_id' => $field_id,
 													'fieldset_id' => $fieldset['id'],
@@ -128,4 +128,4 @@
 	</div>
 	<div class="jcf_clear"></div>
 	
-<?php include(JCF_ROOT . '/views/_foot_wrapper.tpl.php'); ?>
+<?php include(JCF_ROOT . '/views/_footer.tpl.php'); ?>

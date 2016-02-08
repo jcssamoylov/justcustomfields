@@ -1,29 +1,23 @@
 <?php
 
 namespace jcf\models;
+
 use jcf\core;
 
-class Shortcodes extends core\Model {
-	
-	protected $_dL;
-	
-	public function __construct()
-	{
-		parent::__construct();
-		$this->_dL = core\DataLayerFactory::create();
-	}
+class Shortcodes extends core\Model
+{
 
 	/**
-	 *	Do shortcode
-	 *	@param array $args Attributes from shortcode
-	 *	@return string Field content
+	 * 	Do shortcode
+	 * 	@param array $args Attributes from shortcode
+	 * 	@return string Field content
 	 */
-	protected function _initShortcode($args)
+	protected function _initShortcode( $args )
 	{
-		extract( shortcode_atts( array(
+		extract(shortcode_atts(array(
 			'field' => '',
 			'post_id' => '',
-		), $args ) );
+						), $args));
 
 		//get post id
 		$post_id = !empty($args['post_id']) ? $args['post_id'] : get_the_ID();
@@ -44,8 +38,8 @@ class Shortcodes extends core\Model {
 			$field_model->post_type = $post_type;
 			$field_model->field_id = $field_id;
 			$field_obj = core\JustFieldFactory::create($field_model);
-			$field_obj->setPostID( $post_id );
-			
+			$field_obj->setPostID($post_id);
+
 			unset($args['field']);
 			return $field_obj->doShortcode($args);
 		}
@@ -55,11 +49,11 @@ class Shortcodes extends core\Model {
 	}
 
 	/**
-	 *	Shortcode [jcf-value]
-	 *	@param array $args Attributes from shortcode
-	 *	@return string Field content
+	 * 	Shortcode [jcf-value]
+	 * 	@param array $args Attributes from shortcode
+	 * 	@return string Field content
 	 */
-	public function getFieldValue($args)
+	public function getFieldValue( $args )
 	{
 		if ( !empty($args['field']) ) {
 			return $this->_initShortcode($args);
@@ -70,4 +64,3 @@ class Shortcodes extends core\Model {
 	}
 
 }
-
