@@ -13,7 +13,7 @@ Donate link: http://justcoded.com/just-labs/just-custom-fields-for-wordpress-plu
 namespace jcf;
 
 define('JCF_ROOT', dirname(__FILE__));
-require_once( JCF_ROOT.'/core/Autoloader.php' );
+require_once( JCF_ROOT.'/core/Autoload.php' );
 require_once( JCF_ROOT.'/functions/helpers.php' );
 
 class JustCustomFields {
@@ -26,14 +26,12 @@ class JustCustomFields {
 	protected static $_instance = NULL;
 
 	protected $_fields;
-	protected $_dL;
 
 	public function __construct()
 	{
 		self::$_pluginTitle = __('Just Custom Fields', self::TEXTDOMAIN);
 		$this->initControllers();
 		$this->initFields();
-		$this->_dL = \jcf\core\DataLayerFactory::create();
 
 		if ( self::$_instance !== NULL ) {
 			return self::$_instance;

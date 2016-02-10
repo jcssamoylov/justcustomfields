@@ -132,7 +132,7 @@ function initFieldsetsEdit() {
   // choose base for visibility rule
   jQuery('#rule-based-on').live('change', function() {
     var data = {
-      'rule': jQuery(this).val(),
+      'based_on': jQuery(this).val(),
       'action': 'jcf_get_rule_options',
     };
 
@@ -187,7 +187,7 @@ function initFieldsetsEdit() {
     var loader = jQuery(this).find('img.ajax-feedback');
     var data = {
       'action': 'jcf_add_visibility_rules_form',
-      'add_rule': true
+      'scenario': 'create'
     }
     jcf_ajax(data, 'html', loader, function( response ) {
       jQuery('div#visibility').append(response);
@@ -221,7 +221,7 @@ function initFieldsetsEdit() {
       'action': 'jcf_add_visibility_rules_form',
       'rule_id': rule_id,
       'fieldset_id': f_id,
-      'edit_rule': true
+      'scenario': 'update'
     }
     jcf_ajax(data, 'html', loader, function( response ) {
       jQuery('fieldset#fieldset_visibility_rules').remove();

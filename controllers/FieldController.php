@@ -30,11 +30,11 @@ class FieldController extends core\Controller
 	{
 		$model = new models\Field();
 
-		if ( !($model->load($_POST) && $field = core\JustFieldFactory::create($model)) ) {
-			$this->_renderAjax(null, 'json', array( 'status' => !empty($field), 'error' => $model->getErrors() ));
+		if ( $model->load($_POST) && $field = core\JustFieldFactory::create($model) ) {
+			return $this->_renderAjax('fields/form', 'html', array( 'field' => $field ));
 		}
 
-		$this->_renderAjax('fields/form', 'html', array( 'field' => $field ));
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($field), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -45,26 +45,24 @@ class FieldController extends core\Controller
 		$model = new models\Field();
 
 		if ( !($model->load($_POST) && $success = $model->save()) ) {
-			$this->_renderAjax(null, 'json', array( 'status' => !empty($field), 'error' => $model->getErrors() ));
+			if ( isset($success['id_base']) && $success['id_base'] == 'collection' ) {
+				$jcf = new \jcf\JustCustomFields();
+				$registered_fields = $jcf->getFields(true);
+
+				ob_start();
+				$this->_render('fields/collection', array(
+					'collection' => $success['instance'],
+					'collection_id' => $success['id'],
+					'fieldset_id' => $success['fieldset_id'],
+					'registered_fields' => $registered_fields
+				));
+				$success["collection_fields"] = ob_get_clean();
+			}
+
+			return $this->_renderAjax(null, 'json', $success);
 		}
 
-		if ( isset($success['id_base']) && $success['id_base'] == 'collection' ) {
-			$jcf = new \jcf\JustCustomFields();
-			$registered_fields = $jcf->getFields(true);
-
-			ob_start();
-			$template_params = array(
-				'collection' => $success['instance'],
-				'collection_id' => $success['id'],
-				'fieldset_id' => $success['fieldset_id'],
-				'registered_fields' => $registered_fields
-			);
-
-			$this->_render('fields/collection', $template_params);
-			$success["collection_fields"] = ob_get_clean();
-		}
-
-		$this->_renderAjax(null, 'json', $success);
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($field), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -75,7 +73,7 @@ class FieldController extends core\Controller
 		$model = new models\Field();
 		$model->load($_POST) && $success = $model->delete();
 
-		$this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -86,7 +84,7 @@ class FieldController extends core\Controller
 		$model = new models\Field();
 		$model->load($_POST) && $success = $model->sort();
 
-		$this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -97,7 +95,7 @@ class FieldController extends core\Controller
 		$model = new models\Field();
 		$model->load($_POST) && $success = $model->sortCollection();
 
-		$this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
 	}
 
 }

@@ -18,11 +18,9 @@ class AdminController extends core\Controller
 
 		if ( !( isset($_GET['post']) && isset($_GET['action']) ) ) {
 			add_action('admin_print_scripts', array( $this, 'addScripts' ));
+			add_action('admin_print_styles', array( $this, 'addStyles' ));
+			add_action('admin_print_scripts', array( $this, 'addCollectionJs' ));
 		}
-
-		add_action('admin_print_styles', array( $this, 'addStyles' ));
-		add_action('admin_print_scripts', array( $this, 'addCollectionJs' ));
-		add_action('admin_head', array( $this, 'addMediaUploaderJs' ));
 	}
 
 	/**
@@ -89,38 +87,4 @@ class AdminController extends core\Controller
 		);
 		wp_enqueue_script('jcf_collections');
 	}
-
-	/**
-	 * 	this add js script to the Upload Media wordpress popup
-	 */
-	public function addMediaUploaderJs()
-	{
-		global $pagenow;
-
-		if ( $pagenow != 'media-upload.php' || empty($_GET ['jcf_media']) )
-			return;
-
-		// Gets the right label depending on the caller widget
-		switch ( $_GET ['type'] )
-		{
-			case 'image': $button_label = __('Select Picture', \jcf\JustCustomFields::TEXTDOMAIN);
-				break;
-			case 'file': $button_label = __('Select File', \jcf\JustCustomFields::TEXTDOMAIN);
-				break;
-			default: $button_label = __('Insert into Post', \jcf\JustCustomFields::TEXTDOMAIN);
-				break;
-		}
-
-		// Overrides the label when displaying the media uploader panels
-		?>
-		<script type="text/javascript">
-			jQuery(document).ready(function() {
-				jQuery('#media-items').bind('DOMSubtreeModified', function() {
-					jQuery('td.savesend input[type="submit"]').val("<?php echo $button_label; ?>");
-				});
-			});
-		</script>
-		<?php
-	}
-
 }

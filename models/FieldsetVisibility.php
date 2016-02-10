@@ -7,15 +7,19 @@ use jcf\models;
 
 class FieldsetVisibility extends core\Model
 {
-	public $add_rule = false;
-	public $edit_rule = false;
+	const SCENARIO_CREATE = 'create';
+	const SCENARIO_UPDATE = 'update';
+	const BASEDON_PAGE_TPL = 'page_template';
+	const BASEDON_TAXONOMY = 'taxonomy';
+
+	public $scenario = false;
+	public $post_type;
+	public $fieldset_id;
 	public $rule_id;
 	public $rule;
 	public $visibility_rules;
 	public $taxonomy;
 	public $term;
-	public $fieldset_id;
-	public $post_type;
 
 	/**
 	 * Get visibility rules by post type
@@ -24,27 +28,27 @@ class FieldsetVisibility extends core\Model
 	public function findByPostType($post_type) 
 	{
 		$fieldsets = $this->_dL->getFieldsets();
+		$visibility_rules = array();
 
-		if ( !empty($fieldsets[$post_type]) ) {
-			foreach ($fieldsets[$post_type] as $f_id => $fieldset) {
-				if ( !empty($fieldset['visibility_rules']) ) {
-					$visibility_rules[$f_id] = $fieldset['visibility_rules'];
+		if ( empty($fieldsets[$post_type]) ) return;
 
-					foreach ( $visibility_rules[$f_id] as $key => $rule ) {
-						if ( $rule['based_on'] == 'taxonomy' ) {
-							$taxonomy_terms = array();
+		foreach ($fieldsets[$post_type] as $f_id => $fieldset) {
 
-							foreach ( $rule['rule_taxonomy_terms'] as $term_id ) {
-								$taxonomy_terms[] = get_term_by('id', $term_id, $rule['rule_taxonomy']);
-							}
+			if ( empty($fieldset['visibility_rules']) ) continue;
 
-							$visibility_rules[$f_id][$key]['rule_taxonomy_terms'] = $taxonomy_terms;
-						}
-					}
+			$visibility_rules[$f_id] = $fieldset['visibility_rules'];
+
+			foreach ( $visibility_rules[$f_id] as $key => $rule ) {
+				if ( $rule['based_on'] !== self::BASEDON_TAXONOMY ) continue;
+
+				$taxonomy_terms = array();
+
+				foreach ( $rule['rule_taxonomy_terms'] as $term_id ) {
+					$taxonomy_terms[] = get_term_by('id', $term_id, $rule['rule_taxonomy']);
 				}
+				$visibility_rules[$f_id][$key]['rule_taxonomy_terms'] = $taxonomy_terms;
 			}
 		}
-
 		return $visibility_rules;
 	}
 
@@ -59,9 +63,9 @@ class FieldsetVisibility extends core\Model
 
 		$output['post_type'] = $this->post_type;
 		$output['taxonomies'] = $taxonomies;
-		$output['add_rule'] = $this->add_rule;
+		$output['scenario'] = $this->scenario;
 
-		if ( !empty($this->edit_rule) ) {
+		if ( !empty($this->scenario) && $this->scenario == self::SCENARIO_UPDATE ) {
 			$fieldsets = $this->_dL->getFieldsets();
 			$visibility_rule = $fieldsets[$this->post_type][$this->fieldset_id]['visibility_rules'][$this->rule_id - 1];
 
@@ -70,7 +74,7 @@ class FieldsetVisibility extends core\Model
 				return false;
 			}
 
-			if ( $visibility_rule['based_on'] == 'taxonomy' ) {
+			if ( $visibility_rule['based_on'] == self::BASEDON_TAXONOMY ) {
 				$terms = get_terms($visibility_rule['rule_taxonomy'], array( 'hide_empty' => false ));
 				$output['terms'] = $terms;
 			}
@@ -82,7 +86,6 @@ class FieldsetVisibility extends core\Model
 			$output['rule_id'] = $this->rule_id - 1;
 			$output['fieldset_id'] = $this->fieldset_id;
 			$output['visibility_rule'] = $visibility_rule;
-			$output['edit_rule'] = $this->edit_rule;
 		}
 
 		return $output;
@@ -93,7 +96,7 @@ class FieldsetVisibility extends core\Model
 	 */
 	public function getOptions()
 	{
-		if ( $this->rule == 'page_template' ) {
+		if ( $this->based_on == self::BASEDON_PAGE_TPL ) {
 			$options = get_page_templates();
 		}
 		else {
@@ -151,14 +154,14 @@ class FieldsetVisibility extends core\Model
 	/**
 	 * Autocomplete for visibility rule
 	 */
-	public function autocomplete()
+	public static function findTaxonomyTerms($taxonomy, $term)
 	{
 		global $wpdb;
 
 		$query = "SELECT t.term_id, t.name
 			FROM wp_terms AS t
 			LEFT JOIN wp_term_taxonomy AS tt ON t.term_id = tt.term_id
-			WHERE t.name LIKE '%$this->term%' AND tt.taxonomy = '$this->taxonomy'";
+			WHERE t.name LIKE '%$term%' AND tt.taxonomy = '$taxonomy'";
 		$terms = $wpdb->get_results($query);
 		$response = array();
 
@@ -181,8 +184,8 @@ class FieldsetVisibility extends core\Model
 	protected function _save( $fieldsets )
 	{
 		$this->_dL->setFieldsets($fieldsets);
-		$save = $this->_dL->saveFieldsetsData();
-		return !empty($save);
+		$saved = $this->_dL->saveFieldsetsData();
+		return !empty($saved);
 	}
 
 }

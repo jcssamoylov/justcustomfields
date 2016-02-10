@@ -7,14 +7,12 @@ use jcf\core;
 class Field extends core\Model
 {
 	public $post_type;
-	public $post_types;
 	public $field_id;
 	public $field_type;
 	public $fieldset_id;
 	public $collection_id;
 	public $fields_order;
 	public $group_id;
-	public $term;
 
 	/**
 	 * Get all fields
@@ -128,47 +126,4 @@ class Field extends core\Model
 		}
 		return true;
 	}
-
-	/**
-	 * Autocomplete for related content
-	 */
-	public function autocompleteRelatedContent()
-	{
-		if ( empty($this->term) )
-			die('');
-
-		$post_type = $this->post_types;
-		$post_types = jcf_get_post_types('object');
-
-		if ( $post_type != 'any' ) {
-			$post_type_where = " post_type = '$this->post_types' ";
-		}
-		else {
-			// get all post types
-			$post_type_where = "( post_type = '" . implode("' OR post_type = '", array_keys($post_types)) . "' )";
-		}
-
-		global $wpdb;
-		$query = "SELECT ID, post_title, post_status, post_type
-			FROM $wpdb->posts
-			WHERE $post_type_where AND (post_status = 'publish' OR post_status = 'draft') AND post_title LIKE '%$this->term%'
-			ORDER BY post_title";
-		$posts = $wpdb->get_results($query);
-		$response = array();
-
-		foreach ( $posts as $p ) {
-			$draft = ( $p->post_status == 'draft' ) ? ' (DRAFT)' : '';
-			$type_label = ( $this->post_types != 'any' ) ? '' : ' / ' . $post_types[$p->post_type]->labels->singular_name;
-			$response[] = array(
-				'id' => $p->ID,
-				'label' => $p->post_title . $draft . $type_label,
-				'value' => $p->post_title . $draft . $type_label,
-				'type' => $p->post_type,
-				'status' => $p->post_status
-			);
-		}
-
-		return $response;
-	}
-
 }

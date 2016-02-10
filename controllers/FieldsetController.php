@@ -79,7 +79,7 @@ class FieldsetController extends core\Controller
 		$model = new models\Fieldset();
 		$model->load($_POST) && $success = $model->create();
 
-		$this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -90,7 +90,7 @@ class FieldsetController extends core\Controller
 		$model = new models\Fieldset();
 		$model->load($_POST) && $success = $model->delete();
 
-		$this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -100,11 +100,11 @@ class FieldsetController extends core\Controller
 	{
 		$model = new models\Fieldset();
 
-		if ( !($model->load($_POST) && $fieldset = $model->findById($model->fieldset_id)) ) {
-			$this->_renderAjax(null, 'json', array( 'status' => !empty($fieldset), 'error' => $model->getErrors() ));
+		if ( $model->load($_POST) && $fieldset = $model->findById($model->fieldset_id) ) {
+			return $this->_renderAjax('fieldsets/form', 'html', array( 'fieldset' => $fieldset ));
 		}
 
-		$this->_renderAjax('fieldsets/form', 'html', array( 'fieldset' => $fieldset ));
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($fieldset), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -115,12 +115,11 @@ class FieldsetController extends core\Controller
 		$model = new models\Fieldset();
 		$model->load($_POST) && $success = $model->update();
 
-		$params = array(
+		return $this->_renderAjax(null, 'json', array(
 			'status' => !empty($success),
 			'title' => $model->title,
 			'error' => $model->getErrors()
-		);
-		$this->_renderAjax(null, 'json', $params);
+		));
 	}
 
 	/**
@@ -131,7 +130,7 @@ class FieldsetController extends core\Controller
 		$model = new models\Fieldset();
 		$model->load($_POST) && $success = $model->sort();
 
-		$this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($success), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -141,15 +140,15 @@ class FieldsetController extends core\Controller
 	{
 		$model = new models\FieldsetVisibility();
 
-		if ( !($model->load($_POST) && $form_data = $model->getForm()) ) {
-			$this->_renderAjax(null, 'json', array( 'status' => !empty($form_data), 'error' => $model->getErrors() ));
+		if ( $model->load($_POST) && $form_data = $model->getForm() ) {
+			if ( !empty($model->scenario) ) {
+				return $this->_renderAjax('fieldsets/visibility/form', 'html', $form_data);
+			}
+
+			return $this->_render('fieldsets/visibility/form', $form_data);
 		}
 
-		if ( !empty($model->add_rule) || !empty($model->edit_rule) ) {
-			$this->_renderAjax('fieldsets/visibility/form', 'html', $form_data);
-		}
-
-		return $this->_render('fieldsets/visibility/form', $form_data);
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($form_data), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -159,19 +158,19 @@ class FieldsetController extends core\Controller
 	{
 		$model = new models\FieldsetVisibility();
 
-		if ( !($model->load($_POST) && $result = $model->getOptions()) ) {
-			$this->_renderAjax(null, 'json', array( 'status' => !empty($result), 'error' => $model->getErrors() ));
+		if ( $model->load($_POST) && $result = $model->getOptions() ) {
+			$template = 'taxonomies_list';
+			$options = array( 'taxonomies' => $result );
+
+			if ( $model->based_on == models\FieldsetVisibility::BASEDON_PAGE_TPL ) {
+				$template = 'templates_list';
+				$options = array( 'templates' => $result );
+			}
+
+			return $this->_renderAjax('fieldsets/visibility/' . $template, 'html', $options);
 		}
 
-		$template = 'taxonomies_list';
-		$options = array( 'taxonomies' => $result );
-
-		if ( $model->rule == 'page_template' ) {
-			$template = 'templates_list';
-			$options = array( 'templates' => $result );
-		}
-
-		$this->_renderAjax('fieldsets/visibility/' . $template, 'html', $options);
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($result), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -182,7 +181,7 @@ class FieldsetController extends core\Controller
 		$taxonomy = $_POST['taxonomy'];
 		$terms = get_terms($taxonomy, array( 'hide_empty' => false ));
 
-		$this->_renderAjax('fieldsets/visibility/terms_list', 'html', array(
+		return $this->_renderAjax('fieldsets/visibility/terms_list', 'html', array(
 			'terms' => $terms,
 			'taxonomy' => $taxonomy,
 			'current_term' => array()
@@ -196,11 +195,11 @@ class FieldsetController extends core\Controller
 	{
 		$model = new models\FieldsetVisibility();
 
-		if ( !($model->load($_POST) && $rules = $model->update()) ) {
-			$this->_renderAjax(null, 'json', array( 'status' => !empty($rules), 'error' => $model->getErrors() ));
+		if ( $model->load($_POST) && $rules = $model->update() ) {
+			return $this->_renderAjax('fieldsets/visibility/rules', 'html', array( 'visibility_rules' => $rules ));
 		}
 
-		$this->_renderAjax('fieldsets/visibility/rules', 'html', array( 'visibility_rules' => $rules ));
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($rules), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -210,11 +209,11 @@ class FieldsetController extends core\Controller
 	{
 		$model = new models\FieldsetVisibility();
 
-		if ( !($model->load($_POST) && $rules = $model->delete()) ) {
-			$this->_renderAjax(array( 'status' => !empty($rules), 'error' => $model->getErrors() ), 'json');
+		if ( $model->load($_POST) && $rules = $model->delete() ) {
+			return $this->_renderAjax('fieldsets/visibility/rules', 'html', array( 'visibility_rules' => $rules ));
 		}
 
-		$this->_renderAjax('fieldsets/visibility/rules', 'html', array( 'visibility_rules' => $rules ));
+		return $this->_renderAjax(array( 'status' => !empty($rules), 'error' => $model->getErrors() ), 'json');
 	}
 
 	/**
@@ -222,10 +221,11 @@ class FieldsetController extends core\Controller
 	 */
 	public function ajaxVisibilityAutocomplete()
 	{
-		$model = new models\FieldsetVisibility();
-		$model->load($_POST) && $result = $model->autocomplete();
+		$taxonomy = strip_tags(trim($_POST['taxonomy']));
+		$term = strip_tags(trim($_POST['term']));
+		$result = models\FieldsetVisibility::findTaxonomyTerms($taxonomy, $term);
 
-		$this->_renderAjax(null, 'json', $result);
+		return $this->_renderAjax(null, 'json', $result);
 	}
 
 }

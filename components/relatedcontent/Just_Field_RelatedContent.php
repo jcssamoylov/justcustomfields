@@ -16,7 +16,7 @@ class Just_Field_RelatedContent extends models\Just_Field
 	{
 		$field_ops = array( 'classname' => 'field_relatedcontent' );
 		parent::__construct('relatedcontent', __('Related Content', \jcf\JustCustomFields::TEXTDOMAIN), $field_ops);
-		add_action('wp_ajax_jcf_related_content_autocomplete', array( $this, 'ajaxRelatedContentAutocomplete' ));
+		add_action('wp_ajax_jcf_related_content_autocomplete', array( $this, 'ajaxAutocomplete' ));
 	}
 
 	/**
@@ -298,7 +298,7 @@ class Just_Field_RelatedContent extends models\Just_Field
 	/**
 	 * Autocomplete ajax callback
 	 */
-	public function ajaxRelatedContentAutocomplete() {
+	public function ajaxAutocomplete() {
 		if ( empty($_POST['term']) )
 			die('');
 

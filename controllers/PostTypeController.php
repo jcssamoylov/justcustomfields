@@ -17,12 +17,12 @@ class PostTypeController extends core\Controller
 
 		if ( isset($_GET['post']) && isset($_GET['action']) && $_GET['action'] == 'edit' ) {
 			add_action('admin_print_scripts', array( $this, 'addScripts' ));
+			add_action('admin_print_styles', array( $this, 'addStyles' ));
+			add_action('admin_head', array( $this, 'addMediaUploaderJs' ));
 		}
 
-		add_action('admin_print_styles', array( $this, 'addStyles' ));
 		add_action('add_meta_boxes', array( $this, 'actionRender' ), 10, 1);
 		add_action('save_post', array( $this, 'actionSave' ), 10, 2);
-
 		add_shortcode('jcf-value', array( $this, 'actionGetShortcodeValue' ));
 	}
 
@@ -32,10 +32,11 @@ class PostTypeController extends core\Controller
 	 */
 	public function actionRender( $post_type = '' )
 	{
-		$visibility_rules = array();
 		$model = new models\Fieldset();
 		$fieldsets = $model->findByPostType($post_type);
+
 		$field_model = new models\Field();
+
 		$visibility_model = new models\FieldsetVisibility();
 		$visibility_rules = $visibility_model->findByPostType($post_type);
 
@@ -43,12 +44,10 @@ class PostTypeController extends core\Controller
 			// remove fieldsets without fields
 			foreach ( $fieldsets as $f_id => $fieldset ) {
 				// if all fields disabled -> remove fieldset
-				if ( empty($fieldset['fields']) )
-					continue;
+				if ( empty($fieldset['fields']) ) continue;
 
 				foreach ($fieldset['fields'] as $field_id => $enabled) {
-					if ( !$enabled )
-						continue;
+					if ( !$enabled ) continue;
 
 					$params = array(
 						'post_type' => $post_type,
@@ -83,8 +82,7 @@ class PostTypeController extends core\Controller
 		$this->_render('shortcodes/modal');
 
 		foreach ( $fieldset['fields'] as $field_id => $enabled ) {
-			if ( !$enabled )
-				continue;
+			if ( !$enabled ) continue;
 
 			$params = array(
 				'post_type' => $post->post_type,
@@ -117,8 +115,7 @@ class PostTypeController extends core\Controller
 		$field_model = new models\Field();
 		$field_model->load($_POST);
 		// do not save anything on autosave
-		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE )
-			return;
+		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
 
 		// verify this came from the our screen and with proper authorization,
 		// because save_post can be triggered at other times
@@ -127,8 +124,8 @@ class PostTypeController extends core\Controller
 
 		// check permissions
 		$permission = ('page' == $field_model->post_type) ? 'edit_page' : 'edit_post';
-		if ( !current_user_can($permission, $post_ID) )
-			return;
+
+		if ( !current_user_can($permission, $post_ID) )	return;
 
 		// OK, we're authenticated: we need to find and save the data
 		// get fieldsets
@@ -181,5 +178,38 @@ class PostTypeController extends core\Controller
 		wp_enqueue_style('jcf_edit_post');
 
 		do_action('jcf_admin_edit_post_styles');
+	}
+
+	/**
+	 * 	this add js script to the Upload Media wordpress popup
+	 */
+	public function addMediaUploaderJs()
+	{
+		global $pagenow;
+
+		if ( $pagenow != 'media-upload.php' || empty($_GET ['jcf_media']) )
+			return;
+
+		// Gets the right label depending on the caller widget
+		switch ( $_GET ['type'] )
+		{
+			case 'image': $button_label = __('Select Picture', \jcf\JustCustomFields::TEXTDOMAIN);
+				break;
+			case 'file': $button_label = __('Select File', \jcf\JustCustomFields::TEXTDOMAIN);
+				break;
+			default: $button_label = __('Insert into Post', \jcf\JustCustomFields::TEXTDOMAIN);
+				break;
+		}
+
+		// Overrides the label when displaying the media uploader panels
+		?>
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				jQuery('#media-items').bind('DOMSubtreeModified', function() {
+					jQuery('td.savesend input[type="submit"]').val("<?php echo $button_label; ?>");
+				});
+			});
+		</script>
+		<?php
 	}
 }

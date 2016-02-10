@@ -42,12 +42,11 @@ class ImportExportController extends core\Controller
 	{
 		$model = new models\ImportExport();
 
-		if ( !($model->load($_POST) && $all_fields = $model->getImportFields()) ) {
-			$this->_renderAjax(array( 'status' => !empty($all_fields), 'error' => $model->getErrors() ), 'json');
+		if ( $model->load($_POST) && $all_fields = $model->getImportFields() ) {
+			return $this->_renderAjax('import_export/import', 'html', $all_fields);
 		}
 
-		// load template
-		$this->_renderAjax('import_export/import', 'html', $all_fields);
+		return $this->_renderAjax(array( 'status' => !empty($all_fields), 'error' => $model->getErrors() ), 'json');
 	}
 
 	/**
@@ -57,14 +56,14 @@ class ImportExportController extends core\Controller
 	{
 		$model = new models\ImportExport();
 
-		if ( !($model->load($_POST) && $data = json_encode($model->export_data)) ) {
-			$this->_renderAjax(null, 'json', array( 'status' => !empty($data), 'error' => $model->getErrors() ));
+		if ( $model->load($_POST) && $data = json_encode($model->export_data) ) {
+			$filename = 'jcf_export' . date('Ymd-his') . '.json';
+			header("Content-Disposition: attachment;filename=" . $filename);
+			header("Content-Transfer-Encoding: binary ");
+			return $this->_renderAjax(null, 'json', $data);
 		}
 
-		$filename = 'jcf_export' . date('Ymd-his') . '.json';
-		header("Content-Disposition: attachment;filename=" . $filename);
-		header("Content-Transfer-Encoding: binary ");
-		$this->_renderAjax(null, 'json', $data);
+		return $this->_renderAjax(null, 'json', array( 'status' => !empty($data), 'error' => $model->getErrors() ));
 	}
 
 	/**
@@ -73,18 +72,16 @@ class ImportExportController extends core\Controller
 	public function ajaxExportForm()
 	{
 		$fieldsets_model = new models\Fieldset();
-		$fields_model = new models\Field();
 		$fieldsets = $fieldsets_model->findAll();
+
+		$fields_model = new models\Field();
 		$fields = $fields_model->findAll();
 
-		$data = array(
-			'field_settings' => $fields,
-			'fieldsets' => $fieldsets
-		);
-		$data['post_types'] = !empty($fieldsets['post_types']) ? $fieldsets['post_types'] : jcf_get_post_types();
-
 		// load template
-		$this->_renderAjax('import_export/export', 'html', $data);
+		return $this->_renderAjax('import_export/export', 'html', array(
+			'field_settings' => $fields,
+			'fieldsets' => $fieldsets,
+			'post_types' => !empty($fieldsets['post_types']) ? $fieldsets['post_types'] : jcf_get_post_types()
+		));
 	}
-
 }
