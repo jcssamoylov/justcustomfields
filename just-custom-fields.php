@@ -21,22 +21,37 @@ class JustCustomFields {
 	const TEXTDOMAIN = 'just-custom-fields';
 	const VERSION = '2.300';
 
+	/**
+	 * Refers to a single instance of this class. 
+	 */
+	protected static $_instance = null;
 	protected static $_pluginName = 'just_custom_fields';
 	protected static $_pluginTitle;
-	protected static $_instance = NULL;
 
 	protected $_fields;
 
-	public function __construct()
+	/**
+	 * Returns the *Singleton* instance of this class.
+	 *
+	 * @return Singleton A single instance of this class.
+	 */
+	public static function getInstance()
 	{
-		self::$_pluginTitle = __('Just Custom Fields', self::TEXTDOMAIN);
-		$this->initControllers();
-		$this->initFields();
-
-		if ( self::$_instance !== NULL ) {
-			return self::$_instance;
+		if ( null === static::$_instance ) {
+			static::$_instance = new static();
 		}
-		static::$_instance = $this;
+
+		return static::$_instance;
+	}
+
+	/**
+	 * Alias for creating object of *Singleton* pattern
+	 * 
+	 * @return Singleton A single instance of this class.
+	 */
+	public static function run()
+	{
+		return static::getInstance();
 	}
 
 	/**
@@ -148,11 +163,37 @@ class JustCustomFields {
 	}
 
 	/**
-	 * Close method clone for object
+	 * Protected constructor to prevent creating a new instance of the
+	 * *Singleton* via the `new` operator from outside of this class.
 	 */
-	protected function __clone(){}
+	protected function __construct()
+	{
+		static::$_pluginTitle = __('Just Custom Fields', static::TEXTDOMAIN);
+		$this->initControllers();
+		$this->initFields();
+	}
+
+	/**
+	 * Private clone method to prevent cloning of the instance of the
+	 * *Singleton* instance.
+	 * 
+	 * @return void
+	 */
+	private function __clone()
+	{
+	}
+
+	/**
+	 * Private unserialize method to prevent unserializing of the *Singleton*
+	 * instance.
+	 *
+	 * @return void
+	 */
+	private function __wakeup()
+	{
+	}
 }
 
-new JustCustomFields();
+JustCustomFields::run();
 
 ?>
