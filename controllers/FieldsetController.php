@@ -49,14 +49,14 @@ class FieldsetController extends core\Controller
 		$post_type = $_GET['pt'];
 		$post_types = jcf_get_post_types('object');
 
-		$jcf = new \jcf\JustCustomFields();
+		$jcf = \jcf\JustCustomFields::run();
 		$fieldset_model = new models\Fieldset();
 		$field_model = new models\Field();
 
 		$fieldsets = $fieldset_model->findByPostType($post_type);
 		$fields = $field_model->findByPostType($post_type);
 		$collections = $field_model->findCollectionsByPostType($post_type);
-		$collections['registered_fields'] = $jcf->getFields('collections');
+		$collections['registered_fields'] = $jcf->getFields('collection');
 		$registered_fields = $jcf->getFields();
 
 		// load template

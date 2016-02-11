@@ -17,7 +17,7 @@ class JustFieldFactory
 		$field_mixed = !empty($field->field_id) ? $field->field_id : $field->field_type;
 		$id_base = preg_replace('/\-([0-9]+)/', '', $field_mixed);
 
-		$jcf = new \jcf\JustCustomFields();
+		$jcf = \jcf\JustCustomFields::run();
 		$field_info = $jcf->getFieldInfo($id_base);
 
 		$model = new $field_info['class']();
